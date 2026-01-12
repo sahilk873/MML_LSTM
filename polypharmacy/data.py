@@ -28,7 +28,23 @@ def _parse_list_column(value: object) -> List[str]:
 
 def parse_list_column(value: object) -> List[str]:
     """Public wrapper for list parsing to keep reuse consistent."""
-    return _parse_list_column(value)
+    return normalize_id_list(_parse_list_column(value))
+
+
+def normalize_id_list(values: List[object]) -> List[str]:
+    """Flatten one level and coerce identifiers to strings."""
+    flattened: List[str] = []
+    for item in values:
+        if item is None or (isinstance(item, float) and np.isnan(item)):
+            continue
+        if isinstance(item, list):
+            for nested in item:
+                if nested is None or (isinstance(nested, float) and np.isnan(nested)):
+                    continue
+                flattened.append(str(nested))
+        else:
+            flattened.append(str(item))
+    return flattened
 
 
 @dataclass
@@ -41,10 +57,10 @@ class LabeledExample:
 def _load_csv_df(path: str, label: int) -> pd.DataFrame:
     df = pd.read_csv(path)
     for column in LIST_COLUMNS:
-        df[column] = df[column].apply(_parse_list_column)
+        df[column] = df[column].apply(parse_list_column)
     df["condition_id_norm"] = df["condition_id_norm"].astype(str)
     df["drug_set"] = (df["primary_drug_id_norm"] + df["secondary_drug_id_norm"]).apply(
-        lambda ids: sorted(ids)
+        lambda ids: sorted(normalize_id_list(ids))
     )
     df = df[df["drug_set"].map(len) > 0]
     df = df[~df["condition_id_norm"].isin(["nan", "None"])]

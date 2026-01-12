@@ -7,6 +7,7 @@
 ## Key Data Assumptions
 - `primary_drug_id_norm` and `secondary_drug_id_norm` are stringified Python lists and are parsed via `ast.literal_eval`.
 - Drug sets are constructed as `sorted(primary_drug_id_norm + secondary_drug_id_norm)`.
+- Drug list entries are normalized by flattening one level and coercing to strings before sorting.
 - Labels are inferred from source file: indications = 1, contraindications = 0.
 - Only normalized IDs are used for modeling (CHEBI for drugs, MONDO for diseases).
 
@@ -24,3 +25,4 @@
 
 ## Change Log
 - 2026-01-12: Added deduplication + conflict resolution after CSV load, persisted deduped dataset and class counts, and integrated KG coverage filtering with dropped-row reporting to enforce KG node availability and determinism.
+- 2026-01-12: Normalized drug ID lists by flattening nested list entries and coercing to strings to prevent sorting errors during drug set construction.
