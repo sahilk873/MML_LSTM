@@ -22,7 +22,9 @@
 - KG coverage filtering drops any example with drugs/disease missing from KG nodes.
 - Deterministic splits are required; splits are reused only if dataset size matches.
 - Saved artifacts are considered authoritative for evaluation.
+- The training run dataset is saved to `artifacts/filtered_dataset_run.csv` and drives splits/evaluation.
 
 ## Change Log
 - 2026-01-12: Added deduplication + conflict resolution after CSV load, persisted deduped dataset and class counts, and integrated KG coverage filtering with dropped-row reporting to enforce KG node availability and determinism.
 - 2026-01-12: Normalized drug ID lists by flattening nested list entries and coercing to strings to prevent sorting errors during drug set construction.
+- 2026-01-12: Added quick-run CLI controls (sampling edges/examples + override epochs/batch/walks) and persisted the run dataset for deterministic evaluation.

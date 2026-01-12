@@ -52,12 +52,52 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--config", default=None, help="Optional JSON config override.")
     parser.add_argument("--edge-src-col", default=None)
     parser.add_argument("--edge-dst-col", default=None)
+    parser.add_argument("--max-examples", type=int, default=None)
+    parser.add_argument("--max-edges", type=int, default=None)
+    parser.add_argument("--epochs", type=int, default=None)
+    parser.add_argument("--batch-size", type=int, default=None)
+    parser.add_argument("--kg-num-walks", type=int, default=None)
+    parser.add_argument("--kg-walk-length", type=int, default=None)
+    parser.add_argument("--kg-workers", type=int, default=None)
+    parser.add_argument(
+        "--quick",
+        action="store_true",
+        help="Run a quick smoke test with reduced data/compute.",
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
     config = config_lib.load_config(args.config)
+
+    if args.quick:
+        if args.max_examples is None:
+            args.max_examples = 500
+        if args.max_edges is None:
+            args.max_edges = 200000
+        if args.epochs is None:
+            args.epochs = 1
+        if args.batch_size is None:
+            args.batch_size = 32
+        if args.kg_num_walks is None:
+            args.kg_num_walks = 5
+        if args.kg_walk_length is None:
+            args.kg_walk_length = 10
+        if args.kg_workers is None:
+            args.kg_workers = 2
+
+    override_map = {
+        "epochs": args.epochs,
+        "batch_size": args.batch_size,
+        "kg_num_walks": args.kg_num_walks,
+        "kg_walk_length": args.kg_walk_length,
+        "kg_workers": args.kg_workers,
+    }
+    for key, value in override_map.items():
+        if value is not None:
+            config[key] = value
+
     utils.set_seeds(config["seed"])
     utils.ensure_dir(args.output_dir)
 
@@ -71,6 +111,11 @@ def main() -> None:
     print(f"Deduped class counts: {deduped_counts}")
 
     edges = kg_lib.load_edges(args.kg, src_col=args.edge_src_col, dst_col=args.edge_dst_col)
+    if args.max_edges is not None and len(edges) > args.max_edges:
+        edges = edges.sample(n=args.max_edges, random_state=config["seed"]).reset_index(
+            drop=True
+        )
+        print(f"KG edge sampling: using {len(edges)} edges")
     kg_nodes = kg_lib.extract_kg_nodes(edges)
 
     filtered_df, dropped_df, drop_stats = data_lib.filter_by_kg_coverage(
@@ -90,7 +135,17 @@ def main() -> None:
     filtered_counts = filtered_df["label"].value_counts().to_dict()
     print(f"Filtered class counts: {filtered_counts}")
 
-    examples = data_lib.dataframe_to_examples(filtered_df)
+    run_df = filtered_df
+    if args.max_examples is not None and len(filtered_df) > args.max_examples:
+        run_df = filtered_df.sample(n=args.max_examples, random_state=config["seed"]).reset_index(
+            drop=True
+        )
+        print(f"Example sampling: using {len(run_df)} examples")
+
+    run_path = os.path.join(args.output_dir, "filtered_dataset_run.csv")
+    run_df.to_csv(run_path, index=False)
+
+    examples = data_lib.dataframe_to_examples(run_df)
     drug_to_idx, disease_to_idx = data_lib.build_mappings(examples)
     drug_seqs, disease_idxs, labels = data_lib.encode_examples(
         examples, drug_to_idx, disease_to_idx

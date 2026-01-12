@@ -52,8 +52,12 @@ def main() -> None:
     drug_embeddings = np.load(os.path.join(args.output_dir, "drug_embeddings.npy"))
     disease_embeddings = np.load(os.path.join(args.output_dir, "disease_embeddings.npy"))
 
+    run_path = os.path.join(args.output_dir, "filtered_dataset_run.csv")
     filtered_path = os.path.join(args.output_dir, "filtered_dataset.csv")
-    if os.path.exists(filtered_path):
+    if os.path.exists(run_path):
+        filtered_df = pd.read_csv(run_path)
+        filtered_df["drug_set"] = filtered_df["drug_set"].apply(data_lib.parse_list_column)
+    elif os.path.exists(filtered_path):
         filtered_df = pd.read_csv(filtered_path)
         filtered_df["drug_set"] = filtered_df["drug_set"].apply(data_lib.parse_list_column)
     else:
