@@ -1,0 +1,8 @@
+numpy
+pandas
+torch
+scikit-learn
+networkx
+node2vec
+gensim
+pyarrow

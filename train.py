@@ -1,0 +1,274 @@
+import argparse
+import os
+from typing import Dict, Optional
+
+import numpy as np
+import torch
+from torch.utils.data import DataLoader, Subset
+
+from polypharmacy import config as config_lib
+from polypharmacy import data as data_lib
+from polypharmacy import kg as kg_lib
+from polypharmacy import model as model_lib
+from polypharmacy import utils
+
+
+def build_index_to_id(mapping: Dict[str, int], pad_token: Optional[str] = None) -> list:
+    size = len(mapping) + (1 if pad_token is not None else 0)
+    idx_to_id = ["" for _ in range(size)]
+    if pad_token is not None:
+        idx_to_id[0] = pad_token
+    for entity_id, idx in mapping.items():
+        idx_to_id[idx] = entity_id
+    return idx_to_id
+
+
+def evaluate_model(
+    model: torch.nn.Module, loader: DataLoader, device: torch.device
+) -> Dict[str, float]:
+    model.eval()
+    all_probs = []
+    all_labels = []
+    with torch.no_grad():
+        for drug_seq, lengths, disease_idx, labels in loader:
+            drug_seq = drug_seq.to(device)
+            lengths = lengths.to(device)
+            disease_idx = disease_idx.to(device)
+            logits = model(drug_seq, lengths, disease_idx)
+            probs = torch.sigmoid(logits).cpu().numpy()
+            all_probs.append(probs)
+            all_labels.append(labels.numpy())
+    probs = np.concatenate(all_probs)
+    labels = np.concatenate(all_labels)
+    return utils.compute_metrics(labels, probs)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Train polypharmacy predictor.")
+    parser.add_argument("--indications", default="indications_norm.csv")
+    parser.add_argument("--contraindications", default="contraindications_norm.csv")
+    parser.add_argument("--kg", default="kg_edges.parquet")
+    parser.add_argument("--output-dir", default="artifacts")
+    parser.add_argument("--config", default=None, help="Optional JSON config override.")
+    parser.add_argument("--edge-src-col", default=None)
+    parser.add_argument("--edge-dst-col", default=None)
+    return parser.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+    config = config_lib.load_config(args.config)
+    utils.set_seeds(config["seed"])
+    utils.ensure_dir(args.output_dir)
+
+    deduped_df, conflict_count = data_lib.load_deduped_dataframe(
+        args.indications, args.contraindications
+    )
+    print(f"Conflict resolution: {conflict_count} conflicting keys set to label=0")
+    deduped_path = os.path.join(args.output_dir, "deduped_dataset.csv")
+    deduped_df.to_csv(deduped_path, index=False)
+    deduped_counts = deduped_df["label"].value_counts().to_dict()
+    print(f"Deduped class counts: {deduped_counts}")
+
+    edges = kg_lib.load_edges(args.kg, src_col=args.edge_src_col, dst_col=args.edge_dst_col)
+    kg_nodes = kg_lib.extract_kg_nodes(edges)
+
+    filtered_df, dropped_df, drop_stats = data_lib.filter_by_kg_coverage(
+        deduped_df, kg_nodes
+    )
+    dropped_path = os.path.join(args.output_dir, "dropped_rows.csv")
+    dropped_df.to_csv(dropped_path, index=False)
+    filtered_path = os.path.join(args.output_dir, "filtered_dataset.csv")
+    filtered_df.to_csv(filtered_path, index=False)
+    print(
+        "KG coverage filtering: "
+        f"dropped={drop_stats['num_dropped']} "
+        f"({drop_stats['percent_dropped']:.2%})"
+    )
+    if drop_stats["missing_prefixes"]:
+        print(f"Most common missing prefixes: {drop_stats['missing_prefixes']}")
+    filtered_counts = filtered_df["label"].value_counts().to_dict()
+    print(f"Filtered class counts: {filtered_counts}")
+
+    examples = data_lib.dataframe_to_examples(filtered_df)
+    drug_to_idx, disease_to_idx = data_lib.build_mappings(examples)
+    drug_seqs, disease_idxs, labels = data_lib.encode_examples(
+        examples, drug_to_idx, disease_to_idx
+    )
+
+    splits_path = os.path.join(args.output_dir, "splits.npz")
+    if os.path.exists(splits_path):
+        split_data = np.load(splits_path)
+        if split_data.get("num_examples", None) == len(labels):
+            train_idx = split_data["train_idx"]
+            val_idx = split_data["val_idx"]
+            test_idx = split_data["test_idx"]
+        else:
+            train_idx, val_idx, test_idx = data_lib.deterministic_split(
+                num_examples=len(labels),
+                seed=config["seed"],
+                train_frac=config["train_frac"],
+                val_frac=config["val_frac"],
+                test_frac=config["test_frac"],
+            )
+            np.savez_compressed(
+                splits_path,
+                train_idx=train_idx,
+                val_idx=val_idx,
+                test_idx=test_idx,
+                num_examples=len(labels),
+            )
+    else:
+        train_idx, val_idx, test_idx = data_lib.deterministic_split(
+            num_examples=len(labels),
+            seed=config["seed"],
+            train_frac=config["train_frac"],
+            val_frac=config["val_frac"],
+            test_frac=config["test_frac"],
+        )
+        np.savez_compressed(
+            splits_path,
+            train_idx=train_idx,
+            val_idx=val_idx,
+            test_idx=test_idx,
+            num_examples=len(labels),
+        )
+
+    dataset = data_lib.PolypharmacyDataset(drug_seqs, disease_idxs, labels)
+    collate = lambda batch: data_lib.collate_batch(batch, pad_idx=0)
+    train_loader = DataLoader(
+        Subset(dataset, train_idx),
+        batch_size=config["batch_size"],
+        shuffle=True,
+        collate_fn=collate,
+    )
+    val_loader = DataLoader(
+        Subset(dataset, val_idx),
+        batch_size=config["batch_size"],
+        shuffle=False,
+        collate_fn=collate,
+    )
+
+    kg_cache_path = os.path.join(args.output_dir, "kg_embeddings.npz")
+    node_ids, node_vectors = kg_lib.load_or_build_kg_embeddings(
+        kg_path=args.kg,
+        cache_path=kg_cache_path,
+        embedding_dim=config["embedding_dim"],
+        walk_length=config["kg_walk_length"],
+        num_walks=config["kg_num_walks"],
+        p=config["kg_p"],
+        q=config["kg_q"],
+        context_window=config["kg_context_window"],
+        min_count=config["kg_min_count"],
+        workers=config["kg_workers"],
+        seed=config["seed"],
+        src_col=args.edge_src_col,
+        dst_col=args.edge_dst_col,
+        edges=edges,
+    )
+
+    embedding_dim = node_vectors.shape[1]
+    if embedding_dim != config["embedding_dim"]:
+        config["embedding_dim"] = embedding_dim
+
+    node_to_idx = {node_id: idx for idx, node_id in enumerate(node_ids)}
+    rng = np.random.RandomState(config["seed"])
+
+    drug_idx_to_id = build_index_to_id(drug_to_idx, pad_token="<PAD>")
+    disease_idx_to_id = build_index_to_id(disease_to_idx)
+
+    drug_embeddings = kg_lib.build_entity_embedding(
+        entity_ids=drug_idx_to_id,
+        node_to_idx=node_to_idx,
+        node_embeddings=node_vectors,
+        embedding_dim=embedding_dim,
+        rng=rng,
+        pad_idx=0,
+    )
+    disease_embeddings = kg_lib.build_entity_embedding(
+        entity_ids=disease_idx_to_id,
+        node_to_idx=node_to_idx,
+        node_embeddings=node_vectors,
+        embedding_dim=embedding_dim,
+        rng=rng,
+        pad_idx=None,
+    )
+
+    np.save(os.path.join(args.output_dir, "drug_embeddings.npy"), drug_embeddings)
+    np.save(os.path.join(args.output_dir, "disease_embeddings.npy"), disease_embeddings)
+    utils.save_json(
+        os.path.join(args.output_dir, "drug_vocab.json"),
+        {"ids": drug_idx_to_id},
+    )
+    utils.save_json(
+        os.path.join(args.output_dir, "disease_vocab.json"),
+        {"ids": disease_idx_to_id},
+    )
+    utils.save_json(os.path.join(args.output_dir, "config.json"), config)
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model_lib.PolypharmacyLSTMClassifier(
+        drug_embeddings=torch.tensor(drug_embeddings),
+        disease_embeddings=torch.tensor(disease_embeddings),
+        lstm_hidden_dim=config["lstm_hidden_dim"],
+        mlp_hidden_dim=config["mlp_hidden_dim"],
+        dropout=config["dropout"],
+        freeze_kg=config["freeze_kg"],
+        pad_idx=0,
+    ).to(device)
+
+    optimizer = torch.optim.Adam(
+        model.parameters(),
+        lr=config["learning_rate"],
+        weight_decay=config["weight_decay"],
+    )
+    criterion = torch.nn.BCEWithLogitsLoss()
+
+    best_auc = float("-inf")
+    best_path = os.path.join(args.output_dir, "best_model.pt")
+
+    for epoch in range(1, config["epochs"] + 1):
+        model.train()
+        total_loss = 0.0
+        for drug_seq, lengths, disease_idx, batch_labels in train_loader:
+            drug_seq = drug_seq.to(device)
+            lengths = lengths.to(device)
+            disease_idx = disease_idx.to(device)
+            batch_labels = batch_labels.to(device)
+
+            optimizer.zero_grad()
+            logits = model(drug_seq, lengths, disease_idx)
+            loss = criterion(logits, batch_labels)
+            loss.backward()
+            optimizer.step()
+            total_loss += loss.item()
+
+        val_metrics = evaluate_model(model, val_loader, device)
+        avg_loss = total_loss / max(1, len(train_loader))
+        print(
+            f"Epoch {epoch:02d} | loss={avg_loss:.4f} | "
+            f"val_auc={val_metrics['roc_auc']:.4f} | val_acc={val_metrics['accuracy']:.4f}"
+        )
+        if val_metrics["roc_auc"] > best_auc:
+            best_auc = val_metrics["roc_auc"]
+            torch.save(
+                {
+                    "model_state": model.state_dict(),
+                    "config": config,
+                    "drug_vocab_size": drug_embeddings.shape[0],
+                    "disease_vocab_size": disease_embeddings.shape[0],
+                    "embedding_dim": embedding_dim,
+                    "lstm_hidden_dim": config["lstm_hidden_dim"],
+                    "mlp_hidden_dim": config["mlp_hidden_dim"],
+                    "dropout": config["dropout"],
+                    "freeze_kg": config["freeze_kg"],
+                    "pad_idx": 0,
+                },
+                best_path,
+            )
+
+    print(f"Best model saved to {best_path}")
+
+
+if __name__ == "__main__":
+    main()

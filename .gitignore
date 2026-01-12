@@ -1,0 +1,25 @@
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+build/
+dist/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.tox/
+.venv/
+venv/
+env/
+.env
+.DS_Store
+.Rhistory
+
+# Data artifacts
+artifacts/
+
+# Initial datasets
+indications_norm.csv
+contraindications_norm.csv
+kg_edges.parquet

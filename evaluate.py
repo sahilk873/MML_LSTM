@@ -1,0 +1,130 @@
+import argparse
+import os
+
+import numpy as np
+import pandas as pd
+import torch
+from torch.utils.data import DataLoader, Subset
+
+from polypharmacy import data as data_lib
+from polypharmacy import kg as kg_lib
+from polypharmacy import model as model_lib
+from polypharmacy import utils
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Evaluate polypharmacy predictor.")
+    parser.add_argument("--indications", default="indications_norm.csv")
+    parser.add_argument("--contraindications", default="contraindications_norm.csv")
+    parser.add_argument("--checkpoint", default="artifacts/best_model.pt")
+    parser.add_argument("--output-dir", default="artifacts")
+    parser.add_argument("--batch-size", type=int, default=128)
+    parser.add_argument("--kg", default="kg_edges.parquet")
+    parser.add_argument("--edge-src-col", default=None)
+    parser.add_argument("--edge-dst-col", default=None)
+    return parser.parse_args()
+
+
+def evaluate_split(
+    model: torch.nn.Module, loader: DataLoader, device: torch.device
+) -> dict:
+    model.eval()
+    all_probs = []
+    all_labels = []
+    with torch.no_grad():
+        for drug_seq, lengths, disease_idx, labels in loader:
+            drug_seq = drug_seq.to(device)
+            lengths = lengths.to(device)
+            disease_idx = disease_idx.to(device)
+            logits = model(drug_seq, lengths, disease_idx)
+            probs = torch.sigmoid(logits).cpu().numpy()
+            all_probs.append(probs)
+            all_labels.append(labels.numpy())
+    probs = np.concatenate(all_probs)
+    labels = np.concatenate(all_labels)
+    return utils.compute_metrics(labels, probs)
+
+
+def main() -> None:
+    args = parse_args()
+    checkpoint = torch.load(args.checkpoint, map_location="cpu")
+
+    drug_embeddings = np.load(os.path.join(args.output_dir, "drug_embeddings.npy"))
+    disease_embeddings = np.load(os.path.join(args.output_dir, "disease_embeddings.npy"))
+
+    filtered_path = os.path.join(args.output_dir, "filtered_dataset.csv")
+    if os.path.exists(filtered_path):
+        filtered_df = pd.read_csv(filtered_path)
+        filtered_df["drug_set"] = filtered_df["drug_set"].apply(data_lib.parse_list_column)
+    else:
+        deduped_df, _ = data_lib.load_deduped_dataframe(
+            args.indications, args.contraindications
+        )
+        edges = kg_lib.load_edges(args.kg, src_col=args.edge_src_col, dst_col=args.edge_dst_col)
+        kg_nodes = kg_lib.extract_kg_nodes(edges)
+        filtered_df, _, _ = data_lib.filter_by_kg_coverage(deduped_df, kg_nodes)
+
+    examples = data_lib.dataframe_to_examples(filtered_df)
+    drug_vocab_path = os.path.join(args.output_dir, "drug_vocab.json")
+    disease_vocab_path = os.path.join(args.output_dir, "disease_vocab.json")
+
+    if os.path.exists(drug_vocab_path) and os.path.exists(disease_vocab_path):
+        drug_ids = utils.load_json(drug_vocab_path)["ids"]
+        disease_ids = utils.load_json(disease_vocab_path)["ids"]
+        drug_to_idx = {drug_id: idx for idx, drug_id in enumerate(drug_ids) if idx != 0}
+        disease_to_idx = {disease_id: idx for idx, disease_id in enumerate(disease_ids)}
+    else:
+        drug_to_idx, disease_to_idx = data_lib.build_mappings(examples)
+    drug_seqs, disease_idxs, labels = data_lib.encode_examples(
+        examples, drug_to_idx, disease_to_idx
+    )
+
+    splits = np.load(os.path.join(args.output_dir, "splits.npz"))
+    if splits.get("num_examples", None) != len(labels):
+        raise ValueError(
+            "Split file does not match current dataset size. "
+            "Re-run training to regenerate splits."
+        )
+    val_idx = splits["val_idx"]
+    test_idx = splits["test_idx"]
+
+    dataset = data_lib.PolypharmacyDataset(drug_seqs, disease_idxs, labels)
+    collate = lambda batch: data_lib.collate_batch(batch, pad_idx=0)
+    val_loader = DataLoader(
+        Subset(dataset, val_idx),
+        batch_size=args.batch_size,
+        shuffle=False,
+        collate_fn=collate,
+    )
+    test_loader = DataLoader(
+        Subset(dataset, test_idx),
+        batch_size=args.batch_size,
+        shuffle=False,
+        collate_fn=collate,
+    )
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model_lib.PolypharmacyLSTMClassifier(
+        drug_embeddings=torch.tensor(drug_embeddings),
+        disease_embeddings=torch.tensor(disease_embeddings),
+        lstm_hidden_dim=checkpoint["lstm_hidden_dim"],
+        mlp_hidden_dim=checkpoint["mlp_hidden_dim"],
+        dropout=checkpoint["dropout"],
+        freeze_kg=checkpoint["freeze_kg"],
+        pad_idx=checkpoint.get("pad_idx", 0),
+    ).to(device)
+    model.load_state_dict(checkpoint["model_state"])
+
+    val_metrics = evaluate_split(model, val_loader, device)
+    test_metrics = evaluate_split(model, test_loader, device)
+
+    print(
+        f"Validation | auc={val_metrics['roc_auc']:.4f} | acc={val_metrics['accuracy']:.4f}"
+    )
+    print(
+        f"Test       | auc={test_metrics['roc_auc']:.4f} | acc={test_metrics['accuracy']:.4f}"
+    )
+
+
+if __name__ == "__main__":
+    main()
