@@ -1,4 +1,5 @@
 import argparse
+import itertools
 import os
 from typing import Dict, Optional
 
@@ -112,7 +113,20 @@ def main() -> None:
     deduped_counts = deduped_df["label"].value_counts().to_dict()
     print(f"Deduped class counts: {deduped_counts}")
 
+    required_drugs = set(
+        itertools.chain.from_iterable(deduped_df["drug_set"])  # type: ignore[arg-type]
+    )
+    required_diseases = set(deduped_df["condition_id_norm"])
+    required_nodes = required_drugs.union(required_diseases)
+
     edges = kg_lib.load_edges(args.kg, src_col=args.edge_src_col, dst_col=args.edge_dst_col)
+    initial_edge_count = len(edges)
+    edges = kg_lib.prune_edges_to_nodes(edges, required_nodes)
+    if len(edges) < initial_edge_count:
+        print(
+            f"KG node filtering: reduced edges from {initial_edge_count} to {len(edges)} "
+            f"to cover {len(required_nodes)} dataset nodes"
+        )
     if args.max_edges is not None and len(edges) > args.max_edges:
         edges = edges.sample(n=args.max_edges, random_state=config["seed"]).reset_index(
             drop=True
@@ -136,7 +150,6 @@ def main() -> None:
         print(f"Most common missing prefixes: {drop_stats['missing_prefixes']}")
     filtered_counts = filtered_df["label"].value_counts().to_dict()
     print(f"Filtered class counts: {filtered_counts}")
-
     run_df = filtered_df
     if args.max_examples is not None and len(filtered_df) > args.max_examples:
         run_df = filtered_df.sample(n=args.max_examples, random_state=config["seed"]).reset_index(

@@ -83,6 +83,12 @@ def extract_kg_nodes(edges: pd.DataFrame) -> List[str]:
     return pd.unique(pd.concat([edges["src"], edges["dst"]], ignore_index=True)).tolist()
 
 
+def prune_edges_to_nodes(edges: pd.DataFrame, nodes: Iterable[str]) -> pd.DataFrame:
+    node_set = set(nodes)
+    mask = edges["src"].isin(node_set) | edges["dst"].isin(node_set)
+    return edges[mask].copy()
+
+
 def load_or_build_kg_embeddings(
     kg_path: str,
     cache_path: str,

@@ -30,3 +30,4 @@
 - 2026-01-12: Added quick-run CLI controls (sampling edges/examples + override epochs/batch/walks) and persisted the run dataset for deterministic evaluation.
 - 2026-01-12: Guarded against empty datasets/splits during quick runs; added clearer errors and NaN-safe evaluation when validation/test splits are empty.
 - 2026-01-12: Added explicit errors when train/val/test splits are empty after sampling so the user can adjust sampling controls instead of hitting a PyTorch error.
+- 2026-01-12: Pre-filter KG edges to only nodes present in the dataset before running node2vec and keep using `--kg-workers` so walk generation uses multiple CPU cores without rebuilding alias tables.
