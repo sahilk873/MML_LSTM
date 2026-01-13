@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 import numpy as np
 import pandas as pd
@@ -87,6 +87,75 @@ def prune_edges_to_nodes(edges: pd.DataFrame, nodes: Iterable[str]) -> pd.DataFr
     node_set = set(nodes)
     mask = edges["src"].isin(node_set) | edges["dst"].isin(node_set)
     return edges[mask].copy()
+
+
+def expand_node_set(
+    edges: pd.DataFrame,
+    initial_nodes: Iterable[str],
+    hops: int,
+    max_nodes: Optional[int] = None,
+) -> Tuple[Set[str], List[Tuple[int, int, int]], bool]:
+    """Expand the node set by walking up to `hops` in the KG adjacency.
+
+    Args:
+        edges: DataFrame with `src` and `dst` columns.
+        initial_nodes: Starting node IDs from the dataset.
+        hops: Number of hops to expand.
+        max_nodes: Optional cap; expansion stops if exceeded.
+
+    Returns:
+        expanded_nodes: Set of node IDs after expansion.
+        hop_logs: List of tuples (hop_number, new_nodes_added, cumulative_nodes).
+        truncated: True if expansion stopped early due to max_nodes.
+
+    Example:
+        >>> df = pd.DataFrame({'src': ['A', 'B'], 'dst': ['B', 'C']})
+        >>> expand_node_set(df, {'A'}, hops=1)[0]
+        {'A', 'B'}
+        >>> expand_node_set(df, {'A'}, hops=2)[0]
+        {'A', 'B', 'C'}
+    """
+    if hops <= 0:
+        return set(initial_nodes), [], False
+
+    src_arr = edges["src"].to_numpy()
+    dst_arr = edges["dst"].to_numpy()
+    expanded = set(initial_nodes)
+    frontier = set(initial_nodes)
+    hop_logs: List[Tuple[int, int, int]] = []
+    truncated = False
+
+    for hop in range(1, hops + 1):
+        if not frontier:
+            break
+        frontier_arr = np.array(list(frontier), dtype=object)
+        src_mask = np.isin(src_arr, frontier_arr)
+        dst_mask = np.isin(dst_arr, frontier_arr)
+
+        neighbor_parts = []
+        if src_mask.any():
+            neighbor_parts.append(dst_arr[src_mask])
+        if dst_mask.any():
+            neighbor_parts.append(src_arr[dst_mask])
+        if not neighbor_parts:
+            break
+        neighbors = np.concatenate(neighbor_parts)
+
+        unique_neighbors = np.unique(neighbors)
+        new_nodes = set(unique_neighbors) - expanded
+        if not new_nodes:
+            break
+
+        expanded.update(new_nodes)
+        hop_logs.append((hop, len(new_nodes), len(expanded)))
+
+        if max_nodes is not None and len(expanded) > max_nodes:
+            truncated = True
+            break
+
+        frontier = new_nodes
+
+    return expanded, hop_logs, truncated
 
 
 def load_or_build_kg_embeddings(

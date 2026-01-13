@@ -63,6 +63,23 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--kg-walk-length", type=int, default=None)
     parser.add_argument("--kg-workers", type=int, default=None)
     parser.add_argument(
+        "--kg-hop-expansion",
+        type=int,
+        default=0,
+        help="Expand the KG node set by this many hops before pruning.",
+    )
+    parser.add_argument(
+        "--kg-expansion-max-nodes",
+        type=int,
+        default=None,
+        help="Stop expanding if more than this many nodes would be added.",
+    )
+    parser.add_argument(
+        "--kg-expansion-verbose",
+        action="store_true",
+        help="Log node counts per hop during KG expansion.",
+    )
+    parser.add_argument(
         "--quick",
         action="store_true",
         help="Run a quick smoke test with reduced data/compute.",
@@ -121,7 +138,30 @@ def main() -> None:
 
     edges = kg_lib.load_edges(args.kg, src_col=args.edge_src_col, dst_col=args.edge_dst_col)
     initial_edge_count = len(edges)
-    edges = kg_lib.prune_edges_to_nodes(edges, required_nodes)
+    expanded_nodes = required_nodes
+    hop_logs = []
+    truncated = False
+    if args.kg_hop_expansion > 0:
+        expanded_nodes, hop_logs, truncated = kg_lib.expand_node_set(
+            edges,
+            required_nodes,
+            hops=args.kg_hop_expansion,
+            max_nodes=args.kg_expansion_max_nodes,
+        )
+        print(
+            "KG hop expansion: "
+            f"k={args.kg_hop_expansion}, nodes: required={len(required_nodes)} -> expanded={len(expanded_nodes)}"
+        )
+        if args.kg_expansion_verbose:
+            for hop, new_nodes, cum_nodes in hop_logs:
+                print(f"hop {hop}: +{new_nodes} nodes (cum {cum_nodes})")
+        if truncated and args.kg_expansion_verbose:
+            print(
+                "KG hop expansion stopped early because node count exceeded "
+                f"{args.kg_expansion_max_nodes}"
+            )
+
+    edges = kg_lib.prune_edges_to_nodes(edges, expanded_nodes)
     if len(edges) < initial_edge_count:
         print(
             f"KG node filtering: reduced edges from {initial_edge_count} to {len(edges)} "
