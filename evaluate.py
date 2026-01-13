@@ -40,6 +40,8 @@ def evaluate_split(
             probs = torch.sigmoid(logits).cpu().numpy()
             all_probs.append(probs)
             all_labels.append(labels.numpy())
+    if not all_probs:
+        return {"roc_auc": float("nan"), "accuracy": float("nan")}
     probs = np.concatenate(all_probs)
     labels = np.concatenate(all_labels)
     return utils.compute_metrics(labels, probs)

@@ -226,11 +226,17 @@ def deterministic_split(
     # Fixed seed + deterministic permutation keeps splits stable across runs.
     if not np.isclose(train_frac + val_frac + test_frac, 1.0):
         raise ValueError("train/val/test fractions must sum to 1.0")
+    if num_examples <= 0:
+        return np.array([], dtype=int), np.array([], dtype=int), np.array([], dtype=int)
     rng = np.random.RandomState(seed)
     indices = np.arange(num_examples)
     rng.shuffle(indices)
-    train_end = int(num_examples * train_frac)
-    val_end = train_end + int(num_examples * val_frac)
+    if num_examples < 3:
+        train_end = 1
+        val_end = min(num_examples, 2)
+    else:
+        train_end = max(1, int(num_examples * train_frac))
+        val_end = min(num_examples, train_end + max(1, int(num_examples * val_frac)))
     train_idx = indices[:train_end]
     val_idx = indices[train_end:val_end]
     test_idx = indices[val_end:]

@@ -38,6 +38,8 @@ def evaluate_model(
             probs = torch.sigmoid(logits).cpu().numpy()
             all_probs.append(probs)
             all_labels.append(labels.numpy())
+    if not all_probs:
+        return {"roc_auc": float("nan"), "accuracy": float("nan")}
     probs = np.concatenate(all_probs)
     labels = np.concatenate(all_labels)
     return utils.compute_metrics(labels, probs)
@@ -145,6 +147,12 @@ def main() -> None:
     run_path = os.path.join(args.output_dir, "filtered_dataset_run.csv")
     run_df.to_csv(run_path, index=False)
 
+    if len(run_df) == 0:
+        raise ValueError(
+            "No examples remain after KG coverage filtering. "
+            "Increase --max-edges or use the full KG to improve coverage."
+        )
+
     examples = data_lib.dataframe_to_examples(run_df)
     drug_to_idx, disease_to_idx = data_lib.build_mappings(examples)
     drug_seqs, disease_idxs, labels = data_lib.encode_examples(
@@ -187,6 +195,12 @@ def main() -> None:
             val_idx=val_idx,
             test_idx=test_idx,
             num_examples=len(labels),
+        )
+
+    if len(train_idx) == 0 or len(val_idx) == 0 or len(test_idx) == 0:
+        raise ValueError(
+            "Not enough examples after filtering to populate train/val/test splits; "
+            "increase --max-edges/--max-examples or rerun without aggressive sampling."
         )
 
     dataset = data_lib.PolypharmacyDataset(drug_seqs, disease_idxs, labels)
@@ -304,7 +318,7 @@ def main() -> None:
             f"Epoch {epoch:02d} | loss={avg_loss:.4f} | "
             f"val_auc={val_metrics['roc_auc']:.4f} | val_acc={val_metrics['accuracy']:.4f}"
         )
-        if val_metrics["roc_auc"] > best_auc:
+        if not np.isnan(val_metrics["roc_auc"]) and val_metrics["roc_auc"] > best_auc:
             best_auc = val_metrics["roc_auc"]
             torch.save(
                 {

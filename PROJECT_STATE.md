@@ -28,3 +28,5 @@
 - 2026-01-12: Added deduplication + conflict resolution after CSV load, persisted deduped dataset and class counts, and integrated KG coverage filtering with dropped-row reporting to enforce KG node availability and determinism.
 - 2026-01-12: Normalized drug ID lists by flattening nested list entries and coercing to strings to prevent sorting errors during drug set construction.
 - 2026-01-12: Added quick-run CLI controls (sampling edges/examples + override epochs/batch/walks) and persisted the run dataset for deterministic evaluation.
+- 2026-01-12: Guarded against empty datasets/splits during quick runs; added clearer errors and NaN-safe evaluation when validation/test splits are empty.
+- 2026-01-12: Added explicit errors when train/val/test splits are empty after sampling so the user can adjust sampling controls instead of hitting a PyTorch error.
