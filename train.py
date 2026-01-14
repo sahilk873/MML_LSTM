@@ -369,7 +369,9 @@ def main() -> None:
         avg_loss = total_loss / max(1, len(train_loader))
         print(
             f"Epoch {epoch:02d} | loss={avg_loss:.4f} | "
-            f"val_auc={val_metrics['roc_auc']:.4f} | val_acc={val_metrics['accuracy']:.4f}"
+            f"val_auc={val_metrics['roc_auc']:.4f} | val_acc={val_metrics['accuracy']:.4f} | "
+            f"val_sens={val_metrics['sensitivity']:.4f} | val_spec={val_metrics['specificity']:.4f} | "
+            f"val_f1={val_metrics['f1']:.4f}"
         )
         if not np.isnan(val_metrics["roc_auc"]) and val_metrics["roc_auc"] > best_auc:
             best_auc = val_metrics["roc_auc"]

@@ -124,12 +124,15 @@ def main() -> None:
     val_metrics = evaluate_split(model, val_loader, device)
     test_metrics = evaluate_split(model, test_loader, device)
 
-    print(
-        f"Validation | auc={val_metrics['roc_auc']:.4f} | acc={val_metrics['accuracy']:.4f}"
-    )
-    print(
-        f"Test       | auc={test_metrics['roc_auc']:.4f} | acc={test_metrics['accuracy']:.4f}"
-    )
+    def format_metrics(name: str, metrics: dict) -> str:
+        return (
+            f"{name:<11} | auc={metrics['roc_auc']:.4f} | acc={metrics['accuracy']:.4f} "
+            f"| sens={metrics['sensitivity']:.4f} | spec={metrics['specificity']:.4f} "
+            f"| f1={metrics['f1']:.4f} | confusion={metrics['confusion']}"
+        )
+
+    print(format_metrics("Validation", val_metrics))
+    print(format_metrics("Test", test_metrics))
 
 
 if __name__ == "__main__":

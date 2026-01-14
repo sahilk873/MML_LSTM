@@ -32,14 +32,26 @@ def load_json(path: str) -> Dict[str, Any]:
         return json.load(handle)
 
 
-def compute_metrics(labels: np.ndarray, probs: np.ndarray) -> Dict[str, float]:
-    """Compute ROC-AUC and accuracy; assumes probs are sigmoid outputs."""
-    from sklearn.metrics import accuracy_score, roc_auc_score
+def compute_metrics(labels: np.ndarray, probs: np.ndarray) -> Dict[str, object]:
+    """Compute ROC-AUC, accuracy, confusion matrix, F1, sens/spec from sigmoid outputs."""
+    from sklearn.metrics import (
+        accuracy_score,
+        confusion_matrix,
+        f1_score,
+        recall_score,
+        roc_auc_score,
+    )
 
     preds = (probs >= 0.5).astype(np.int64)
-    metrics: Dict[str, float] = {"accuracy": float(accuracy_score(labels, preds))}
+    metrics: Dict[str, object] = {"accuracy": float(accuracy_score(labels, preds))}
     try:
         metrics["roc_auc"] = float(roc_auc_score(labels, probs))
     except ValueError:
         metrics["roc_auc"] = float("nan")
+
+    metrics["sensitivity"] = float(recall_score(labels, preds, pos_label=1))
+    metrics["specificity"] = float(recall_score(labels, preds, pos_label=0))
+    metrics["f1"] = float(f1_score(labels, preds))
+    tn, fp, fn, tp = confusion_matrix(labels, preds).ravel()
+    metrics["confusion"] = {"tn": int(tn), "fp": int(fp), "fn": int(fn), "tp": int(tp)}
     return metrics
