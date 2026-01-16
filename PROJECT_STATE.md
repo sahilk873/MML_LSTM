@@ -33,3 +33,4 @@
 - 2026-01-12: Pre-filter KG edges to only nodes present in the dataset before running node2vec and keep using `--kg-workers` so walk generation uses multiple CPU cores without rebuilding alias tables.
 - 2026-01-12: Added optional KG hop expansion so pruning can include k-hop neighbors (with node caps and verbose hop logging) before node2vec runs.
 - 2026-01-12: Extended evaluation metrics to include confusion matrix, specificity, sensitivity, and F1 so we can better characterize performance beyond AUC/accuracy.
+- 2026-01-12: Added `experiment.py` to compare a Random Forest (drug+drug+disease embeddings) vs. the LSTM using a fixed 2-drug test set, ensuring both models see the same held-out triples.
