@@ -25,6 +25,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--kg-expansion-max-nodes", type=int, default=None)
     parser.add_argument("--kg-expansion-verbose", action="store_true")
     parser.add_argument("--kg-workers", type=int, default=None)
+    parser.add_argument(
+        "--kg-cache-path",
+        default=os.path.join("artifacts", "kg_embeddings.npz"),
+        help="Node2Vec cache file path to share with train.py.",
+    )
     parser.add_argument("--test-frac", type=float, default=0.1)
     parser.add_argument("--rf-estimators", type=int, default=200)
     parser.add_argument("--rf-max-depth", type=int, default=16)
@@ -213,9 +218,13 @@ def main() -> None:
             f"covering {len(expanded_nodes)} nodes"
         )
 
+    kg_cache_dir = os.path.dirname(args.kg_cache_path)
+    if kg_cache_dir:
+        os.makedirs(kg_cache_dir, exist_ok=True)
+
     node_ids, node_vectors = kg_lib.load_or_build_kg_embeddings(
         args.kg,
-        cache_path=os.path.join(args.output_dir, "kg_embeddings.npz"),
+        cache_path=args.kg_cache_path,
         embedding_dim=config["embedding_dim"],
         walk_length=config["kg_walk_length"],
         num_walks=config["kg_num_walks"],
@@ -250,7 +259,8 @@ def main() -> None:
         stratify=stratify_col,
     )
 
-    drug_to_idx, disease_to_idx = data_lib.build_mappings(filtered_df)
+    filtered_examples = data_lib.dataframe_to_examples(filtered_df)
+    drug_to_idx, disease_to_idx = data_lib.build_mappings(filtered_examples)
     drug_idx_to_id = build_idx_to_id(drug_to_idx, pad_token="<PAD>")
     disease_idx_to_id = build_idx_to_id(disease_to_idx)
     node_to_idx = {node_id: idx for idx, node_id in enumerate(node_ids)}
