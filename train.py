@@ -256,6 +256,10 @@ def main() -> None:
             "increase --max-edges/--max-examples or rerun without aggressive sampling."
         )
 
+    print(
+        f"Dataset split sizes (train/val/test): {len(train_idx)}/{len(val_idx)}/{len(test_idx)}"
+    )
+
     dataset = data_lib.PolypharmacyDataset(drug_seqs, disease_idxs, labels)
     collate = lambda batch: data_lib.collate_batch(batch, pad_idx=0)
     train_loader = DataLoader(

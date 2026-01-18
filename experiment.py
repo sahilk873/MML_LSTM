@@ -321,6 +321,11 @@ def main() -> None:
         collate_fn=collate,
     )
 
+    print(
+        "Dataset split sizes (train/val/test): "
+        f"{len(train_dataset)}/{len(val_dataset)}/{len(test_dataset)}"
+    )
+
     rf_train_df = train_df[train_df["drug_set"].apply(lambda ds: len(ds) == 2)]
     print(
         f"RF train candidates: {len(rf_train_df)} two-drug examples, "
