@@ -191,6 +191,7 @@ def main() -> None:
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     ensure_dir(args.output_dir)
+    utils.save_json(os.path.join(args.output_dir, "config.json"), config)
 
     deduped_df, conflict_count = data_lib.load_deduped_dataframe(
         "indications_norm.csv",

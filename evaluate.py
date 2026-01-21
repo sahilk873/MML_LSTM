@@ -26,7 +26,7 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Optional RENCI single-therapy contraindications CSV.",
     )
-    parser.add_argument("--checkpoint", default="artifacts/best_model.pt")
+    parser.add_argument("--checkpoint", default=None)
     parser.add_argument("--output-dir", default="artifacts")
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--kg", default="kg_edges.parquet")
@@ -59,7 +59,8 @@ def evaluate_split(
 
 def main() -> None:
     args = parse_args()
-    checkpoint = torch.load(args.checkpoint, map_location="cpu")
+    checkpoint_path = args.checkpoint or os.path.join(args.output_dir, "best_model.pt")
+    checkpoint = torch.load(checkpoint_path, map_location="cpu")
 
     drug_embeddings = np.load(os.path.join(args.output_dir, "drug_embeddings.npy"))
     disease_embeddings = np.load(os.path.join(args.output_dir, "disease_embeddings.npy"))
