@@ -1,7 +1,7 @@
 import ast
 from collections import Counter
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Sequence, Tuple
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
 import numpy as np
 import pandas as pd
@@ -10,6 +10,8 @@ from torch.utils.data import Dataset
 
 
 LIST_COLUMNS = ("primary_drug_id_norm", "secondary_drug_id_norm")
+SINGLE_THERAPY_DRUG_COLUMN = "final normalized drug id"
+SINGLE_THERAPY_DISEASE_COLUMN = "final normalized disease id"
 
 
 def _parse_list_column(value: object) -> List[str]:
@@ -70,14 +72,54 @@ def _load_csv_df(path: str, label: int) -> pd.DataFrame:
     return df
 
 
+def _parse_single_therapy_drug_ids(value: object) -> List[str]:
+    """Split the single-therapy drug column into a normalized ID list."""
+    if value is None or (isinstance(value, float) and np.isnan(value)):
+        return []
+    text = str(value).strip()
+    if not text:
+        return []
+    tokens = [token.strip() for token in text.split("|") if token.strip()]
+    tokens = [token for token in tokens if token.lower() not in {"nan", "none"}]
+    return normalize_id_list(tokens)
+
+
+def _load_single_therapy_csv(path: str, label: int) -> pd.DataFrame:
+    """Load the RENCI single-therapy CSVs and align them with the standard schema."""
+    df = pd.read_csv(path, usecols=[SINGLE_THERAPY_DRUG_COLUMN, SINGLE_THERAPY_DISEASE_COLUMN])
+    df = df.rename(
+        columns={
+            SINGLE_THERAPY_DRUG_COLUMN: "drug_id",
+            SINGLE_THERAPY_DISEASE_COLUMN: "condition_id_norm",
+        }
+    )
+    df["drug_set"] = df["drug_id"].apply(_parse_single_therapy_drug_ids)
+    df["condition_id_norm"] = df["condition_id_norm"].astype(str).str.strip()
+    df = df[df["drug_set"].map(len) > 0]
+    invalid_condition = df["condition_id_norm"].str.lower().isin({"nan", "none", ""})
+    df = df[~invalid_condition]
+    df = df[["drug_set", "condition_id_norm"]].copy()
+    df["drug_set"] = df["drug_set"].apply(lambda ids: sorted(ids))
+    df["label"] = label
+    return df
+
+
 def load_deduped_dataframe(
     indications_path: str,
     contraindications_path: str,
+    single_therapy_indications_path: Optional[str] = None,
+    single_therapy_contraindications_path: Optional[str] = None,
 ) -> Tuple[pd.DataFrame, int]:
     """Load CSVs, build sorted drug sets, and deduplicate with conflict resolution."""
-    indications = _load_csv_df(indications_path, label=1)
-    contraindications = _load_csv_df(contraindications_path, label=0)
-    combined = pd.concat([indications, contraindications], ignore_index=True)
+    frames = [
+        _load_csv_df(indications_path, label=1),
+        _load_csv_df(contraindications_path, label=0),
+    ]
+    if single_therapy_indications_path:
+        frames.append(_load_single_therapy_csv(single_therapy_indications_path, label=1))
+    if single_therapy_contraindications_path:
+        frames.append(_load_single_therapy_csv(single_therapy_contraindications_path, label=0))
+    combined = pd.concat(frames, ignore_index=True)
 
     combined["drug_set_key"] = combined["drug_set"].apply(tuple)
     conflict_flags = (
@@ -111,9 +153,16 @@ def dataframe_to_examples(df: pd.DataFrame) -> List[LabeledExample]:
 def load_examples(
     indications_path: str,
     contraindications_path: str,
+    single_therapy_indications_path: Optional[str] = None,
+    single_therapy_contraindications_path: Optional[str] = None,
 ) -> List[LabeledExample]:
     """Load labeled examples with deduplication and conflict resolution applied."""
-    deduped, _ = load_deduped_dataframe(indications_path, contraindications_path)
+    deduped, _ = load_deduped_dataframe(
+        indications_path,
+        contraindications_path,
+        single_therapy_indications_path,
+        single_therapy_contraindications_path,
+    )
     return dataframe_to_examples(deduped)
 
 

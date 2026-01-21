@@ -34,6 +34,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--rf-estimators", type=int, default=200)
     parser.add_argument("--rf-max-depth", type=int, default=16)
     parser.add_argument("--seed", type=int, default=13)
+    parser.add_argument(
+        "--single-therapy-indications",
+        default=None,
+        help="Optional RENCI single-therapy indications CSV.",
+    )
+    parser.add_argument(
+        "--single-therapy-contraindications",
+        default=None,
+        help="Optional RENCI single-therapy contraindications CSV.",
+    )
     return parser.parse_args()
 
 
@@ -182,7 +192,10 @@ def main() -> None:
     ensure_dir(args.output_dir)
 
     deduped_df, conflict_count = data_lib.load_deduped_dataframe(
-        "indications_norm.csv", "contraindications_norm.csv"
+        "indications_norm.csv",
+        "contraindications_norm.csv",
+        single_therapy_indications_path=args.single_therapy_indications,
+        single_therapy_contraindications_path=args.single_therapy_contraindications,
     )
     print(f"Conflict resolution: {conflict_count}")
 

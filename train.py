@@ -50,6 +50,16 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train polypharmacy predictor.")
     parser.add_argument("--indications", default="indications_norm.csv")
     parser.add_argument("--contraindications", default="contraindications_norm.csv")
+    parser.add_argument(
+        "--single-therapy-indications",
+        default=None,
+        help="Optional RENCI single-therapy indications CSV.",
+    )
+    parser.add_argument(
+        "--single-therapy-contraindications",
+        default=None,
+        help="Optional RENCI single-therapy contraindications CSV.",
+    )
     parser.add_argument("--kg", default="kg_edges.parquet")
     parser.add_argument("--output-dir", default="artifacts")
     parser.add_argument("--config", default=None, help="Optional JSON config override.")
@@ -122,9 +132,19 @@ def main() -> None:
     utils.ensure_dir(args.output_dir)
 
     deduped_df, conflict_count = data_lib.load_deduped_dataframe(
-        args.indications, args.contraindications
+        args.indications,
+        args.contraindications,
+        single_therapy_indications_path=args.single_therapy_indications,
+        single_therapy_contraindications_path=args.single_therapy_contraindications,
     )
     print(f"Conflict resolution: {conflict_count} conflicting keys set to label=0")
+    single_sources = []
+    if args.single_therapy_indications:
+        single_sources.append("single-therapy indications")
+    if args.single_therapy_contraindications:
+        single_sources.append("single-therapy contraindications")
+    if single_sources:
+        print(f"Including additional single-therapy data: {', '.join(single_sources)}")
     deduped_path = os.path.join(args.output_dir, "deduped_dataset.csv")
     deduped_df.to_csv(deduped_path, index=False)
     deduped_counts = deduped_df["label"].value_counts().to_dict()

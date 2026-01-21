@@ -16,6 +16,16 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate polypharmacy predictor.")
     parser.add_argument("--indications", default="indications_norm.csv")
     parser.add_argument("--contraindications", default="contraindications_norm.csv")
+    parser.add_argument(
+        "--single-therapy-indications",
+        default=None,
+        help="Optional RENCI single-therapy indications CSV.",
+    )
+    parser.add_argument(
+        "--single-therapy-contraindications",
+        default=None,
+        help="Optional RENCI single-therapy contraindications CSV.",
+    )
     parser.add_argument("--checkpoint", default="artifacts/best_model.pt")
     parser.add_argument("--output-dir", default="artifacts")
     parser.add_argument("--batch-size", type=int, default=128)
@@ -64,7 +74,10 @@ def main() -> None:
         filtered_df["drug_set"] = filtered_df["drug_set"].apply(data_lib.parse_list_column)
     else:
         deduped_df, _ = data_lib.load_deduped_dataframe(
-            args.indications, args.contraindications
+            args.indications,
+            args.contraindications,
+            single_therapy_indications_path=args.single_therapy_indications,
+            single_therapy_contraindications_path=args.single_therapy_contraindications,
         )
         edges = kg_lib.load_edges(args.kg, src_col=args.edge_src_col, dst_col=args.edge_dst_col)
         kg_nodes = kg_lib.extract_kg_nodes(edges)
