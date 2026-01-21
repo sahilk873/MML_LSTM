@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 import torch
 from torch import nn
@@ -11,6 +11,7 @@ class PolypharmacyLSTMClassifier(nn.Module):
         disease_embeddings: torch.Tensor,
         lstm_hidden_dim: int,
         mlp_hidden_dim: int,
+        mlp_layers: int,
         dropout: float,
         freeze_kg: bool,
         pad_idx: int = 0,
@@ -27,12 +28,16 @@ class PolypharmacyLSTMClassifier(nn.Module):
             hidden_size=lstm_hidden_dim,
             batch_first=True,
         )
-        self.classifier = nn.Sequential(
-            nn.Linear(lstm_hidden_dim + disease_embeddings.size(1), mlp_hidden_dim),
-            nn.ReLU(),
-            nn.Dropout(dropout),
-            nn.Linear(mlp_hidden_dim, 1),
-        )
+        mlp_layers_seq: List[nn.Module] = []
+        input_dim = lstm_hidden_dim + disease_embeddings.size(1)
+        for _ in range(max(1, mlp_layers)):
+            mlp_layers_seq.append(nn.Linear(input_dim, mlp_hidden_dim))
+            mlp_layers_seq.append(nn.LayerNorm(mlp_hidden_dim))
+            mlp_layers_seq.append(nn.ReLU())
+            mlp_layers_seq.append(nn.Dropout(dropout))
+            input_dim = mlp_hidden_dim
+        mlp_layers_seq.append(nn.Linear(input_dim, 1))
+        self.classifier = nn.Sequential(*mlp_layers_seq)
 
     def forward(
         self,

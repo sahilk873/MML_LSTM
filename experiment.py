@@ -154,6 +154,7 @@ def train_lstm(
         disease_embeddings=torch.tensor(disease_embeddings),
         lstm_hidden_dim=config["lstm_hidden_dim"],
         mlp_hidden_dim=config["mlp_hidden_dim"],
+        mlp_layers=config["mlp_layers"],
         dropout=config["dropout"],
         freeze_kg=config["freeze_kg"],
         pad_idx=0,

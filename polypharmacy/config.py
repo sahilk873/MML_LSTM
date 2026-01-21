@@ -10,6 +10,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "embedding_dim": 128,
     "lstm_hidden_dim": 128,
     "mlp_hidden_dim": 128,
+    "mlp_layers": 2,
     "dropout": 0.2,
     "batch_size": 64,
     "epochs": 10,

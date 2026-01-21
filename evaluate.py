@@ -128,6 +128,7 @@ def main() -> None:
         disease_embeddings=torch.tensor(disease_embeddings),
         lstm_hidden_dim=checkpoint["lstm_hidden_dim"],
         mlp_hidden_dim=checkpoint["mlp_hidden_dim"],
+        mlp_layers=checkpoint.get("mlp_layers", 2),
         dropout=checkpoint["dropout"],
         freeze_kg=checkpoint["freeze_kg"],
         pad_idx=checkpoint.get("pad_idx", 0),
