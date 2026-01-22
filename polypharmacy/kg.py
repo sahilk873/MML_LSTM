@@ -59,8 +59,8 @@ def build_node2vec_embeddings(
     seed: int,
 ) -> Tuple[List[str], np.ndarray]:
     edges = edges.dropna(subset=["src", "dst"]).copy()
-    edges["src"] = edges["src"].astype(str)
-    edges["dst"] = edges["dst"].astype(str)
+    edges["src"] = edges["src"].astype(str).str.strip()
+    edges["dst"] = edges["dst"].astype(str).str.strip()
     edges = edges[(edges["src"] != "") & (edges["dst"] != "")]
     edge_count = len(edges)
     unique_nodes = pd.unique(
@@ -116,14 +116,15 @@ def build_node2vec_embeddings(
             with tempfile.NamedTemporaryFile(
                 mode="w", suffix=".edgelist", delete=False
             ) as handle:
-                edges[["src", "dst"]].to_csv(
-                    handle.name,
-                    sep=" ",
-                    header=False,
-                    index=False,
-                    lineterminator="\n",
-                )
+                skipped = 0
+                for src, dst in edges[["src", "dst"]].itertuples(index=False, name=None):
+                    if not src or not dst:
+                        skipped += 1
+                        continue
+                    handle.write(f"{src} {dst}\n")
                 edge_path = handle.name
+            if skipped:
+                print(f"KG edgelist export: skipped {skipped} invalid edges")
 
             print(f"KG node2vec backend: pecanpy {sparse_class.__name__} ({sparse_module})")
             start = time.time()
