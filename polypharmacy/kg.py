@@ -121,7 +121,7 @@ def build_node2vec_embeddings(
                     sep=" ",
                     header=False,
                     index=False,
-                    line_terminator="\n",
+                    lineterminator="\n",
                 )
                 edge_path = handle.name
 
