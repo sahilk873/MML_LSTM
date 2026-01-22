@@ -128,7 +128,7 @@ def build_node2vec_embeddings(
             print(f"KG node2vec backend: pecanpy {sparse_class.__name__} ({sparse_module})")
             start = time.time()
             graph = sparse_class(p=p, q=q, workers=workers, verbose=False)
-            graph.read_edg(edge_path, weighted=False, directed=False)
+            graph.read_edg(edge_path, weighted=False, directed=False, delimiter=" ")
             if hasattr(graph, "preprocess_transition_probs"):
                 graph.preprocess_transition_probs()
 
