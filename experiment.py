@@ -322,6 +322,17 @@ def main() -> None:
     if embedding_dim != config["embedding_dim"]:
         config["embedding_dim"] = embedding_dim
 
+    utils.save_json(
+        os.path.join(args.output_dir, "drug_vocab.json"),
+        {"ids": drug_idx_to_id},
+    )
+    utils.save_json(
+        os.path.join(args.output_dir, "disease_vocab.json"),
+        {"ids": disease_idx_to_id},
+    )
+    np.save(os.path.join(args.output_dir, "drug_embeddings.npy"), drug_embeddings)
+    np.save(os.path.join(args.output_dir, "disease_embeddings.npy"), disease_embeddings)
+
     def encode_split(df: data_lib.pd.DataFrame) -> Tuple[List[List[int]], List[int], List[int]]:
         examples = data_lib.dataframe_to_examples(df)
         return data_lib.encode_examples(examples, drug_to_idx, disease_to_idx)
@@ -329,6 +340,25 @@ def main() -> None:
     train_seqs, train_diseases, train_labels = encode_split(train_df)
     val_seqs, val_diseases, val_labels = encode_split(val_df)
     test_seqs, test_diseases, test_labels = encode_split(test_df)
+
+    all_seqs, all_diseases, all_labels = data_lib.encode_examples(
+        filtered_examples, drug_to_idx, disease_to_idx
+    )
+    train_idx, val_idx, test_idx = data_lib.deterministic_split(
+        num_examples=len(all_labels),
+        seed=config["seed"],
+        train_frac=config["train_frac"],
+        val_frac=config["val_frac"],
+        test_frac=config["test_frac"],
+    )
+    np.savez_compressed(
+        os.path.join(args.output_dir, "splits.npz"),
+        train_idx=train_idx,
+        val_idx=val_idx,
+        test_idx=test_idx,
+        num_examples=len(all_labels),
+    )
+    filtered_df.to_csv(os.path.join(args.output_dir, "filtered_dataset_run.csv"), index=False)
 
     if not train_seqs or not val_seqs or not test_seqs:
         raise ValueError("One of the splits became empty after encoding.")
