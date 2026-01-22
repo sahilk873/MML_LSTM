@@ -19,7 +19,7 @@ from polypharmacy import utils
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run RF vs LSTM comparison.")
     parser.add_argument("--config", default=None, help="Optional JSON config overrides.")
-    parser.add_argument("--output-dir", default="artifacts/experiment")
+    parser.add_argument("--output-dir", default="artifacts")
     parser.add_argument("--kg", default="kg_edges.parquet")
     parser.add_argument("--kg-hop-expansion", type=int, default=0)
     parser.add_argument("--kg-expansion-max-nodes", type=int, default=None)
