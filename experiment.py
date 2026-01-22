@@ -148,7 +148,8 @@ def train_lstm(
     drug_embeddings: np.ndarray,
     disease_embeddings: np.ndarray,
     device: torch.device,
-) -> model_lib.PolypharmacyLSTMClassifier:
+    output_dir: str,
+) -> Tuple[model_lib.PolypharmacyLSTMClassifier, str]:
     model = model_lib.PolypharmacyLSTMClassifier(
         drug_embeddings=torch.tensor(drug_embeddings),
         disease_embeddings=torch.tensor(disease_embeddings),
@@ -161,6 +162,8 @@ def train_lstm(
     ).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config["learning_rate"])
     criterion = torch.nn.BCEWithLogitsLoss()
+    best_auc = float("-inf")
+    best_path = os.path.join(output_dir, "best_model.pt")
     for epoch in range(1, config["epochs"] + 1):
         model.train()
         total_loss = 0.0
@@ -182,7 +185,25 @@ def train_lstm(
             f"val_sens={val_metrics['sensitivity']:.4f} | val_spec={val_metrics['specificity']:.4f} | "
             f"val_f1={val_metrics['f1']:.4f}"
         )
-    return model
+        if not np.isnan(val_metrics["roc_auc"]) and val_metrics["roc_auc"] > best_auc:
+            best_auc = val_metrics["roc_auc"]
+            torch.save(
+                {
+                    "model_state": model.state_dict(),
+                    "config": config,
+                    "drug_vocab_size": drug_embeddings.shape[0],
+                    "disease_vocab_size": disease_embeddings.shape[0],
+                    "embedding_dim": drug_embeddings.shape[1],
+                    "lstm_hidden_dim": config["lstm_hidden_dim"],
+                    "mlp_hidden_dim": config["mlp_hidden_dim"],
+                    "mlp_layers": config["mlp_layers"],
+                    "dropout": config["dropout"],
+                    "freeze_kg": config["freeze_kg"],
+                    "pad_idx": 0,
+                },
+                best_path,
+            )
+    return model, best_path
 
 
 def main() -> None:
@@ -369,8 +390,8 @@ def main() -> None:
     )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    lstm_model = train_lstm(
-        train_loader, val_loader, config, drug_embeddings, disease_embeddings, device
+    lstm_model, lstm_best_path = train_lstm(
+        train_loader, val_loader, config, drug_embeddings, disease_embeddings, device, args.output_dir
     )
     lstm_metrics = evaluate_model_with_loader(lstm_model, test_loader, device)
     print(
@@ -379,6 +400,7 @@ def main() -> None:
         f"spec={lstm_metrics['specificity']:.4f} | f1={lstm_metrics['f1']:.4f} | "
         f"confusion={lstm_metrics['confusion']}"
     )
+    print(f"Best LSTM checkpoint saved to {lstm_best_path}")
 
 
 if __name__ == "__main__":
