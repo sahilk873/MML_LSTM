@@ -1,4 +1,6 @@
 import os
+import tempfile
+import time
 from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 import numpy as np
@@ -56,27 +58,87 @@ def build_node2vec_embeddings(
     workers: int,
     seed: int,
 ) -> Tuple[List[str], np.ndarray]:
-    import networkx as nx
-    from node2vec import Node2Vec
+    edge_count = len(edges)
+    unique_nodes = pd.unique(
+        pd.concat([edges["src"], edges["dst"]], ignore_index=True)
+    ).size
+    print(
+        "KG node2vec setup | edges="
+        f"{edge_count} nodes={unique_nodes} dim={embedding_dim} "
+        f"walk_length={walk_length} num_walks={num_walks} "
+        f"p={p} q={q} window={context_window} workers={workers}"
+    )
 
-    graph = nx.from_pandas_edgelist(edges, source="src", target="dst")
-    # Node2Vec embeds all KG nodes into a shared vector space.
-    node2vec = Node2Vec(
-        graph,
-        dimensions=embedding_dim,
-        walk_length=walk_length,
-        num_walks=num_walks,
-        p=p,
-        q=q,
-        workers=workers,
-        seed=seed,
-    )
-    model = node2vec.fit(
-        window=context_window, min_count=min_count, batch_words=128, seed=seed
-    )
-    node_ids = list(model.wv.index_to_key)
-    vectors = model.wv.vectors
-    return node_ids, vectors
+    try:
+        from pecanpy import SparseOTF  # type: ignore[import-not-found]
+        from gensim.models import Word2Vec
+
+        edge_path = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="w", suffix=".edgelist", delete=False
+            ) as handle:
+                edges[["src", "dst"]].to_csv(
+                    handle.name, sep=" ", header=False, index=False
+                )
+                edge_path = handle.name
+
+            print("KG node2vec backend: pecanpy SparseOTF")
+            start = time.time()
+            # SparseOTF computes transition probabilities on the fly.
+            graph = SparseOTF(p=p, q=q, workers=workers, verbose=False)
+            graph.read_edg(edge_path, weighted=False, directed=False)
+            if hasattr(graph, "preprocess_transition_probs"):
+                graph.preprocess_transition_probs()
+
+            walks = graph.simulate_walks(num_walks=num_walks, walk_length=walk_length)
+            model = Word2Vec(
+                sentences=walks,
+                vector_size=embedding_dim,
+                window=context_window,
+                min_count=min_count,
+                sg=1,
+                workers=workers,
+                seed=seed,
+            )
+            node_ids = list(model.wv.index_to_key)
+            vectors = model.wv.vectors
+            print(
+                "KG node2vec complete (pecanpy) | "
+                f"nodes_embedded={len(node_ids)} in {time.time() - start:.1f}s"
+            )
+            return node_ids, vectors
+        finally:
+            if edge_path:
+                os.remove(edge_path)
+    except ImportError:
+        import networkx as nx
+        from node2vec import Node2Vec
+
+        print("KG node2vec backend: node2vec (networkx)")
+        start = time.time()
+        graph = nx.from_pandas_edgelist(edges, source="src", target="dst")
+        # Node2Vec embeds all KG nodes into a shared vector space.
+        node2vec = Node2Vec(
+            graph,
+            dimensions=embedding_dim,
+            walk_length=walk_length,
+            num_walks=num_walks,
+            p=p,
+            q=q,
+            workers=workers,
+            seed=seed,
+        )
+        model = node2vec.fit(
+            window=context_window, min_count=min_count, batch_words=128, seed=seed
+        )
+        node_ids = list(model.wv.index_to_key)
+        vectors = model.wv.vectors
+        print(
+            "KG node2vec complete (node2vec) | "
+            f"nodes_embedded={len(node_ids)} in {time.time() - start:.1f}s"
+        )
+        return node_ids, vectors
 
 
 def extract_kg_nodes(edges: pd.DataFrame) -> List[str]:
