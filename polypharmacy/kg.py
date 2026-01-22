@@ -70,8 +70,42 @@ def build_node2vec_embeddings(
     )
 
     try:
-        from pecanpy import SparseOTF  # type: ignore[import-not-found]
         from gensim.models import Word2Vec
+        import importlib
+
+        sparse_class = None
+        sparse_module = None
+        fallback_class = None
+        fallback_module = None
+        for mod_name in (
+            "pecanpy",
+            "pecanpy.pecanpy",
+            "pecanpy.wrappers",
+            "pecanpy.experimental",
+            "pecanpy.graph",
+            "pecanpy.rw",
+        ):
+            try:
+                mod = importlib.import_module(mod_name)
+            except Exception:
+                continue
+            if hasattr(mod, "SparseOTF"):
+                sparse_class = getattr(mod, "SparseOTF")
+                sparse_module = mod_name
+                break
+            if fallback_class is None:
+                for attr_name in dir(mod):
+                    if attr_name.endswith("OTF"):
+                        fallback_class = getattr(mod, attr_name)
+                        fallback_module = mod_name
+                        break
+        if sparse_class is None and fallback_class is not None:
+            sparse_class = fallback_class
+            sparse_module = fallback_module
+        if sparse_class is None:
+            raise ImportError(
+                "PecanPy OTF class not found in known modules."
+            )
 
         edge_path = None
         try:
@@ -83,10 +117,10 @@ def build_node2vec_embeddings(
                 )
                 edge_path = handle.name
 
-            print("KG node2vec backend: pecanpy SparseOTF")
+            print(f"KG node2vec backend: pecanpy {sparse_class.__name__} ({sparse_module})")
             start = time.time()
             # SparseOTF computes transition probabilities on the fly.
-            graph = SparseOTF(p=p, q=q, workers=workers, verbose=False)
+            graph = sparse_class(p=p, q=q, workers=workers, verbose=False)
             graph.read_edg(edge_path, weighted=False, directed=False)
             if hasattr(graph, "preprocess_transition_probs"):
                 graph.preprocess_transition_probs()
