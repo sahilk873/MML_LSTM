@@ -1,5 +1,6 @@
 import argparse
 import itertools
+import json
 import os
 from typing import Dict, Optional
 
@@ -127,6 +128,7 @@ def main() -> None:
     for key, value in override_map.items():
         if value is not None:
             config[key] = value
+    print("Resolved train config:\n" + json.dumps(config, indent=2))
 
     utils.set_seeds(config["seed"])
     utils.ensure_dir(args.output_dir)

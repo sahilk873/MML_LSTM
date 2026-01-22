@@ -1,5 +1,6 @@
 import argparse
 import itertools
+import json
 import os
 from typing import Dict, List, Tuple
 
@@ -209,6 +210,7 @@ def train_lstm(
 def main() -> None:
     args = parse_args()
     config = config_lib.load_config(args.config)
+    print("Resolved experiment config:\n" + json.dumps(config, indent=2))
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     ensure_dir(args.output_dir)
