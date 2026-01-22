@@ -14,6 +14,7 @@ from polypharmacy import utils
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate polypharmacy predictor.")
+    parser.add_argument("--config", default=None, help="Optional JSON config override.")
     parser.add_argument("--indications", default="indications_norm.csv")
     parser.add_argument("--contraindications", default="contraindications_norm.csv")
     parser.add_argument(
