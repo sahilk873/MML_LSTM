@@ -57,6 +57,7 @@ def build_node2vec_embeddings(
     min_count: int,
     workers: int,
     seed: int,
+    backend: str = "auto",
 ) -> Tuple[List[str], np.ndarray]:
     edges = edges.dropna(subset=["src", "dst"]).copy()
     edges["src"] = edges["src"].astype(str).str.strip()
@@ -70,10 +71,10 @@ def build_node2vec_embeddings(
         "KG node2vec setup | edges="
         f"{edge_count} nodes={unique_nodes} dim={embedding_dim} "
         f"walk_length={walk_length} num_walks={num_walks} "
-        f"p={p} q={q} window={context_window} workers={workers}"
+        f"p={p} q={q} window={context_window} workers={workers} backend={backend}"
     )
 
-    try:
+    def run_with_pecanpy() -> Tuple[List[str], np.ndarray]:
         from gensim.models import Word2Vec
         import importlib
 
@@ -107,9 +108,7 @@ def build_node2vec_embeddings(
             sparse_class = fallback_class
             sparse_module = fallback_module
         if sparse_class is None:
-            raise ImportError(
-                "PecanPy OTF class not found in known modules."
-            )
+            raise ImportError("PecanPy OTF class not found in known modules.")
 
         edge_path = None
         try:
@@ -128,7 +127,6 @@ def build_node2vec_embeddings(
 
             print(f"KG node2vec backend: pecanpy {sparse_class.__name__} ({sparse_module})")
             start = time.time()
-            # SparseOTF computes transition probabilities on the fly.
             graph = sparse_class(p=p, q=q, workers=workers, verbose=False)
             graph.read_edg(edge_path, weighted=False, directed=False)
             if hasattr(graph, "preprocess_transition_probs"):
@@ -154,14 +152,14 @@ def build_node2vec_embeddings(
         finally:
             if edge_path:
                 os.remove(edge_path)
-    except ImportError:
+
+    def run_with_node2vec() -> Tuple[List[str], np.ndarray]:
         import networkx as nx
         from node2vec import Node2Vec
 
         print("KG node2vec backend: node2vec (networkx)")
         start = time.time()
         graph = nx.from_pandas_edgelist(edges, source="src", target="dst")
-        # Node2Vec embeds all KG nodes into a shared vector space.
         node2vec = Node2Vec(
             graph,
             dimensions=embedding_dim,
@@ -182,6 +180,17 @@ def build_node2vec_embeddings(
             f"nodes_embedded={len(node_ids)} in {time.time() - start:.1f}s"
         )
         return node_ids, vectors
+
+    if backend == "pecanpy":
+        return run_with_pecanpy()
+    if backend == "node2vec":
+        return run_with_node2vec()
+
+    try:
+        return run_with_pecanpy()
+    except ImportError as exc:
+        print(f"KG node2vec backend: pecanpy unavailable ({exc}); falling back to node2vec.")
+        return run_with_node2vec()
 
 
 def extract_kg_nodes(edges: pd.DataFrame) -> List[str]:
@@ -278,6 +287,7 @@ def load_or_build_kg_embeddings(
     src_col: Optional[str],
     dst_col: Optional[str],
     edges: Optional[pd.DataFrame] = None,
+    backend: str = "auto",
 ) -> Tuple[List[str], np.ndarray]:
     if cache_path and os.path.exists(cache_path):
         data = np.load(cache_path, allow_pickle=True)
@@ -298,6 +308,7 @@ def load_or_build_kg_embeddings(
         min_count=min_count,
         workers=workers,
         seed=seed,
+        backend=backend,
     )
     if cache_path:
         np.savez_compressed(cache_path, node_ids=np.array(node_ids), embeddings=vectors)

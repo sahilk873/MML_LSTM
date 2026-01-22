@@ -27,6 +27,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--kg-expansion-verbose", action="store_true")
     parser.add_argument("--kg-workers", type=int, default=None)
     parser.add_argument(
+        "--kg-backend",
+        choices=["auto", "pecanpy", "node2vec"],
+        default="auto",
+        help="Force KG embedding backend.",
+    )
+    parser.add_argument(
         "--kg-cache-path",
         default=os.path.join("artifacts", "kg_embeddings.npz"),
         help="Node2Vec cache file path to share with train.py.",
@@ -275,6 +281,7 @@ def main() -> None:
         src_col=None,
         dst_col=None,
         edges=pruned_edges,
+        backend=args.kg_backend,
     )
 
     kg_nodes = kg_lib.extract_kg_nodes(pruned_edges)

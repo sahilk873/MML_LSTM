@@ -74,6 +74,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--kg-walk-length", type=int, default=None)
     parser.add_argument("--kg-workers", type=int, default=None)
     parser.add_argument(
+        "--kg-backend",
+        choices=["auto", "pecanpy", "node2vec"],
+        default="auto",
+        help="Force KG embedding backend.",
+    )
+    parser.add_argument(
         "--kg-hop-expansion",
         type=int,
         default=0,
@@ -313,6 +319,7 @@ def main() -> None:
         src_col=args.edge_src_col,
         dst_col=args.edge_dst_col,
         edges=edges,
+        backend=args.kg_backend,
     )
 
     embedding_dim = node_vectors.shape[1]
