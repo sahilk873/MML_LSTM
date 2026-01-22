@@ -58,6 +58,10 @@ def build_node2vec_embeddings(
     workers: int,
     seed: int,
 ) -> Tuple[List[str], np.ndarray]:
+    edges = edges.dropna(subset=["src", "dst"]).copy()
+    edges["src"] = edges["src"].astype(str)
+    edges["dst"] = edges["dst"].astype(str)
+    edges = edges[(edges["src"] != "") & (edges["dst"] != "")]
     edge_count = len(edges)
     unique_nodes = pd.unique(
         pd.concat([edges["src"], edges["dst"]], ignore_index=True)
@@ -113,7 +117,11 @@ def build_node2vec_embeddings(
                 mode="w", suffix=".edgelist", delete=False
             ) as handle:
                 edges[["src", "dst"]].to_csv(
-                    handle.name, sep=" ", header=False, index=False
+                    handle.name,
+                    sep=" ",
+                    header=False,
+                    index=False,
+                    line_terminator="\n",
                 )
                 edge_path = handle.name
 
