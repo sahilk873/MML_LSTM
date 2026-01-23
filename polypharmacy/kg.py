@@ -315,6 +315,28 @@ def load_or_build_kg_embeddings(
     return node_ids, vectors
 
 
+def load_precomputed_embeddings(
+    embeddings_path: str, node_ids_path: Optional[str] = None
+) -> Tuple[List[str], np.ndarray]:
+    if embeddings_path.endswith(".npz"):
+        data = np.load(embeddings_path, allow_pickle=True)
+        node_ids = data["node_ids"].tolist()
+        vectors = data["embeddings"]
+    elif embeddings_path.endswith(".npy"):
+        if node_ids_path is None:
+            raise ValueError("node_ids_path is required when using .npy embeddings.")
+        vectors = np.load(embeddings_path)
+        node_ids = np.load(node_ids_path, allow_pickle=True).tolist()
+    else:
+        raise ValueError(f"Unsupported embedding file: {embeddings_path}")
+    if len(node_ids) != vectors.shape[0]:
+        raise ValueError(
+            "Embedding count mismatch: "
+            f"{len(node_ids)} node IDs vs {vectors.shape[0]} vectors."
+        )
+    return node_ids, vectors
+
+
 def build_entity_embedding(
     entity_ids: List[str],
     node_to_idx: Dict[str, int],

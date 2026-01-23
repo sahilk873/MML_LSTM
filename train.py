@@ -62,6 +62,16 @@ def parse_args() -> argparse.Namespace:
         help="Optional RENCI single-therapy contraindications CSV.",
     )
     parser.add_argument("--kg", default="kg_edges.parquet")
+    parser.add_argument(
+        "--kg-embeddings",
+        default=None,
+        help="Optional precomputed KG embeddings (.npz or .npy).",
+    )
+    parser.add_argument(
+        "--kg-embedding-ids",
+        default=None,
+        help="Node ID list for .npy embeddings (ignored for .npz).",
+    )
     parser.add_argument("--output-dir", default="artifacts")
     parser.add_argument("--config", default=None, help="Optional JSON config override.")
     parser.add_argument("--edge-src-col", default=None)
@@ -303,24 +313,29 @@ def main() -> None:
         collate_fn=collate,
     )
 
-    kg_cache_path = os.path.join(args.output_dir, "kg_embeddings.npz")
-    node_ids, node_vectors = kg_lib.load_or_build_kg_embeddings(
-        kg_path=args.kg,
-        cache_path=kg_cache_path,
-        embedding_dim=config["embedding_dim"],
-        walk_length=config["kg_walk_length"],
-        num_walks=config["kg_num_walks"],
-        p=config["kg_p"],
-        q=config["kg_q"],
-        context_window=config["kg_context_window"],
-        min_count=config["kg_min_count"],
-        workers=config["kg_workers"],
-        seed=config["seed"],
-        src_col=args.edge_src_col,
-        dst_col=args.edge_dst_col,
-        edges=edges,
-        backend=args.kg_backend,
-    )
+    if args.kg_embeddings:
+        node_ids, node_vectors = kg_lib.load_precomputed_embeddings(
+            args.kg_embeddings, args.kg_embedding_ids
+        )
+    else:
+        kg_cache_path = os.path.join(args.output_dir, "kg_embeddings.npz")
+        node_ids, node_vectors = kg_lib.load_or_build_kg_embeddings(
+            kg_path=args.kg,
+            cache_path=kg_cache_path,
+            embedding_dim=config["embedding_dim"],
+            walk_length=config["kg_walk_length"],
+            num_walks=config["kg_num_walks"],
+            p=config["kg_p"],
+            q=config["kg_q"],
+            context_window=config["kg_context_window"],
+            min_count=config["kg_min_count"],
+            workers=config["kg_workers"],
+            seed=config["seed"],
+            src_col=args.edge_src_col,
+            dst_col=args.edge_dst_col,
+            edges=edges,
+            backend=args.kg_backend,
+        )
 
     embedding_dim = node_vectors.shape[1]
     if embedding_dim != config["embedding_dim"]:

@@ -22,6 +22,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--config", default=None, help="Optional JSON config overrides.")
     parser.add_argument("--output-dir", default="artifacts")
     parser.add_argument("--kg", default="kg_edges.parquet")
+    parser.add_argument(
+        "--kg-embeddings",
+        default=None,
+        help="Optional precomputed KG embeddings (.npz or .npy).",
+    )
+    parser.add_argument(
+        "--kg-embedding-ids",
+        default=None,
+        help="Node ID list for .npy embeddings (ignored for .npz).",
+    )
     parser.add_argument("--kg-hop-expansion", type=int, default=0)
     parser.add_argument("--kg-expansion-max-nodes", type=int, default=None)
     parser.add_argument("--kg-expansion-verbose", action="store_true")
@@ -262,35 +272,47 @@ def main() -> None:
             f"covering {len(expanded_nodes)} nodes"
         )
 
-    kg_cache_dir = os.path.dirname(args.kg_cache_path)
-    if kg_cache_dir:
-        os.makedirs(kg_cache_dir, exist_ok=True)
+    if args.kg_embeddings:
+        node_ids, node_vectors = kg_lib.load_precomputed_embeddings(
+            args.kg_embeddings, args.kg_embedding_ids
+        )
+    else:
+        kg_cache_dir = os.path.dirname(args.kg_cache_path)
+        if kg_cache_dir:
+            os.makedirs(kg_cache_dir, exist_ok=True)
 
-    node_ids, node_vectors = kg_lib.load_or_build_kg_embeddings(
-        args.kg,
-        cache_path=args.kg_cache_path,
-        embedding_dim=config["embedding_dim"],
-        walk_length=config["kg_walk_length"],
-        num_walks=config["kg_num_walks"],
-        p=config["kg_p"],
-        q=config["kg_q"],
-        context_window=config["kg_context_window"],
-        min_count=config["kg_min_count"],
-        workers=args.kg_workers or config["kg_workers"],
-        seed=args.seed,
-        src_col=None,
-        dst_col=None,
-        edges=pruned_edges,
-        backend=args.kg_backend,
-    )
+        node_ids, node_vectors = kg_lib.load_or_build_kg_embeddings(
+            args.kg,
+            cache_path=args.kg_cache_path,
+            embedding_dim=config["embedding_dim"],
+            walk_length=config["kg_walk_length"],
+            num_walks=config["kg_num_walks"],
+            p=config["kg_p"],
+            q=config["kg_q"],
+            context_window=config["kg_context_window"],
+            min_count=config["kg_min_count"],
+            workers=args.kg_workers or config["kg_workers"],
+            seed=args.seed,
+            src_col=None,
+            dst_col=None,
+            edges=pruned_edges,
+            backend=args.kg_backend,
+        )
 
     kg_nodes = kg_lib.extract_kg_nodes(pruned_edges)
-    filtered_df, dropped_df, _ = data_lib.filter_by_kg_coverage(
+    filtered_df, dropped_df, drop_stats = data_lib.filter_by_kg_coverage(
         deduped_df, kg_nodes
     )
     ensure_dir(args.output_dir)
     filtered_df.to_csv(os.path.join(args.output_dir, "filtered_dataset.csv"), index=False)
     dropped_df.to_csv(os.path.join(args.output_dir, "dropped_rows.csv"), index=False)
+    print(
+        "KG coverage filtering: "
+        f"dropped={drop_stats['num_dropped']} "
+        f"({drop_stats['percent_dropped']:.2%})"
+    )
+    if drop_stats["missing_prefixes"]:
+        print(f"Most common missing prefixes: {drop_stats['missing_prefixes']}")
 
     split_data = prepare_test_train_split(filtered_df, args.test_frac, args.seed, args.output_dir)
     train_df = split_data["train"]
