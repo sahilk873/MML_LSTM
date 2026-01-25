@@ -1,5 +1,25 @@
 {
+  "seed": 13,
+  "train_frac": 0.8,
+  "val_frac": 0.1,
+  "test_frac": 0.1,
+  "embedding_dim": 128,
   "lstm_hidden_dim": 128,
   "mlp_hidden_dim": 128,
-  "mlp_layers": 2
+  "mlp_layers": 2,
+  "dropout": 0.2,
+  "batch_size": 64,
+  "epochs": 10,
+  "learning_rate": 0.001,
+  "weight_decay": 0.00001,
+  "freeze_kg": true,
+  "kg_walk_length": 20,
+  "kg_num_walks": 10,
+  "kg_p": 1.0,
+  "kg_q": 1.0,
+  "kg_context_window": 10,
+  "kg_min_count": 1,
+  "kg_workers": 4,
+  "disease_token_position": null,
+  "concat_disease_after_lstm": true
 }
