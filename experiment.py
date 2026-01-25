@@ -404,22 +404,16 @@ def main() -> None:
     val_seqs, val_diseases, val_labels = encode_split(val_df)
     test_seqs, test_diseases, test_labels = encode_split(test_df)
 
-    all_seqs, all_diseases, all_labels = data_lib.encode_examples(
-        filtered_examples, drug_to_idx, disease_to_idx
-    )
-    train_idx, val_idx, test_idx = data_lib.deterministic_split(
-        num_examples=len(all_labels),
-        seed=config["seed"],
-        train_frac=config["train_frac"],
-        val_frac=config["val_frac"],
-        test_frac=config["test_frac"],
-    )
+    filtered_positions = {idx: pos for pos, idx in enumerate(filtered_df.index)}
+    train_idx = np.array([filtered_positions[idx] for idx in train_df.index], dtype=np.int64)
+    val_idx = np.array([filtered_positions[idx] for idx in val_df.index], dtype=np.int64)
+    test_idx = np.array([filtered_positions[idx] for idx in test_df.index], dtype=np.int64)
     np.savez_compressed(
         os.path.join(args.output_dir, "splits.npz"),
         train_idx=train_idx,
         val_idx=val_idx,
         test_idx=test_idx,
-        num_examples=len(all_labels),
+        num_examples=len(filtered_df),
     )
     filtered_df.to_csv(os.path.join(args.output_dir, "filtered_dataset_run.csv"), index=False)
 
