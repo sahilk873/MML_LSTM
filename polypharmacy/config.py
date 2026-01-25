@@ -12,6 +12,8 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "mlp_hidden_dim": 128,
     "mlp_layers": 2,
     "dropout": 0.2,
+    "disease_token_position": None,
+    "concat_disease_after_lstm": True,
     "batch_size": 64,
     "epochs": 10,
     "learning_rate": 1e-3,

@@ -37,6 +37,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--kg-expansion-verbose", action="store_true")
     parser.add_argument("--kg-workers", type=int, default=None)
     parser.add_argument(
+        "--disease-token-position",
+        choices=["first", "last", "none"],
+        default=None,
+        help="Optionally inject disease embedding as a token in the LSTM sequence.",
+    )
+    parser.add_argument(
+        "--concat-disease-after-lstm",
+        choices=["true", "false"],
+        default=None,
+        help="Whether to concat disease embedding after LSTM (default: true).",
+    )
+    parser.add_argument(
         "--kg-backend",
         choices=["auto", "pecanpy", "node2vec"],
         default="auto",
@@ -175,6 +187,8 @@ def train_lstm(
         mlp_layers=config["mlp_layers"],
         dropout=config["dropout"],
         freeze_kg=config["freeze_kg"],
+        disease_token_position=config.get("disease_token_position"),
+        concat_disease_after_lstm=config.get("concat_disease_after_lstm", True),
         pad_idx=0,
     ).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config["learning_rate"])
@@ -216,6 +230,10 @@ def train_lstm(
                     "mlp_layers": config["mlp_layers"],
                     "dropout": config["dropout"],
                     "freeze_kg": config["freeze_kg"],
+                    "disease_token_position": config.get("disease_token_position"),
+                    "concat_disease_after_lstm": config.get(
+                        "concat_disease_after_lstm", True
+                    ),
                     "pad_idx": 0,
                 },
                 best_path,
@@ -226,6 +244,12 @@ def train_lstm(
 def main() -> None:
     args = parse_args()
     config = config_lib.load_config(args.config)
+    if args.disease_token_position is not None:
+        config["disease_token_position"] = (
+            None if args.disease_token_position == "none" else args.disease_token_position
+        )
+    if args.concat_disease_after_lstm is not None:
+        config["concat_disease_after_lstm"] = args.concat_disease_after_lstm == "true"
     print("Resolved experiment config:\n" + json.dumps(config, indent=2))
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)

@@ -33,6 +33,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--kg", default="kg_edges.parquet")
     parser.add_argument("--edge-src-col", default=None)
     parser.add_argument("--edge-dst-col", default=None)
+    parser.add_argument(
+        "--disease-token-position",
+        choices=["first", "last", "none"],
+        default=None,
+        help="Override checkpoint: inject disease embedding as a token in the LSTM sequence.",
+    )
+    parser.add_argument(
+        "--concat-disease-after-lstm",
+        choices=["true", "false"],
+        default=None,
+        help="Override checkpoint: concat disease embedding after LSTM.",
+    )
     return parser.parse_args()
 
 
@@ -133,6 +145,18 @@ def main() -> None:
         mlp_layers=checkpoint.get("mlp_layers", 2),
         dropout=checkpoint["dropout"],
         freeze_kg=checkpoint["freeze_kg"],
+        disease_token_position=(
+            None
+            if args.disease_token_position == "none"
+            else args.disease_token_position
+        )
+        if args.disease_token_position is not None
+        else checkpoint.get("disease_token_position"),
+        concat_disease_after_lstm=(
+            args.concat_disease_after_lstm == "true"
+            if args.concat_disease_after_lstm is not None
+            else checkpoint.get("concat_disease_after_lstm", True)
+        ),
         pad_idx=checkpoint.get("pad_idx", 0),
     ).to(device)
     model.load_state_dict(checkpoint["model_state"])

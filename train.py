@@ -84,6 +84,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--kg-walk-length", type=int, default=None)
     parser.add_argument("--kg-workers", type=int, default=None)
     parser.add_argument(
+        "--disease-token-position",
+        choices=["first", "last", "none"],
+        default=None,
+        help="Optionally inject disease embedding as a token in the LSTM sequence.",
+    )
+    parser.add_argument(
+        "--concat-disease-after-lstm",
+        choices=["true", "false"],
+        default=None,
+        help="Whether to concat disease embedding after LSTM (default: true).",
+    )
+    parser.add_argument(
         "--kg-backend",
         choices=["auto", "pecanpy", "node2vec"],
         default="auto",
@@ -141,6 +153,12 @@ def main() -> None:
         "kg_walk_length": args.kg_walk_length,
         "kg_workers": args.kg_workers,
     }
+    if args.disease_token_position is not None:
+        config["disease_token_position"] = (
+            None if args.disease_token_position == "none" else args.disease_token_position
+        )
+    if args.concat_disease_after_lstm is not None:
+        config["concat_disease_after_lstm"] = args.concat_disease_after_lstm == "true"
     for key, value in override_map.items():
         if value is not None:
             config[key] = value
@@ -401,6 +419,8 @@ def main() -> None:
         mlp_layers=config["mlp_layers"],
         dropout=config["dropout"],
         freeze_kg=config["freeze_kg"],
+        disease_token_position=config.get("disease_token_position"),
+        concat_disease_after_lstm=config.get("concat_disease_after_lstm", True),
         pad_idx=0,
     ).to(device)
 
@@ -452,6 +472,10 @@ def main() -> None:
                     "mlp_layers": config["mlp_layers"],
                     "dropout": config["dropout"],
                     "freeze_kg": config["freeze_kg"],
+                    "disease_token_position": config.get("disease_token_position"),
+                    "concat_disease_after_lstm": config.get(
+                        "concat_disease_after_lstm", True
+                    ),
                     "pad_idx": 0,
                 },
                 best_path,
