@@ -240,43 +240,51 @@ def main() -> None:
     )
     print(f"Conflict resolution: {conflict_count}")
 
-    edges = kg_lib.load_edges(args.kg, src_col=None, dst_col=None)
-    initial_edges = len(edges)
     required_drugs = set(
         itertools.chain.from_iterable(deduped_df["drug_set"])  # type: ignore[arg-type]
     )
     required_diseases = set(deduped_df["condition_id_norm"])
     required_nodes = required_drugs.union(required_diseases)
 
-    expanded_nodes = required_nodes
-    if args.kg_hop_expansion > 0:
-        expanded_nodes, hop_logs, truncated = kg_lib.expand_node_set(
-            edges,
-            required_nodes,
-            hops=args.kg_hop_expansion,
-            max_nodes=args.kg_expansion_max_nodes,
-        )
-        print(
-            f"KG hop expansion: k={args.kg_hop_expansion}, nodes required={len(required_nodes)} -> expanded={len(expanded_nodes)}"
-        )
-        if args.kg_expansion_verbose:
-            for hop, added, cum in hop_logs:
-                print(f"hop {hop}: +{added} nodes (cum {cum})")
-            if truncated:
-                print("KG expansion stopped early due to max node cap.")
-
-    pruned_edges = kg_lib.prune_edges_to_nodes(edges, expanded_nodes)
-    if len(pruned_edges) < initial_edges:
-        print(
-            f"KG pruning: reduced edges from {initial_edges} to {len(pruned_edges)} "
-            f"covering {len(expanded_nodes)} nodes"
-        )
-
+    node_ids = None
+    node_vectors = None
+    pruned_edges = None
     if args.kg_embeddings:
         node_ids, node_vectors = kg_lib.load_precomputed_embeddings(
             args.kg_embeddings, args.kg_embedding_ids
         )
+        kg_nodes = set(node_ids)
+        print(
+            "KG coverage filtering: using precomputed embedding node IDs "
+            f"(nodes={len(kg_nodes)})"
+        )
     else:
+        edges = kg_lib.load_edges(args.kg, src_col=None, dst_col=None)
+        initial_edges = len(edges)
+        expanded_nodes = required_nodes
+        if args.kg_hop_expansion > 0:
+            expanded_nodes, hop_logs, truncated = kg_lib.expand_node_set(
+                edges,
+                required_nodes,
+                hops=args.kg_hop_expansion,
+                max_nodes=args.kg_expansion_max_nodes,
+            )
+            print(
+                f"KG hop expansion: k={args.kg_hop_expansion}, nodes required={len(required_nodes)} -> expanded={len(expanded_nodes)}"
+            )
+            if args.kg_expansion_verbose:
+                for hop, added, cum in hop_logs:
+                    print(f"hop {hop}: +{added} nodes (cum {cum})")
+                if truncated:
+                    print("KG expansion stopped early due to max node cap.")
+
+        pruned_edges = kg_lib.prune_edges_to_nodes(edges, expanded_nodes)
+        if len(pruned_edges) < initial_edges:
+            print(
+                f"KG pruning: reduced edges from {initial_edges} to {len(pruned_edges)} "
+                f"covering {len(expanded_nodes)} nodes"
+            )
+
         kg_cache_dir = os.path.dirname(args.kg_cache_path)
         if kg_cache_dir:
             os.makedirs(kg_cache_dir, exist_ok=True)
@@ -299,7 +307,7 @@ def main() -> None:
             backend=args.kg_backend,
         )
 
-    kg_nodes = kg_lib.extract_kg_nodes(pruned_edges)
+        kg_nodes = kg_lib.extract_kg_nodes(pruned_edges)
     filtered_df, dropped_df, drop_stats = data_lib.filter_by_kg_coverage(
         deduped_df, kg_nodes
     )

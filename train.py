@@ -174,43 +174,58 @@ def main() -> None:
     required_diseases = set(deduped_df["condition_id_norm"])
     required_nodes = required_drugs.union(required_diseases)
 
-    edges = kg_lib.load_edges(args.kg, src_col=args.edge_src_col, dst_col=args.edge_dst_col)
-    initial_edge_count = len(edges)
-    expanded_nodes = required_nodes
-    hop_logs = []
-    truncated = False
-    if args.kg_hop_expansion > 0:
-        expanded_nodes, hop_logs, truncated = kg_lib.expand_node_set(
-            edges,
-            required_nodes,
-            hops=args.kg_hop_expansion,
-            max_nodes=args.kg_expansion_max_nodes,
+    node_ids = None
+    node_vectors = None
+    edges = None
+    if args.kg_embeddings:
+        node_ids, node_vectors = kg_lib.load_precomputed_embeddings(
+            args.kg_embeddings, args.kg_embedding_ids
         )
+        kg_nodes = set(node_ids)
         print(
-            "KG hop expansion: "
-            f"k={args.kg_hop_expansion}, nodes: required={len(required_nodes)} -> expanded={len(expanded_nodes)}"
+            "KG coverage filtering: using precomputed embedding node IDs "
+            f"(nodes={len(kg_nodes)})"
         )
-        if args.kg_expansion_verbose:
-            for hop, new_nodes, cum_nodes in hop_logs:
-                print(f"hop {hop}: +{new_nodes} nodes (cum {cum_nodes})")
-        if truncated and args.kg_expansion_verbose:
-            print(
-                "KG hop expansion stopped early because node count exceeded "
-                f"{args.kg_expansion_max_nodes}"
+    else:
+        edges = kg_lib.load_edges(
+            args.kg, src_col=args.edge_src_col, dst_col=args.edge_dst_col
+        )
+        initial_edge_count = len(edges)
+        expanded_nodes = required_nodes
+        hop_logs = []
+        truncated = False
+        if args.kg_hop_expansion > 0:
+            expanded_nodes, hop_logs, truncated = kg_lib.expand_node_set(
+                edges,
+                required_nodes,
+                hops=args.kg_hop_expansion,
+                max_nodes=args.kg_expansion_max_nodes,
             )
+            print(
+                "KG hop expansion: "
+                f"k={args.kg_hop_expansion}, nodes: required={len(required_nodes)} -> expanded={len(expanded_nodes)}"
+            )
+            if args.kg_expansion_verbose:
+                for hop, new_nodes, cum_nodes in hop_logs:
+                    print(f"hop {hop}: +{new_nodes} nodes (cum {cum_nodes})")
+            if truncated and args.kg_expansion_verbose:
+                print(
+                    "KG hop expansion stopped early because node count exceeded "
+                    f"{args.kg_expansion_max_nodes}"
+                )
 
-    edges = kg_lib.prune_edges_to_nodes(edges, expanded_nodes)
-    if len(edges) < initial_edge_count:
-        print(
-            f"KG node filtering: reduced edges from {initial_edge_count} to {len(edges)} "
-            f"to cover {len(required_nodes)} dataset nodes"
-        )
-    if args.max_edges is not None and len(edges) > args.max_edges:
-        edges = edges.sample(n=args.max_edges, random_state=config["seed"]).reset_index(
-            drop=True
-        )
-        print(f"KG edge sampling: using {len(edges)} edges")
-    kg_nodes = kg_lib.extract_kg_nodes(edges)
+        edges = kg_lib.prune_edges_to_nodes(edges, expanded_nodes)
+        if len(edges) < initial_edge_count:
+            print(
+                f"KG node filtering: reduced edges from {initial_edge_count} to {len(edges)} "
+                f"to cover {len(required_nodes)} dataset nodes"
+            )
+        if args.max_edges is not None and len(edges) > args.max_edges:
+            edges = edges.sample(n=args.max_edges, random_state=config["seed"]).reset_index(
+                drop=True
+            )
+            print(f"KG edge sampling: using {len(edges)} edges")
+        kg_nodes = kg_lib.extract_kg_nodes(edges)
 
     filtered_df, dropped_df, drop_stats = data_lib.filter_by_kg_coverage(
         deduped_df, kg_nodes
@@ -314,9 +329,10 @@ def main() -> None:
     )
 
     if args.kg_embeddings:
-        node_ids, node_vectors = kg_lib.load_precomputed_embeddings(
-            args.kg_embeddings, args.kg_embedding_ids
-        )
+        if node_ids is None or node_vectors is None:
+            node_ids, node_vectors = kg_lib.load_precomputed_embeddings(
+                args.kg_embeddings, args.kg_embedding_ids
+            )
     else:
         kg_cache_path = os.path.join(args.output_dir, "kg_embeddings.npz")
         node_ids, node_vectors = kg_lib.load_or_build_kg_embeddings(
