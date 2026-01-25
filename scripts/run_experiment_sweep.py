@@ -4,6 +4,7 @@ import itertools
 import json
 import os
 import subprocess
+import csv
 from typing import Dict, Iterable, List
 
 
@@ -24,6 +25,41 @@ def write_config(path: str, config: Dict) -> None:
 def run_command(cmd: List[str]) -> None:
     print(" ".join(cmd))
     subprocess.run(cmd, check=True)
+
+
+def parse_metrics_line(line: str) -> Dict[str, str]:
+    parts = [part.strip() for part in line.split("|")]
+    if not parts:
+        return {}
+    metrics: Dict[str, str] = {}
+    metrics["split"] = parts[0]
+    for item in parts[1:]:
+        if "=" not in item:
+            continue
+        key, value = item.split("=", 1)
+        metrics[key.strip()] = value.strip()
+    return metrics
+
+
+def run_evaluate(output_dir: str) -> Dict[str, Dict[str, str]]:
+    cmd = [
+        "python3",
+        "evaluate.py",
+        "--output-dir",
+        output_dir,
+        "--checkpoint",
+        os.path.join(output_dir, "best_model.pt"),
+    ]
+    print(" ".join(cmd))
+    result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+    metrics: Dict[str, Dict[str, str]] = {}
+    for line in result.stdout.splitlines():
+        line = line.strip()
+        if line.startswith("Validation") or line.startswith("Test"):
+            parsed = parse_metrics_line(line)
+            if parsed.get("split"):
+                metrics[parsed["split"]] = parsed
+    return metrics
 
 
 def main() -> None:
@@ -64,6 +100,11 @@ def main() -> None:
         action="store_true",
         help="Skip runs if output directory already exists.",
     )
+    parser.add_argument(
+        "--summary-csv",
+        default=None,
+        help="Write sweep summary CSV (default: <output-root>/sweep_summary.csv).",
+    )
     args = parser.parse_args()
 
     base_config = load_base_config(args.base_config)
@@ -83,6 +124,8 @@ def main() -> None:
             )
 
     os.makedirs(args.output_root, exist_ok=True)
+    summary_path = args.summary_csv or os.path.join(args.output_root, "sweep_summary.csv")
+    summary_rows: List[Dict[str, str]] = []
 
     sweep = itertools.product(
         embedding_sources,
@@ -171,6 +214,34 @@ def main() -> None:
             print("DRY RUN:", " ".join(cmd))
         else:
             run_command(cmd)
+            metrics = run_evaluate(output_dir)
+            row = {
+                "run_name": run_name,
+                "output_dir": output_dir,
+                "embedding_source": source,
+                "lstm_hidden_dim": str(lstm_dim),
+                "mlp_hidden_dim": str(mlp_dim),
+                "mlp_layers": str(mlp_layers_count),
+                "disease_token_position": disease_pos,
+                "concat_disease_after_lstm": concat_flag,
+            }
+            for split_name, split_metrics in metrics.items():
+                row.update(
+                    {
+                        f"{split_name.lower()}_{k}": v
+                        for k, v in split_metrics.items()
+                        if k != "split"
+                    }
+                )
+            summary_rows.append(row)
+
+    if summary_rows:
+        fieldnames = sorted({key for row in summary_rows for key in row.keys()})
+        with open(summary_path, "w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(summary_rows)
+        print(f"Wrote sweep summary to {summary_path}")
 
 
 if __name__ == "__main__":
