@@ -62,6 +62,24 @@ def run_evaluate(output_dir: str) -> Dict[str, Dict[str, str]]:
     return metrics
 
 
+def read_existing_summary(path: str) -> List[Dict[str, str]]:
+    if not os.path.exists(path):
+        return []
+    with open(path, "r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        return [row for row in reader]
+
+
+def write_summary(path: str, rows: List[Dict[str, str]]) -> None:
+    if not rows:
+        return
+    fieldnames = sorted({key for row in rows for key in row.keys()})
+    with open(path, "w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Sweep experiment.py hyperparameters.")
     parser.add_argument("--base-config", default="config_override.json")
@@ -125,7 +143,8 @@ def main() -> None:
 
     os.makedirs(args.output_root, exist_ok=True)
     summary_path = args.summary_csv or os.path.join(args.output_root, "sweep_summary.csv")
-    summary_rows: List[Dict[str, str]] = []
+    summary_rows = read_existing_summary(summary_path)
+    existing_runs = {row.get("run_name") for row in summary_rows if row.get("run_name")}
 
     sweep = itertools.product(
         embedding_sources,
@@ -152,6 +171,29 @@ def main() -> None:
         output_dir = os.path.join(args.output_root, run_name)
         if args.skip_existing and os.path.exists(output_dir):
             print(f"Skipping existing run: {output_dir}")
+            if run_name not in existing_runs and not args.dry_run:
+                metrics = run_evaluate(output_dir)
+                row = {
+                    "run_name": run_name,
+                    "output_dir": output_dir,
+                    "embedding_source": source,
+                    "lstm_hidden_dim": str(lstm_dim),
+                    "mlp_hidden_dim": str(mlp_dim),
+                    "mlp_layers": str(mlp_layers_count),
+                    "disease_token_position": disease_pos,
+                    "concat_disease_after_lstm": concat_flag,
+                }
+                for split_name, split_metrics in metrics.items():
+                    row.update(
+                        {
+                            f"{split_name.lower()}_{k}": v
+                            for k, v in split_metrics.items()
+                            if k != "split"
+                        }
+                    )
+                summary_rows.append(row)
+                existing_runs.add(run_name)
+                write_summary(summary_path, summary_rows)
             continue
 
         run_config = dict(base_config)
@@ -234,13 +276,10 @@ def main() -> None:
                     }
                 )
             summary_rows.append(row)
+            existing_runs.add(run_name)
+            write_summary(summary_path, summary_rows)
 
     if summary_rows:
-        fieldnames = sorted({key for row in summary_rows for key in row.keys()})
-        with open(summary_path, "w", encoding="utf-8", newline="") as handle:
-            writer = csv.DictWriter(handle, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(summary_rows)
         print(f"Wrote sweep summary to {summary_path}")
 
 
