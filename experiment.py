@@ -64,6 +64,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--rf-max-depth", type=int, default=16)
     parser.add_argument("--seed", type=int, default=13)
     parser.add_argument(
+        "--replicates",
+        type=int,
+        default=1,
+        help="Number of replicate train/holdout splits to run.",
+    )
+    parser.add_argument(
+        "--replicate-seed-step",
+        type=int,
+        default=1,
+        help="Seed increment per replicate (seed + step * i).",
+    )
+    parser.add_argument(
         "--single-therapy-indications",
         default=None,
         help="Optional RENCI single-therapy indications CSV.",
@@ -241,6 +253,46 @@ def train_lstm(
     return model, best_path
 
 
+def aggregate_metrics(metrics_list: List[Dict[str, object]]) -> Dict[str, Dict[str, float]]:
+    summary: Dict[str, Dict[str, float]] = {}
+    metric_keys = ["roc_auc", "accuracy", "sensitivity", "specificity", "f1"]
+    for key in metric_keys:
+        values = np.array([float(m[key]) for m in metrics_list], dtype=float)
+        valid = values[~np.isnan(values)]
+        if len(valid) == 0:
+            summary[key] = {"mean": float("nan"), "std": float("nan"), "sem": float("nan"), "n": 0}
+            continue
+        mean = float(np.mean(valid))
+        if len(valid) > 1:
+            std = float(np.std(valid, ddof=1))
+            sem = float(std / np.sqrt(len(valid)))
+        else:
+            std = 0.0
+            sem = 0.0
+        summary[key] = {"mean": mean, "std": std, "sem": sem, "n": int(len(valid))}
+    return summary
+
+
+def format_mean_sem(value: Dict[str, float]) -> str:
+    return f"{value['mean']:.4f}±{value['sem']:.4f}"
+
+
+def print_summary(label: str, summary: Dict[str, Dict[str, float]]) -> None:
+    print(f"{label} summary (mean±SEM):")
+    print(
+        "  "
+        + " | ".join(
+            [
+                f"auc={format_mean_sem(summary['roc_auc'])}",
+                f"acc={format_mean_sem(summary['accuracy'])}",
+                f"sens={format_mean_sem(summary['sensitivity'])}",
+                f"spec={format_mean_sem(summary['specificity'])}",
+                f"f1={format_mean_sem(summary['f1'])}",
+            ]
+        )
+    )
+
+
 def main() -> None:
     args = parse_args()
     config = config_lib.load_config(args.config)
@@ -251,8 +303,7 @@ def main() -> None:
     if args.concat_disease_after_lstm is not None:
         config["concat_disease_after_lstm"] = args.concat_disease_after_lstm == "true"
     print("Resolved experiment config:\n" + json.dumps(config, indent=2))
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
+    utils.set_seeds(args.seed)
     ensure_dir(args.output_dir)
     utils.save_json(os.path.join(args.output_dir, "config.json"), config)
 
@@ -346,18 +397,6 @@ def main() -> None:
     if drop_stats["missing_prefixes"]:
         print(f"Most common missing prefixes: {drop_stats['missing_prefixes']}")
 
-    split_data = prepare_test_train_split(filtered_df, args.test_frac, args.seed, args.output_dir)
-    train_df = split_data["train"]
-    test_df = split_data["test"]
-
-    stratify_col = train_df["label"] if train_df["label"].nunique() > 1 else None
-    train_df, val_df = train_test_split(
-        train_df,
-        test_size=0.1,
-        random_state=args.seed,
-        stratify=stratify_col,
-    )
-
     filtered_examples = data_lib.dataframe_to_examples(filtered_df)
     drug_to_idx, disease_to_idx = data_lib.build_mappings(filtered_examples)
     drug_idx_to_id = build_idx_to_id(drug_to_idx, pad_token="<PAD>")
@@ -400,94 +439,171 @@ def main() -> None:
         examples = data_lib.dataframe_to_examples(df)
         return data_lib.encode_examples(examples, drug_to_idx, disease_to_idx)
 
-    train_seqs, train_diseases, train_labels = encode_split(train_df)
-    val_seqs, val_diseases, val_labels = encode_split(val_df)
-    test_seqs, test_diseases, test_labels = encode_split(test_df)
-
     filtered_positions = {idx: pos for pos, idx in enumerate(filtered_df.index)}
-    train_idx = np.array([filtered_positions[idx] for idx in train_df.index], dtype=np.int64)
-    val_idx = np.array([filtered_positions[idx] for idx in val_df.index], dtype=np.int64)
-    test_idx = np.array([filtered_positions[idx] for idx in test_df.index], dtype=np.int64)
-    np.savez_compressed(
-        os.path.join(args.output_dir, "splits.npz"),
-        train_idx=train_idx,
-        val_idx=val_idx,
-        test_idx=test_idx,
-        num_examples=len(filtered_df),
-    )
     filtered_df.to_csv(os.path.join(args.output_dir, "filtered_dataset_run.csv"), index=False)
 
-    if not train_seqs or not val_seqs or not test_seqs:
-        raise ValueError("One of the splits became empty after encoding.")
-
-    train_dataset = data_lib.PolypharmacyDataset(train_seqs, train_diseases, train_labels)
-    val_dataset = data_lib.PolypharmacyDataset(val_seqs, val_diseases, val_labels)
-    test_dataset = data_lib.PolypharmacyDataset(test_seqs, test_diseases, test_labels)
-
-    collate = lambda batch: data_lib.collate_batch(batch, pad_idx=0)
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=config["batch_size"],
-        shuffle=True,
-        collate_fn=collate,
-    )
-    val_loader = DataLoader(
-        val_dataset,
-        batch_size=config["batch_size"],
-        shuffle=False,
-        collate_fn=collate,
-    )
-    test_loader = DataLoader(
-        test_dataset,
-        batch_size=config["batch_size"],
-        shuffle=False,
-        collate_fn=collate,
-    )
-
-    print(
-        "Dataset split sizes (train/val/test): "
-        f"{len(train_dataset)}/{len(val_dataset)}/{len(test_dataset)}"
-    )
-
-    rf_train_df = train_df[train_df["drug_set"].apply(lambda ds: len(ds) == 2)]
-    print(
-        f"RF train candidates: {len(rf_train_df)} two-drug examples, "
-        f"test set: {len(test_df)} two-drug examples"
-    )
-    X_rf_train, y_rf_train = build_rf_features(
-        rf_train_df, drug_to_idx, disease_to_idx, drug_embeddings, disease_embeddings
-    )
-    rf_model = fit_random_forest(
-        X_rf_train,
-        y_rf_train,
-        est=args.rf_estimators,
-        max_depth=args.rf_max_depth,
-        seed=args.seed,
-    )
-    X_rf_test, y_rf_test = build_rf_features(
-        test_df, drug_to_idx, disease_to_idx, drug_embeddings, disease_embeddings
-    )
-    rf_probs = rf_model.predict_proba(X_rf_test)[:, 1]
-    rf_metrics = utils.compute_metrics(y_rf_test, rf_probs)
-    print(
-        f"RF on held-out 2-drug test | auc={rf_metrics['roc_auc']:.4f} | "
-        f"acc={rf_metrics['accuracy']:.4f} | sens={rf_metrics['sensitivity']:.4f} | "
-        f"spec={rf_metrics['specificity']:.4f} | f1={rf_metrics['f1']:.4f} | "
-        f"confusion={rf_metrics['confusion']}"
-    )
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    lstm_model, lstm_best_path = train_lstm(
-        train_loader, val_loader, config, drug_embeddings, disease_embeddings, device, args.output_dir
-    )
-    lstm_metrics = evaluate_model_with_loader(lstm_model, test_loader, device)
-    print(
-        f"LSTM on held-out 2-drug test | auc={lstm_metrics['roc_auc']:.4f} | "
-        f"acc={lstm_metrics['accuracy']:.4f} | sens={lstm_metrics['sensitivity']:.4f} | "
-        f"spec={lstm_metrics['specificity']:.4f} | f1={lstm_metrics['f1']:.4f} | "
-        f"confusion={lstm_metrics['confusion']}"
-    )
-    print(f"Best LSTM checkpoint saved to {lstm_best_path}")
+    rf_metrics_all: List[Dict[str, object]] = []
+    lstm_metrics_all: List[Dict[str, object]] = []
+    replicate_payloads: List[Dict[str, object]] = []
+
+    for rep in range(args.replicates):
+        rep_seed = args.seed + rep * args.replicate_seed_step
+        run_output_dir = (
+            args.output_dir
+            if args.replicates == 1
+            else os.path.join(args.output_dir, f"run_{rep:02d}")
+        )
+        ensure_dir(run_output_dir)
+        utils.set_seeds(rep_seed)
+        print(f"\n=== Replicate {rep + 1}/{args.replicates} (seed={rep_seed}) ===")
+
+        split_data = prepare_test_train_split(
+            filtered_df, args.test_frac, rep_seed, run_output_dir
+        )
+        train_df = split_data["train"]
+        test_df = split_data["test"]
+
+        stratify_col = train_df["label"] if train_df["label"].nunique() > 1 else None
+        train_df, val_df = train_test_split(
+            train_df,
+            test_size=0.1,
+            random_state=rep_seed,
+            stratify=stratify_col,
+        )
+
+        train_seqs, train_diseases, train_labels = encode_split(train_df)
+        val_seqs, val_diseases, val_labels = encode_split(val_df)
+        test_seqs, test_diseases, test_labels = encode_split(test_df)
+
+        train_idx = np.array([filtered_positions[idx] for idx in train_df.index], dtype=np.int64)
+        val_idx = np.array([filtered_positions[idx] for idx in val_df.index], dtype=np.int64)
+        test_idx = np.array([filtered_positions[idx] for idx in test_df.index], dtype=np.int64)
+        np.savez_compressed(
+            os.path.join(run_output_dir, "splits.npz"),
+            train_idx=train_idx,
+            val_idx=val_idx,
+            test_idx=test_idx,
+            num_examples=len(filtered_df),
+        )
+
+        if not train_seqs or not val_seqs or not test_seqs:
+            raise ValueError("One of the splits became empty after encoding.")
+
+        train_dataset = data_lib.PolypharmacyDataset(train_seqs, train_diseases, train_labels)
+        val_dataset = data_lib.PolypharmacyDataset(val_seqs, val_diseases, val_labels)
+        test_dataset = data_lib.PolypharmacyDataset(test_seqs, test_diseases, test_labels)
+
+        collate = lambda batch: data_lib.collate_batch(batch, pad_idx=0)
+        train_loader = DataLoader(
+            train_dataset,
+            batch_size=config["batch_size"],
+            shuffle=True,
+            collate_fn=collate,
+        )
+        val_loader = DataLoader(
+            val_dataset,
+            batch_size=config["batch_size"],
+            shuffle=False,
+            collate_fn=collate,
+        )
+        test_loader = DataLoader(
+            test_dataset,
+            batch_size=config["batch_size"],
+            shuffle=False,
+            collate_fn=collate,
+        )
+
+        print(
+            "Dataset split sizes (train/val/test): "
+            f"{len(train_dataset)}/{len(val_dataset)}/{len(test_dataset)}"
+        )
+
+        rf_train_df = train_df[train_df["drug_set"].apply(lambda ds: len(ds) == 2)]
+        print(
+            f"RF train candidates: {len(rf_train_df)} two-drug examples, "
+            f"test set: {len(test_df)} two-drug examples"
+        )
+        X_rf_train, y_rf_train = build_rf_features(
+            rf_train_df, drug_to_idx, disease_to_idx, drug_embeddings, disease_embeddings
+        )
+        rf_model = fit_random_forest(
+            X_rf_train,
+            y_rf_train,
+            est=args.rf_estimators,
+            max_depth=args.rf_max_depth,
+            seed=rep_seed,
+        )
+        X_rf_test, y_rf_test = build_rf_features(
+            test_df, drug_to_idx, disease_to_idx, drug_embeddings, disease_embeddings
+        )
+        rf_probs = rf_model.predict_proba(X_rf_test)[:, 1]
+        rf_metrics = utils.compute_metrics(y_rf_test, rf_probs)
+        rf_metrics_all.append(rf_metrics)
+        print(
+            f"RF on held-out 2-drug test | auc={rf_metrics['roc_auc']:.4f} | "
+            f"acc={rf_metrics['accuracy']:.4f} | sens={rf_metrics['sensitivity']:.4f} | "
+            f"spec={rf_metrics['specificity']:.4f} | f1={rf_metrics['f1']:.4f} | "
+            f"confusion={rf_metrics['confusion']}"
+        )
+
+        lstm_model, lstm_best_path = train_lstm(
+            train_loader,
+            val_loader,
+            config,
+            drug_embeddings,
+            disease_embeddings,
+            device,
+            run_output_dir,
+        )
+        lstm_metrics = evaluate_model_with_loader(lstm_model, test_loader, device)
+        lstm_metrics_all.append(lstm_metrics)
+        print(
+            f"LSTM on held-out 2-drug test | auc={lstm_metrics['roc_auc']:.4f} | "
+            f"acc={lstm_metrics['accuracy']:.4f} | sens={lstm_metrics['sensitivity']:.4f} | "
+            f"spec={lstm_metrics['specificity']:.4f} | f1={lstm_metrics['f1']:.4f} | "
+            f"confusion={lstm_metrics['confusion']}"
+        )
+        print(f"Best LSTM checkpoint saved to {lstm_best_path}")
+
+        replicate_payloads.append(
+            {
+                "replicate": rep,
+                "seed": rep_seed,
+                "run_dir": run_output_dir,
+                "rf_metrics": rf_metrics,
+                "lstm_metrics": lstm_metrics,
+                "test_size": len(test_df),
+                "train_size": len(train_df),
+                "val_size": len(val_df),
+            }
+        )
+        utils.save_json(
+            os.path.join(run_output_dir, "metrics.json"),
+            {
+                "replicate": rep,
+                "seed": rep_seed,
+                "rf_metrics": rf_metrics,
+                "lstm_metrics": lstm_metrics,
+            },
+        )
+
+    if args.replicates > 1:
+        rf_summary = aggregate_metrics(rf_metrics_all)
+        lstm_summary = aggregate_metrics(lstm_metrics_all)
+        print_summary("RF", rf_summary)
+        print_summary("LSTM", lstm_summary)
+        utils.save_json(
+            os.path.join(args.output_dir, "bag_summary.json"),
+            {
+                "replicates": args.replicates,
+                "seed": args.seed,
+                "replicate_seed_step": args.replicate_seed_step,
+                "rf_summary": rf_summary,
+                "lstm_summary": lstm_summary,
+                "replicate_metrics": replicate_payloads,
+            },
+        )
 
 
 if __name__ == "__main__":
