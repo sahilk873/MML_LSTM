@@ -64,6 +64,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--rf-max-depth", type=int, default=16)
     parser.add_argument("--seed", type=int, default=13)
     parser.add_argument(
+        "--per-drug-count-metrics",
+        action="store_true",
+        help="Report LSTM metrics grouped by drug count buckets.",
+    )
+    parser.add_argument(
         "--replicates",
         type=int,
         default=1,
@@ -180,6 +185,96 @@ def evaluate_model_with_loader(
     if not all_probs:
         return {"roc_auc": float("nan"), "accuracy": float("nan")}
     return utils.compute_metrics(np.concatenate(all_labels), np.concatenate(all_probs))
+
+
+def collect_predictions(
+    model: model_lib.PolypharmacyLSTMClassifier,
+    loader: DataLoader,
+    device: torch.device,
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    model.eval()
+    all_probs = []
+    all_labels = []
+    all_lengths = []
+    with torch.no_grad():
+        for drug_seq, lengths, disease_idx, labels in loader:
+            drug_seq = drug_seq.to(device)
+            lengths = lengths.to(device)
+            disease_idx = disease_idx.to(device)
+            logits = model(drug_seq, lengths, disease_idx)
+            probs = torch.sigmoid(logits).cpu().numpy()
+            all_probs.append(probs)
+            all_labels.append(labels.numpy())
+            all_lengths.append(lengths.cpu().numpy())
+    if not all_probs:
+        return (
+            np.array([], dtype=float),
+            np.array([], dtype=float),
+            np.array([], dtype=float),
+        )
+    return (
+        np.concatenate(all_probs),
+        np.concatenate(all_labels),
+        np.concatenate(all_lengths),
+    )
+
+
+def compute_metrics_safe(labels: np.ndarray, probs: np.ndarray) -> Dict[str, object]:
+    from sklearn.metrics import roc_auc_score
+
+    if len(labels) == 0:
+        return {
+            "roc_auc": float("nan"),
+            "accuracy": float("nan"),
+            "sensitivity": float("nan"),
+            "specificity": float("nan"),
+            "f1": float("nan"),
+            "confusion": {"tn": 0, "fp": 0, "fn": 0, "tp": 0},
+        }
+
+    labels = labels.astype(np.int64)
+    preds = (probs >= 0.5).astype(np.int64)
+    tn = int(np.sum((labels == 0) & (preds == 0)))
+    fp = int(np.sum((labels == 0) & (preds == 1)))
+    fn = int(np.sum((labels == 1) & (preds == 0)))
+    tp = int(np.sum((labels == 1) & (preds == 1)))
+    accuracy = float((tn + tp) / max(len(labels), 1))
+    sensitivity = float(tp / (tp + fn)) if (tp + fn) > 0 else float("nan")
+    specificity = float(tn / (tn + fp)) if (tn + fp) > 0 else float("nan")
+    denom = 2 * tp + fp + fn
+    f1 = float(2 * tp / denom) if denom > 0 else float("nan")
+    roc_auc = float("nan")
+    if len(np.unique(labels)) == 2:
+        roc_auc = float(roc_auc_score(labels, probs))
+    return {
+        "roc_auc": roc_auc,
+        "accuracy": accuracy,
+        "sensitivity": sensitivity,
+        "specificity": specificity,
+        "f1": f1,
+        "confusion": {"tn": tn, "fp": fp, "fn": fn, "tp": tp},
+    }
+
+
+def compute_bucket_metrics(
+    labels: np.ndarray, probs: np.ndarray, lengths: np.ndarray
+) -> Dict[str, Dict[str, object]]:
+    buckets = [
+        ("1", lambda x: x == 1),
+        ("2", lambda x: x == 2),
+        ("3-4", lambda x: (x >= 3) & (x <= 4)),
+        (">=5", lambda x: x >= 5),
+    ]
+    metrics_by_bucket: Dict[str, Dict[str, object]] = {}
+    lengths = lengths.astype(np.int64)
+    for name, predicate in buckets:
+        mask = predicate(lengths)
+        bucket_labels = labels[mask]
+        bucket_probs = probs[mask]
+        metrics = compute_metrics_safe(bucket_labels, bucket_probs)
+        metrics["n"] = int(mask.sum())
+        metrics_by_bucket[name] = metrics
+    return metrics_by_bucket
 
 
 def train_lstm(
@@ -445,6 +540,18 @@ def main() -> None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     rf_metrics_all: List[Dict[str, object]] = []
     lstm_metrics_all: List[Dict[str, object]] = []
+    bucket_metrics_val: Dict[str, List[Dict[str, object]]] = {
+        "1": [],
+        "2": [],
+        "3-4": [],
+        ">=5": [],
+    }
+    bucket_metrics_test: Dict[str, List[Dict[str, object]]] = {
+        "1": [],
+        "2": [],
+        "3-4": [],
+        ">=5": [],
+    }
     replicate_payloads: List[Dict[str, object]] = []
 
     for rep in range(args.replicates):
@@ -556,7 +663,10 @@ def main() -> None:
             device,
             run_output_dir,
         )
-        lstm_metrics = evaluate_model_with_loader(lstm_model, test_loader, device)
+        test_probs, test_labels, test_lengths = collect_predictions(
+            lstm_model, test_loader, device
+        )
+        lstm_metrics = utils.compute_metrics(test_labels, test_probs)
         lstm_metrics_all.append(lstm_metrics)
         print(
             f"LSTM on held-out 2-drug test | auc={lstm_metrics['roc_auc']:.4f} | "
@@ -566,6 +676,36 @@ def main() -> None:
         )
         print(f"Best LSTM checkpoint saved to {lstm_best_path}")
 
+        if args.per_drug_count_metrics:
+            val_probs, val_labels, val_lengths = collect_predictions(
+                lstm_model, val_loader, device
+            )
+            val_bucket_metrics = compute_bucket_metrics(
+                val_labels, val_probs, val_lengths
+            )
+            test_bucket_metrics = compute_bucket_metrics(
+                test_labels, test_probs, test_lengths
+            )
+            print("LSTM per-drug-count metrics (validation):")
+            for bucket, metrics in val_bucket_metrics.items():
+                print(
+                    f"  drugs={bucket:<3} n={metrics['n']:<4} | "
+                    f"auc={metrics['roc_auc']:.4f} | acc={metrics['accuracy']:.4f} | "
+                    f"sens={metrics['sensitivity']:.4f} | spec={metrics['specificity']:.4f} | "
+                    f"f1={metrics['f1']:.4f}"
+                )
+            print("LSTM per-drug-count metrics (test):")
+            for bucket, metrics in test_bucket_metrics.items():
+                print(
+                    f"  drugs={bucket:<3} n={metrics['n']:<4} | "
+                    f"auc={metrics['roc_auc']:.4f} | acc={metrics['accuracy']:.4f} | "
+                    f"sens={metrics['sensitivity']:.4f} | spec={metrics['specificity']:.4f} | "
+                    f"f1={metrics['f1']:.4f}"
+                )
+            for bucket in bucket_metrics_val:
+                bucket_metrics_val[bucket].append(val_bucket_metrics[bucket])
+                bucket_metrics_test[bucket].append(test_bucket_metrics[bucket])
+
         replicate_payloads.append(
             {
                 "replicate": rep,
@@ -573,6 +713,12 @@ def main() -> None:
                 "run_dir": run_output_dir,
                 "rf_metrics": rf_metrics,
                 "lstm_metrics": lstm_metrics,
+                "lstm_val_bucket_metrics": val_bucket_metrics
+                if args.per_drug_count_metrics
+                else None,
+                "lstm_test_bucket_metrics": test_bucket_metrics
+                if args.per_drug_count_metrics
+                else None,
                 "test_size": len(test_df),
                 "train_size": len(train_df),
                 "val_size": len(val_df),
@@ -593,6 +739,29 @@ def main() -> None:
         lstm_summary = aggregate_metrics(lstm_metrics_all)
         print_summary("RF", rf_summary)
         print_summary("LSTM", lstm_summary)
+        if args.per_drug_count_metrics:
+            print("LSTM per-drug-count summary (mean±SEM):")
+            for bucket in bucket_metrics_val:
+                val_summary = aggregate_metrics(bucket_metrics_val[bucket])
+                test_summary = aggregate_metrics(bucket_metrics_test[bucket])
+                val_n = float(np.mean([m["n"] for m in bucket_metrics_val[bucket]]))
+                test_n = float(np.mean([m["n"] for m in bucket_metrics_test[bucket]]))
+                print(
+                    f"  drugs={bucket:<3} n_mean={val_n:.1f} | val "
+                    f"auc={format_mean_sem(val_summary['roc_auc'])} | "
+                    f"acc={format_mean_sem(val_summary['accuracy'])} | "
+                    f"sens={format_mean_sem(val_summary['sensitivity'])} | "
+                    f"spec={format_mean_sem(val_summary['specificity'])} | "
+                    f"f1={format_mean_sem(val_summary['f1'])}"
+                )
+                print(
+                    f"  drugs={bucket:<3} n_mean={test_n:.1f} | test "
+                    f"auc={format_mean_sem(test_summary['roc_auc'])} | "
+                    f"acc={format_mean_sem(test_summary['accuracy'])} | "
+                    f"sens={format_mean_sem(test_summary['sensitivity'])} | "
+                    f"spec={format_mean_sem(test_summary['specificity'])} | "
+                    f"f1={format_mean_sem(test_summary['f1'])}"
+                )
         utils.save_json(
             os.path.join(args.output_dir, "bag_summary.json"),
             {
@@ -601,6 +770,18 @@ def main() -> None:
                 "replicate_seed_step": args.replicate_seed_step,
                 "rf_summary": rf_summary,
                 "lstm_summary": lstm_summary,
+                "lstm_bucket_summary": {
+                    "validation": {
+                        bucket: aggregate_metrics(bucket_metrics_val[bucket])
+                        for bucket in bucket_metrics_val
+                    },
+                    "test": {
+                        bucket: aggregate_metrics(bucket_metrics_test[bucket])
+                        for bucket in bucket_metrics_test
+                    },
+                }
+                if args.per_drug_count_metrics
+                else None,
                 "replicate_metrics": replicate_payloads,
             },
         )
