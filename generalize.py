@@ -73,6 +73,11 @@ def parse_args() -> argparse.Namespace:
         help="Force KG embedding backend.",
     )
     parser.add_argument(
+        "--kg-cache-path",
+        default=os.path.join("artifacts", "kg_embeddings.npz"),
+        help="Node2Vec cache file path to share with train.py/experiment.py.",
+    )
+    parser.add_argument(
         "--kg-hop-expansion",
         type=int,
         default=0,
@@ -363,10 +368,9 @@ def main() -> None:
                 args.kg_embeddings, args.kg_embedding_ids
             )
     else:
-        kg_cache_path = os.path.join(args.output_dir, "kg_embeddings.npz")
         node_ids, node_vectors = kg_lib.load_or_build_kg_embeddings(
             kg_path=args.kg,
-            cache_path=kg_cache_path,
+            cache_path=args.kg_cache_path,
             embedding_dim=config["embedding_dim"],
             walk_length=config["kg_walk_length"],
             num_walks=config["kg_num_walks"],
