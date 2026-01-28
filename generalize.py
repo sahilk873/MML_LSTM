@@ -337,26 +337,51 @@ def main() -> None:
 
     holdout_fn, holdout_label = parse_holdout_spec(args.holdout_drug_count)
     holdout_mask = filtered_df["drug_set"].apply(lambda ds: holdout_fn(len(ds)))
-    holdout_df = filtered_df[holdout_mask].reset_index(drop=True)
-    train_pool_df = filtered_df[~holdout_mask].reset_index(drop=True)
+    holdout_bucket_df = filtered_df[holdout_mask].reset_index(drop=True)
+    non_holdout_df = filtered_df[~holdout_mask].reset_index(drop=True)
 
-    if len(holdout_df) == 0:
+    if len(holdout_bucket_df) == 0:
         raise ValueError(
             f"No examples found for holdout bucket '{holdout_label}'."
         )
-    if len(train_pool_df) == 0:
+    if len(non_holdout_df) == 0:
         raise ValueError(
-            f"No training examples remain after holding out '{holdout_label}'."
+            f"No non-holdout examples remain after filtering '{holdout_label}'."
         )
 
-    if args.max_examples is not None and len(train_pool_df) > args.max_examples:
-        train_pool_df = train_pool_df.sample(
+    total_examples = len(filtered_df)
+    desired_test_size = max(1, int(total_examples * config["test_frac"]))
+    if len(holdout_bucket_df) <= desired_test_size:
+        test_df = holdout_bucket_df
+        train_val_pool_df = non_holdout_df
+        print(
+            f"Holdout bucket size {len(holdout_bucket_df)} < desired test size "
+            f"{desired_test_size}; using all holdout examples for test."
+        )
+    else:
+        test_df = holdout_bucket_df.sample(
+            n=desired_test_size, random_state=config["seed"]
+        )
+        remaining_holdout = holdout_bucket_df.drop(test_df.index)
+        test_df = test_df.reset_index(drop=True)
+        remaining_holdout = remaining_holdout.reset_index(drop=True)
+        train_val_pool_df = pd.concat([non_holdout_df, remaining_holdout], ignore_index=True)
+        print(
+            f"Holdout bucket size {len(holdout_bucket_df)} >= desired test size "
+            f"{desired_test_size}; using {len(test_df)} holdout examples for test "
+            "and returning the rest to train/val."
+        )
+
+    if args.max_examples is not None and len(train_val_pool_df) > args.max_examples:
+        train_val_pool_df = train_val_pool_df.sample(
             n=args.max_examples, random_state=config["seed"]
         ).reset_index(drop=True)
-        print(f"Example sampling (train pool): using {len(train_pool_df)} examples")
+        print(
+            f"Example sampling (train/val pool): using {len(train_val_pool_df)} examples"
+        )
 
     train_idx, val_idx = deterministic_train_val_split(
-        num_examples=len(train_pool_df),
+        num_examples=len(train_val_pool_df),
         seed=config["seed"],
         train_frac=config["train_frac"],
         val_frac=config["val_frac"],
@@ -367,30 +392,30 @@ def main() -> None:
             "Not enough training examples after holdout to populate train/val splits."
         )
 
-    train_df = train_pool_df.iloc[train_idx].reset_index(drop=True)
-    val_df = train_pool_df.iloc[val_idx].reset_index(drop=True)
+    train_df = train_val_pool_df.iloc[train_idx].reset_index(drop=True)
+    val_df = train_val_pool_df.iloc[val_idx].reset_index(drop=True)
 
     generalize_path = os.path.join(args.output_dir, "generalize_dataset.csv")
-    generalize_df = pd.concat([train_pool_df, holdout_df], ignore_index=True)
+    generalize_df = pd.concat([train_val_pool_df, test_df], ignore_index=True)
     generalize_df.to_csv(generalize_path, index=False)
     train_df.to_csv(os.path.join(args.output_dir, "generalize_train.csv"), index=False)
     val_df.to_csv(os.path.join(args.output_dir, "generalize_val.csv"), index=False)
-    holdout_df.to_csv(os.path.join(args.output_dir, "generalize_holdout.csv"), index=False)
+    test_df.to_csv(os.path.join(args.output_dir, "generalize_test.csv"), index=False)
     np.savez_compressed(
         os.path.join(args.output_dir, "generalize_splits.npz"),
         train_idx=train_idx,
         val_idx=val_idx,
-        holdout_idx=np.arange(len(holdout_df)),
-        num_train_pool=len(train_pool_df),
-        num_holdout=len(holdout_df),
+        test_idx=np.arange(len(test_df)) + len(train_val_pool_df),
+        num_train_val=len(train_val_pool_df),
+        num_test=len(test_df),
         holdout_spec=holdout_label,
     )
     utils.save_json(
         os.path.join(args.output_dir, "generalize_config.json"),
         {
             "holdout_drug_count": holdout_label,
-            "train_pool_size": len(train_pool_df),
-            "holdout_size": len(holdout_df),
+            "train_val_pool_size": len(train_val_pool_df),
+            "test_size": len(test_df),
         },
     )
 
@@ -465,15 +490,13 @@ def main() -> None:
 
     train_seqs, train_diseases, train_labels = encode_df(train_df)
     val_seqs, val_diseases, val_labels = encode_df(val_df)
-    holdout_seqs, holdout_diseases, holdout_labels = encode_df(holdout_df)
+    test_seqs, test_diseases, test_labels = encode_df(test_df)
 
     train_dataset = data_lib.PolypharmacyDataset(
         train_seqs, train_diseases, train_labels
     )
     val_dataset = data_lib.PolypharmacyDataset(val_seqs, val_diseases, val_labels)
-    holdout_dataset = data_lib.PolypharmacyDataset(
-        holdout_seqs, holdout_diseases, holdout_labels
-    )
+    test_dataset = data_lib.PolypharmacyDataset(test_seqs, test_diseases, test_labels)
     collate = lambda batch: data_lib.collate_batch(batch, pad_idx=0)
     train_loader = DataLoader(
         train_dataset,
@@ -487,8 +510,8 @@ def main() -> None:
         shuffle=False,
         collate_fn=collate,
     )
-    holdout_loader = DataLoader(
-        holdout_dataset,
+    test_loader = DataLoader(
+        test_dataset,
         batch_size=config["batch_size"],
         shuffle=False,
         collate_fn=collate,
@@ -519,8 +542,8 @@ def main() -> None:
     best_path = os.path.join(args.output_dir, "best_model.pt")
 
     print(
-        "Split sizes (train/val/holdout): "
-        f"{len(train_dataset)}/{len(val_dataset)}/{len(holdout_dataset)}"
+        "Split sizes (train/val/test): "
+        f"{len(train_dataset)}/{len(val_dataset)}/{len(test_dataset)}"
     )
 
     for epoch in range(1, config["epochs"] + 1):
@@ -575,9 +598,9 @@ def main() -> None:
         checkpoint = torch.load(best_path, map_location=device)
         model.load_state_dict(checkpoint["model_state"])
         val_metrics = evaluate_model(model, val_loader, device)
-    holdout_metrics = evaluate_model(model, holdout_loader, device)
+    holdout_metrics = evaluate_model(model, test_loader, device)
     print(
-        f"Holdout ({holdout_label} drugs) | auc={holdout_metrics['roc_auc']:.4f} | "
+        f"Test ({holdout_label} drugs) | auc={holdout_metrics['roc_auc']:.4f} | "
         f"acc={holdout_metrics['accuracy']:.4f} | sens={holdout_metrics['sensitivity']:.4f} | "
         f"spec={holdout_metrics['specificity']:.4f} | f1={holdout_metrics['f1']:.4f} | "
         f"confusion={holdout_metrics['confusion']}"
@@ -587,7 +610,7 @@ def main() -> None:
         {
             "holdout_drug_count": holdout_label,
             "val_metrics": val_metrics,
-            "holdout_metrics": holdout_metrics,
+            "test_metrics": holdout_metrics,
         },
     )
 
