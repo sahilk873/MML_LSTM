@@ -136,7 +136,44 @@ def evaluate_model(
         return {"roc_auc": float("nan"), "accuracy": float("nan")}
     probs = np.concatenate(all_probs)
     labels = np.concatenate(all_labels)
-    return utils.compute_metrics(labels, probs)
+    return compute_metrics_safe(labels, probs)
+
+
+def compute_metrics_safe(labels: np.ndarray, probs: np.ndarray) -> Dict[str, object]:
+    from sklearn.metrics import roc_auc_score
+
+    if len(labels) == 0:
+        return {
+            "roc_auc": float("nan"),
+            "accuracy": float("nan"),
+            "sensitivity": float("nan"),
+            "specificity": float("nan"),
+            "f1": float("nan"),
+            "confusion": {"tn": 0, "fp": 0, "fn": 0, "tp": 0},
+        }
+
+    labels = labels.astype(np.int64)
+    preds = (probs >= 0.5).astype(np.int64)
+    tn = int(np.sum((labels == 0) & (preds == 0)))
+    fp = int(np.sum((labels == 0) & (preds == 1)))
+    fn = int(np.sum((labels == 1) & (preds == 0)))
+    tp = int(np.sum((labels == 1) & (preds == 1)))
+    accuracy = float((tn + tp) / max(len(labels), 1))
+    sensitivity = float(tp / (tp + fn)) if (tp + fn) > 0 else float("nan")
+    specificity = float(tn / (tn + fp)) if (tn + fp) > 0 else float("nan")
+    denom = 2 * tp + fp + fn
+    f1 = float(2 * tp / denom) if denom > 0 else float("nan")
+    roc_auc = float("nan")
+    if len(np.unique(labels)) == 2:
+        roc_auc = float(roc_auc_score(labels, probs))
+    return {
+        "roc_auc": roc_auc,
+        "accuracy": accuracy,
+        "sensitivity": sensitivity,
+        "specificity": specificity,
+        "f1": f1,
+        "confusion": {"tn": tn, "fp": fp, "fn": fn, "tp": tp},
+    }
 
 
 def parse_holdout_spec(spec: str) -> Tuple[Callable[[int], bool], str]:
