@@ -433,6 +433,7 @@ def main() -> None:
 
     best_auc = float("-inf")
     best_path = os.path.join(args.output_dir, "best_model.pt")
+    loss_curve = []
 
     for epoch in range(1, config["epochs"] + 1):
         model.train()
@@ -452,6 +453,7 @@ def main() -> None:
 
         val_metrics = evaluate_model(model, val_loader, device)
         avg_loss = total_loss / max(1, len(train_loader))
+        loss_curve.append(avg_loss)
         print(
             f"Epoch {epoch:02d} | loss={avg_loss:.4f} | "
             f"val_auc={val_metrics['roc_auc']:.4f} | val_acc={val_metrics['accuracy']:.4f} | "
@@ -482,6 +484,25 @@ def main() -> None:
             )
 
     print(f"Best model saved to {best_path}")
+    try:
+        import matplotlib.pyplot as plt
+
+        epochs = np.arange(1, len(loss_curve) + 1)
+        plt.style.use("seaborn-v0_8-whitegrid")
+        fig, ax = plt.subplots(figsize=(7, 4.5), dpi=200)
+        ax.plot(epochs, loss_curve, color="#1f77b4", linewidth=2.2)
+        ax.set_title("Training Loss Curve", fontsize=14, pad=10)
+        ax.set_xlabel("Epoch", fontsize=12)
+        ax.set_ylabel("BCEWithLogits Loss", fontsize=12)
+        ax.tick_params(axis="both", labelsize=10)
+        ax.set_xlim(1, max(1, len(loss_curve)))
+        fig.tight_layout()
+        plot_path = os.path.join(args.output_dir, "training_loss_curve.png")
+        fig.savefig(plot_path, bbox_inches="tight")
+        plt.close(fig)
+        print(f"Saved training loss curve to {plot_path}")
+    except Exception as exc:
+        print(f"Warning: failed to save training loss curve: {exc}")
 
 
 if __name__ == "__main__":
