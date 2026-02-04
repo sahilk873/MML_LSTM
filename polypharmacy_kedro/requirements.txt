@@ -1,0 +1,14 @@
+kedro~=1.1.1
+kedro-datasets>=9.1.1
+ipython>=8.10
+jupyterlab>=3.0
+notebook
+numpy
+pandas
+torch
+scikit-learn
+networkx
+node2vec
+gensim
+pyarrow
+pecanpy

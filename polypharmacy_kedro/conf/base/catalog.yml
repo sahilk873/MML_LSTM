@@ -1,0 +1,159 @@
+indications_norm:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/indications_norm.csv
+
+contraindications_norm:
+  type: pandas.CSVDataset
+  filepath: data/01_raw/contraindications_norm.csv
+
+kg_edges:
+  type: pandas.ParquetDataset
+  filepath: data/01_raw/kg_edges.parquet
+
+# Intermediate / derived datasets
+required_nodes:
+  type: MemoryDataset
+
+kg_edges_normalized:
+  type: MemoryDataset
+
+kg_nodes:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/kg_nodes.pkl
+
+kg_node_ids:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/kg_node_ids.pkl
+
+kg_node_vectors:
+  type: pickle.PickleDataset
+  filepath: data/02_intermediate/kg_node_vectors.pkl
+
+# Deduped and filtered datasets
+
+deduped_dataset:
+  type: pandas.CSVDataset
+  filepath: data/03_primary/deduped_dataset.csv
+  save_args:
+    index: false
+
+conflict_count:
+  type: json.JSONDataset
+  filepath: data/08_reporting/conflict_count.json
+
+
+deduped_counts:
+  type: json.JSONDataset
+  filepath: data/08_reporting/deduped_counts.json
+
+filtered_dataset:
+  type: pandas.CSVDataset
+  filepath: data/03_primary/filtered_dataset.csv
+  save_args:
+    index: false
+
+
+dropped_rows:
+  type: pandas.CSVDataset
+  filepath: data/03_primary/dropped_rows.csv
+  save_args:
+    index: false
+
+
+drop_stats:
+  type: json.JSONDataset
+  filepath: data/08_reporting/drop_stats.json
+
+# Model input datasets
+
+run_dataset:
+  type: pandas.CSVDataset
+  filepath: data/04_feature/filtered_dataset_run.csv
+  save_args:
+    index: false
+
+
+drug_to_idx:
+  type: pickle.PickleDataset
+  filepath: data/05_model_input/drug_to_idx.pkl
+
+
+disease_to_idx:
+  type: pickle.PickleDataset
+  filepath: data/05_model_input/disease_to_idx.pkl
+
+
+drug_seqs:
+  type: pickle.PickleDataset
+  filepath: data/05_model_input/drug_seqs.pkl
+
+
+disease_idxs:
+  type: pickle.PickleDataset
+  filepath: data/05_model_input/disease_idxs.pkl
+
+
+labels:
+  type: pickle.PickleDataset
+  filepath: data/05_model_input/labels.pkl
+
+
+train_idx:
+  type: pickle.PickleDataset
+  filepath: data/05_model_input/train_idx.pkl
+
+
+val_idx:
+  type: pickle.PickleDataset
+  filepath: data/05_model_input/val_idx.pkl
+
+
+test_idx:
+  type: pickle.PickleDataset
+  filepath: data/05_model_input/test_idx.pkl
+
+# Model artifacts
+
+drug_embeddings:
+  type: pickle.PickleDataset
+  filepath: data/06_models/drug_embeddings.pkl
+
+
+disease_embeddings:
+  type: pickle.PickleDataset
+  filepath: data/06_models/disease_embeddings.pkl
+
+
+drug_vocab:
+  type: json.JSONDataset
+  filepath: data/06_models/drug_vocab.json
+
+
+disease_vocab:
+  type: json.JSONDataset
+  filepath: data/06_models/disease_vocab.json
+
+
+embedding_dim:
+  type: pickle.PickleDataset
+  filepath: data/06_models/embedding_dim.pkl
+
+
+resolved_config:
+  type: json.JSONDataset
+  filepath: data/06_models/config.json
+
+
+best_checkpoint:
+  type: pickle.PickleDataset
+  filepath: data/06_models/best_model.pt
+
+
+best_val_metrics:
+  type: json.JSONDataset
+  filepath: data/08_reporting/best_val_metrics.json
+
+
+eval_metrics:
+  type: json.JSONDataset
+  filepath: data/08_reporting/eval_metrics.json

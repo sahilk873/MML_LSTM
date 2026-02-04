@@ -1,0 +1,45 @@
+polypharmacy:
+  seed: 13
+  train_frac: 0.8
+  val_frac: 0.1
+  test_frac: 0.1
+  embedding_dim: 128
+  lstm_hidden_dim: 128
+  mlp_hidden_dim: 128
+  mlp_layers: 2
+  dropout: 0.2
+  disease_token_position: null
+  concat_disease_after_lstm: true
+  batch_size: 64
+  eval_batch_size: 128
+  epochs: 10
+  learning_rate: 0.001
+  weight_decay: 0.00001
+  freeze_kg: true
+
+  kg_walk_length: 20
+  kg_num_walks: 10
+  kg_p: 1.0
+  kg_q: 1.0
+  kg_context_window: 10
+  kg_min_count: 1
+  kg_workers: 4
+  kg_backend: auto
+
+  kg_hop_expansion: 0
+  kg_expansion_max_nodes: null
+  kg_expansion_verbose: false
+
+  max_edges: null
+  max_examples: null
+
+  kg_path: data/01_raw/kg_edges.parquet
+  kg_cache_path: data/02_intermediate/kg_embeddings.npz
+  kg_embeddings_path: null
+  kg_embedding_ids_path: null
+
+  edge_src_col: null
+  edge_dst_col: null
+
+  single_therapy_indications_path: null
+  single_therapy_contraindications_path: null

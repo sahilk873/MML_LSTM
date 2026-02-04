@@ -7,19 +7,26 @@ import numpy as np
 import pandas as pd
 
 
-# kg_edges.parquet schema: subject-predicate-object (SPO) triples.
-SUBJECT_COL = "subject"
-OBJECT_COL = "object"
-PREDICATE_COL = "predicate"
+EDGE_COLUMN_CANDIDATES: List[Tuple[str, str]] = [
+    ("subject", "object"),
+    ("source", "target"),
+    ("src", "dst"),
+    ("head", "tail"),
+    ("node1", "node2"),
+]
 
 
-def load_edges(
-    path: str,
-    src_col: Optional[str] = None,
-    dst_col: Optional[str] = None,
-    include_relation: bool = False,
-) -> pd.DataFrame:
-    """Load KG edges from parquet. Expects columns subject, object, and optionally predicate."""
+def _infer_edge_columns(columns: Iterable[str]) -> Tuple[str, str]:
+    lower_map = {col.lower(): col for col in columns}
+    for left, right in EDGE_COLUMN_CANDIDATES:
+        if left in lower_map and right in lower_map:
+            return lower_map[left], lower_map[right]
+    raise ValueError(
+        "Unable to infer edge columns. Provide --edge-src-col and --edge-dst-col."
+    )
+
+
+def load_edges(path: str, src_col: Optional[str], dst_col: Optional[str]) -> pd.DataFrame:
     try:
         df = pd.read_parquet(path)
     except ImportError as exc:
@@ -28,47 +35,30 @@ def load_edges(
             "Install one of them before running."
         ) from exc
 
-    src_col = src_col if src_col is not None else SUBJECT_COL
-    dst_col = dst_col if dst_col is not None else OBJECT_COL
+    if src_col is None or dst_col is None:
+        inferred_src, inferred_dst = _infer_edge_columns(df.columns)
+        src_col = src_col or inferred_src
+        dst_col = dst_col or inferred_dst
 
     if src_col not in df.columns or dst_col not in df.columns:
-        missing = [c for c in (src_col, dst_col) if c not in df.columns]
-        raise ValueError(
-            f"Edge columns not found: {missing}. Parquet columns: {list(df.columns)}."
-        )
+        raise ValueError(f"Edge columns not found: {src_col}, {dst_col}")
 
-    rename = {src_col: "src", dst_col: "dst"}
-    if include_relation:
-        rel_col = PREDICATE_COL if PREDICATE_COL in df.columns else None
-        if rel_col is not None:
-            out_cols = [src_col, dst_col, rel_col]
-            rename[rel_col] = "relation"
-        else:
-            out_cols = [src_col, dst_col]
-    else:
-        out_cols = [src_col, dst_col]
-    return df[out_cols].rename(columns=rename)
+    return df[[src_col, dst_col]].rename(columns={src_col: "src", dst_col: "dst"})
 
 
-def sample_edges(
-    path: str,
-    n: int,
-    random: bool = False,
-    src_col: Optional[str] = None,
-    dst_col: Optional[str] = None,
-    include_relation: bool = False,
-    seed: int = 42,
+def normalize_edges_df(
+    edges: pd.DataFrame, src_col: Optional[str], dst_col: Optional[str]
 ) -> pd.DataFrame:
-    """Load edges from parquet and return the first n rows or a random sample of n."""
-    edges = load_edges(
-        path,
-        src_col=src_col,
-        dst_col=dst_col,
-        include_relation=include_relation,
-    )
-    if random:
-        return edges.sample(n=min(n, len(edges)), random_state=seed)
-    return edges.head(n)
+    """Normalize an in-memory edges dataframe to `src`/`dst` columns."""
+    if src_col is None or dst_col is None:
+        inferred_src, inferred_dst = _infer_edge_columns(edges.columns)
+        src_col = src_col or inferred_src
+        dst_col = dst_col or inferred_dst
+
+    if src_col not in edges.columns or dst_col not in edges.columns:
+        raise ValueError(f"Edge columns not found: {src_col}, {dst_col}")
+
+    return edges[[src_col, dst_col]].rename(columns={src_col: "src", dst_col: "dst"})
 
 
 def build_node2vec_embeddings(
