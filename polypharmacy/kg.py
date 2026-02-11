@@ -7,12 +7,13 @@ import numpy as np
 import pandas as pd
 
 
-# kg_edges.parquet schema: subject-predicate-object (SPO) triples.
+# SPO triples, column names for our parquet (kushal)
 SUBJECT_COL = "subject"
 OBJECT_COL = "object"
 PREDICATE_COL = "predicate"
 
 
+# returns df with src/dst, fine for node2vec
 def load_edges(
     path: str,
     src_col: Optional[str] = None,
@@ -101,39 +102,21 @@ def build_node2vec_embeddings(
 
     def run_with_pecanpy() -> Tuple[List[str], np.ndarray]:
         from gensim.models import Word2Vec
-        import importlib
 
-        sparse_class = None
-        sparse_module = None
-        fallback_class = None
-        fallback_module = None
-        for mod_name in (
-            "pecanpy",
-            "pecanpy.pecanpy",
-            "pecanpy.wrappers",
-            "pecanpy.experimental",
-            "pecanpy.graph",
-            "pecanpy.rw",
-        ):
-            try:
-                mod = importlib.import_module(mod_name)
-            except Exception:
-                continue
-            if hasattr(mod, "SparseOTF"):
-                sparse_class = getattr(mod, "SparseOTF")
-                sparse_module = mod_name
-                break
-            if fallback_class is None:
-                for attr_name in dir(mod):
-                    if attr_name.endswith("OTF"):
-                        fallback_class = getattr(mod, attr_name)
-                        fallback_module = mod_name
+        # see notes doc for pecanpy impl
+        try:
+            from pecanpy import SparseOTF
+            sparse_class = SparseOTF
+        except ImportError:
+            import pecanpy
+            sparse_class = getattr(pecanpy, "SparseOTF", None)
+            if sparse_class is None:
+                for name in dir(pecanpy):
+                    if name.endswith("OTF"):
+                        sparse_class = getattr(pecanpy, name)
                         break
-        if sparse_class is None and fallback_class is not None:
-            sparse_class = fallback_class
-            sparse_module = fallback_module
-        if sparse_class is None:
-            raise ImportError("PecanPy OTF class not found in known modules.")
+            if sparse_class is None:
+                raise ImportError("PecanPy OTF class not found.")
 
         edge_path = None
         try:
@@ -150,7 +133,7 @@ def build_node2vec_embeddings(
             if skipped:
                 print(f"KG edgelist export: skipped {skipped} invalid edges")
 
-            print(f"KG node2vec backend: pecanpy {sparse_class.__name__} ({sparse_module})")
+            print(f"KG node2vec backend: pecanpy {sparse_class.__name__}")
             start = time.time()
             graph = sparse_class(p=p, q=q, workers=workers, verbose=False)
             graph.read_edg(edge_path, weighted=False, directed=False, delimiter=" ")
@@ -222,10 +205,15 @@ def extract_kg_nodes(edges: pd.DataFrame) -> List[str]:
     return pd.unique(pd.concat([edges["src"], edges["dst"]], ignore_index=True)).tolist()
 
 
-def prune_edges_to_nodes(edges: pd.DataFrame, nodes: Iterable[str]) -> pd.DataFrame:
+def keep_edges_incident_to_nodes(edges: pd.DataFrame, nodes: Iterable[str]) -> pd.DataFrame:
+    """Keep only edges that have at least one endpoint in `nodes`."""
     node_set = set(nodes)
     mask = edges["src"].isin(node_set) | edges["dst"].isin(node_set)
     return edges[mask].copy()
+
+
+# alias for backward compat
+prune_edges_to_nodes = keep_edges_incident_to_nodes
 
 
 def expand_node_set(
@@ -234,26 +222,7 @@ def expand_node_set(
     hops: int,
     max_nodes: Optional[int] = None,
 ) -> Tuple[Set[str], List[Tuple[int, int, int]], bool]:
-    """Expand the node set by walking up to `hops` in the KG adjacency.
-
-    Args:
-        edges: DataFrame with `src` and `dst` columns.
-        initial_nodes: Starting node IDs from the dataset.
-        hops: Number of hops to expand.
-        max_nodes: Optional cap; expansion stops if exceeded.
-
-    Returns:
-        expanded_nodes: Set of node IDs after expansion.
-        hop_logs: List of tuples (hop_number, new_nodes_added, cumulative_nodes).
-        truncated: True if expansion stopped early due to max_nodes.
-
-    Example:
-        >>> df = pd.DataFrame({'src': ['A', 'B'], 'dst': ['B', 'C']})
-        >>> expand_node_set(df, {'A'}, hops=1)[0]
-        {'A', 'B'}
-        >>> expand_node_set(df, {'A'}, hops=2)[0]
-        {'A', 'B', 'C'}
-    """
+    """Expand by walking up to `hops` from initial_nodes. Returns (expanded_ids, hop_logs, truncated)."""
     if hops <= 0:
         return set(initial_nodes), [], False
 
