@@ -1,0 +1,20 @@
+{
+  "drop_needs_review": true,
+  "dropped": {
+    "category": 1232,
+    "confidence": 0,
+    "needs_review": 92
+  },
+  "keep_categories": [
+    "mechanistically_synergistic"
+  ],
+  "label_counts_refined": {
+    "1": 3910
+  },
+  "min_confidence": 0.6,
+  "rows_after_category_filter": 4530,
+  "rows_after_confidence_filter": 4530,
+  "rows_after_review_filter": 4438,
+  "rows_refined_after_dedup": 3910,
+  "total_rows_input": 5762
+}

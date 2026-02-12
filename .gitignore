@@ -17,7 +17,8 @@ env/
 .Rhistory
 
 # Data artifacts
-artifacts/
+# Track most artifacts, but keep generated embedding dumps local.
+artifacts/precomputed_embeddings/
 
 # Initial datasets
 indications_norm.csv
