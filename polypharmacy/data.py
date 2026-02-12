@@ -45,6 +45,10 @@ def parse_list_column(value: object) -> List[str]:
 def normalize_id_list(values: List[object]) -> List[str]:
     """Flatten one level and coerce identifiers to strings."""
     flattened: List[str] = []
+
+    def _valid_id(text: str) -> bool:
+        return bool(text.strip()) and not text.strip().startswith("Error")
+
     for item in values:
         if item is None or (isinstance(item, float) and np.isnan(item)):
             continue
@@ -52,9 +56,13 @@ def normalize_id_list(values: List[object]) -> List[str]:
             for nested in item:
                 if nested is None or (isinstance(nested, float) and np.isnan(nested)):
                     continue
-                flattened.append(str(nested))
+                token = str(nested)
+                if _valid_id(token):
+                    flattened.append(token)
         else:
-            flattened.append(str(item))
+            token = str(item)
+            if _valid_id(token):
+                flattened.append(token)
     return flattened
 
 
@@ -75,6 +83,7 @@ def _load_csv_df(path: str, label: int) -> pd.DataFrame:
     )
     df = df[df["drug_set"].map(len) > 0]
     df = df[~df["condition_id_norm"].isin(["nan", "None"])]
+    df = df[~df["condition_id_norm"].str.startswith("Error")]
     df = df[["drug_set", "condition_id_norm"]].copy()
     # Label is inferred from the file source (indications=1, contraindications=0).
     df["label"] = label
@@ -107,6 +116,7 @@ def _load_single_therapy_csv(path: str, label: int) -> pd.DataFrame:
     df = df[df["drug_set"].map(len) > 0]
     invalid_condition = df["condition_id_norm"].str.lower().isin({"nan", "none", ""})
     df = df[~invalid_condition]
+    df = df[~df["condition_id_norm"].str.startswith("Error")]
     df = df[["drug_set", "condition_id_norm"]].copy()
     df["drug_set"] = df["drug_set"].apply(lambda ids: sorted(ids))
     df["label"] = label

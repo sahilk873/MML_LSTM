@@ -46,13 +46,10 @@ drug_set,condition_id_norm,label,missing_drug_ids,missing_disease_id,reason
 "['CHEBI:114786', 'CHEBI:17234']",UMLS:C0040793,0,[],UMLS:C0040793,missing_disease
 "['CHEBI:114786', 'CHEBI:26710']",UMLS:C0040793,0,[],UMLS:C0040793,missing_disease
 "['CHEBI:114786', 'CHEBI:32954']",UMLS:C0040793,0,[],UMLS:C0040793,missing_disease
-"['CHEBI:116735', 'CHEBI:135611', 'CHEBI:17650', 'CHEBI:4853', 'Error']",MONDO:0004872,1,['Error'],,missing_drug
 "['CHEBI:116735', 'CHEBI:135611', 'CHEBI:7507', 'UMLS:C0041499']",UMLS:C0729771,1,[],UMLS:C0729771,missing_disease
 "['CHEBI:116735', 'CHEBI:17987', 'CHEBI:34393']",UMLS:C5437085,1,[],UMLS:C5437085,missing_disease
 "['CHEBI:116735', 'CHEBI:9468']",UMLS:C0011593,1,[],UMLS:C0011593,missing_disease
 "['CHEBI:116735', 'CHEBI:94725', 'UMLS:C0041499']",UMLS:C0729771,1,[],UMLS:C0729771,missing_disease
-"['CHEBI:116735', 'Error']",MONDO:0018076,0,['Error'],,missing_drug
-"['CHEBI:116735', 'Error']",UMLS:C0948998,0,['Error'],UMLS:C0948998,missing_drug+missing_disease
 "['CHEBI:116735', 'UMLS:C0041499']",UMLS:C0729771,1,[],UMLS:C0729771,missing_disease
 "['CHEBI:12777', 'CHEBI:133538', 'CHEBI:15956', 'CHEBI:16708', 'CHEBI:16828', 'CHEBI:16908', 'CHEBI:17561', 'CHEBI:17895', 'CHEBI:17933', 'CHEBI:18385', 'CHEBI:22652', 'CHEBI:26078', 'CHEBI:26709', 'UMLS:C0003999', 'UMLS:C0025646', 'UMLS:C0036002', 'UMLS:C0042285']",MONDO:0001711,1,['UMLS:C0003999'],,missing_drug
 "['CHEBI:12777', 'CHEBI:15940']",UMLS:C0342951,0,[],UMLS:C0342951,missing_disease
@@ -148,8 +145,6 @@ drug_set,condition_id_norm,label,missing_drug_ids,missing_disease_id,reason
 "['CHEBI:135611', 'CHEBI:36560', 'CHEBI:39561']",UMLS:C0086196,1,[],UMLS:C0086196,missing_disease
 "['CHEBI:135611', 'CHEBI:39561']",UMLS:C0043255,1,[],UMLS:C0043255,missing_disease
 "['CHEBI:135611', 'CHEBI:41872']",UMLS:C0729771,1,[],UMLS:C0729771,missing_disease
-"['CHEBI:135611', 'Error']",MONDO:0018076,0,['Error'],,missing_drug
-"['CHEBI:135611', 'Error']",UMLS:C0948998,0,['Error'],UMLS:C0948998,missing_drug+missing_disease
 "['CHEBI:135642', 'CHEBI:31498']",NCIT:C78213,1,[],NCIT:C78213,missing_disease
 ['CHEBI:135679'],UMLS:C0339164,1,[],UMLS:C0339164,missing_disease
 "['CHEBI:135735', 'CHEBI:135849']",UMLS:C1802373,0,[],UMLS:C1802373,missing_disease
@@ -457,8 +452,6 @@ drug_set,condition_id_norm,label,missing_drug_ids,missing_disease_id,reason
 "['CHEBI:17650', 'CHEBI:74460']",UMLS:C0086196,1,[],UMLS:C0086196,missing_disease
 "['CHEBI:17650', 'CHEBI:74460']",UMLS:C0151217,1,[],UMLS:C0151217,missing_disease
 "['CHEBI:17650', 'CHEBI:74460']",UMLS:C0241873,1,[],UMLS:C0241873,missing_disease
-"['CHEBI:17650', 'Error']",MONDO:0018076,0,['Error'],,missing_drug
-"['CHEBI:17650', 'Error']",UMLS:C0948998,0,['Error'],UMLS:C0948998,missing_drug+missing_disease
 "['CHEBI:17682', 'DRUGBANK:DB11224', 'DRUGBANK:DB13906', 'UNII:TD2LE91MBE']",UniProtKB:A0A8D1DTM2,1,"['DRUGBANK:DB11224', 'DRUGBANK:DB13906']",UniProtKB:A0A8D1DTM2,missing_drug+missing_disease
 ['CHEBI:176844'],UMLS:C5706080,1,[],UMLS:C5706080,missing_disease
 "['CHEBI:17698', 'CHEBI:27902', 'UMLS:C0009315']",UMLS:C4285790,1,[],UMLS:C4285790,missing_disease
@@ -835,17 +828,6 @@ drug_set,condition_id_norm,label,missing_drug_ids,missing_disease_id,reason
 "['CHEBI:31498', 'CHEBI:95304', 'UMLS:C0111046']",MONDO:0004574,1,['UMLS:C0111046'],,missing_drug
 "['CHEBI:31498', 'DRUGBANK:DB10426', 'DRUGBANK:DB14016', 'UMLS:C0111046']",HP:0033589,1,"['DRUGBANK:DB10426', 'DRUGBANK:DB14016', 'UMLS:C0111046']",,missing_drug
 "['CHEBI:31498', 'DRUGBANK:DB10426', 'DRUGBANK:DB14016', 'UMLS:C0111046']",MONDO:0001684,1,"['DRUGBANK:DB10426', 'DRUGBANK:DB14016', 'UMLS:C0111046']",,missing_drug
-"['CHEBI:31498', 'DRUGBANK:DB14016', 'Error', 'UMLS:C0111046']",HP:0002591,1,"['DRUGBANK:DB14016', 'Error', 'UMLS:C0111046']",,missing_drug
-"['CHEBI:31498', 'DRUGBANK:DB14016', 'Error', 'UMLS:C0111046']",HP:0003270,1,"['DRUGBANK:DB14016', 'Error', 'UMLS:C0111046']",,missing_drug
-"['CHEBI:31498', 'DRUGBANK:DB14016', 'Error', 'UMLS:C0111046']",HP:0004396,1,"['DRUGBANK:DB14016', 'Error', 'UMLS:C0111046']",,missing_drug
-"['CHEBI:31498', 'DRUGBANK:DB14016', 'Error', 'UMLS:C0111046']",HP:0033589,1,"['DRUGBANK:DB14016', 'Error', 'UMLS:C0111046']",,missing_drug
-"['CHEBI:31498', 'DRUGBANK:DB14016', 'Error', 'UMLS:C0111046']",MONDO:0004574,1,"['DRUGBANK:DB14016', 'Error', 'UMLS:C0111046']",,missing_drug
-"['CHEBI:31498', 'DRUGBANK:DB14016', 'Error', 'UMLS:C0301812', 'UMLS:C0443469', 'UMLS:C2722896']",HP:0002239,1,"['DRUGBANK:DB14016', 'Error', 'UMLS:C0301812', 'UMLS:C2722896']",,missing_drug
-"['CHEBI:31498', 'DRUGBANK:DB14016', 'Error', 'UMLS:C0301812', 'UMLS:C0443469', 'UMLS:C2722896']",MONDO:0005003,1,"['DRUGBANK:DB14016', 'Error', 'UMLS:C0301812', 'UMLS:C2722896']",,missing_drug
-"['CHEBI:31498', 'DRUGBANK:DB14016', 'Error', 'UMLS:C0301812', 'UMLS:C0443469', 'UMLS:C2722896']",MONDO:0005281,1,"['DRUGBANK:DB14016', 'Error', 'UMLS:C0301812', 'UMLS:C2722896']",,missing_drug
-"['CHEBI:31498', 'DRUGBANK:DB14016', 'Error', 'UMLS:C0301812', 'UMLS:C0443469', 'UMLS:C2722896']",NCIT:C78213,1,"['DRUGBANK:DB14016', 'Error', 'UMLS:C0301812', 'UMLS:C2722896']",NCIT:C78213,missing_drug+missing_disease
-"['CHEBI:31498', 'DRUGBANK:DB14016', 'Error', 'UMLS:C0301812', 'UMLS:C0443469', 'UMLS:C2722896']",UMLS:C0852271,1,"['DRUGBANK:DB14016', 'Error', 'UMLS:C0301812', 'UMLS:C2722896']",UMLS:C0852271,missing_drug+missing_disease
-"['CHEBI:31498', 'DRUGBANK:DB14016', 'Error', 'UMLS:C0301812', 'UMLS:C0443469', 'UMLS:C2722896']",UMLS:C0936186,1,"['DRUGBANK:DB14016', 'Error', 'UMLS:C0301812', 'UMLS:C2722896']",UMLS:C0936186,missing_drug+missing_disease
 "['CHEBI:31498', 'UMLS:C0111046']",CHEBI:25805,1,['UMLS:C0111046'],,missing_drug
 "['CHEBI:31498', 'UMLS:C0111046']",HP:0033589,1,['UMLS:C0111046'],,missing_drug
 "['CHEBI:31498', 'UMLS:C0111046']",MONDO:0001684,1,['UMLS:C0111046'],,missing_drug
@@ -937,18 +919,6 @@ drug_set,condition_id_norm,label,missing_drug_ids,missing_disease_id,reason
 "['CHEBI:32914', 'CHEBI:53579', 'CHEBI:94563']",UMLS:C0729771,1,[],UMLS:C0729771,missing_disease
 "['CHEBI:32914', 'CHEBI:6456']",UMLS:C0729771,1,[],UMLS:C0729771,missing_disease
 "['CHEBI:32914', 'CHEBI:94563']",UMLS:C0877743,1,[],UMLS:C0877743,missing_disease
-"['CHEBI:32918', 'Error']",HP:0002910,0,['Error'],,missing_drug
-"['CHEBI:32918', 'Error']",MONDO:0001548,0,['Error'],,missing_drug
-"['CHEBI:32918', 'Error']",MONDO:0002887,1,['Error'],,missing_drug
-"['CHEBI:32918', 'Error']",MONDO:0004565,0,['Error'],,missing_drug
-"['CHEBI:32918', 'Error']",MONDO:0004868,0,['Error'],,missing_drug
-"['CHEBI:32918', 'Error']",MONDO:0005281,1,['Error'],,missing_drug
-"['CHEBI:32918', 'Error']",MONDO:0005725,1,['Error'],,missing_drug
-"['CHEBI:32918', 'Error']",MONDO:0006515,0,['Error'],,missing_drug
-"['CHEBI:32918', 'Error']",UBERON:0001174,0,['Error'],,missing_drug
-"['CHEBI:32918', 'Error']",UMLS:C0014012,0,['Error'],UMLS:C0014012,missing_drug+missing_disease
-"['CHEBI:32918', 'Error']",UMLS:C0151824,0,['Error'],,missing_drug
-"['CHEBI:32918', 'Error']",UMLS:C0276622,0,['Error'],UMLS:C0276622,missing_drug+missing_disease
 "['CHEBI:3311', 'CHEBI:6637', 'CHEBI:9679']",UMLS:C0342923,1,[],UMLS:C0342923,missing_disease
 "['CHEBI:3312', 'UMLS:C0040018', 'UMLS:C0700346', 'UMLS:C2587184', 'UNII:04XPW8C0FL']",MONDO:0002243,1,"['UMLS:C0040018', 'UMLS:C0700346', 'UMLS:C2587184']",,missing_drug
 "['CHEBI:3312', 'UMLS:C0040018', 'UMLS:C0700346', 'UMLS:C2587184', 'UNII:04XPW8C0FL']",UMLS:C0420433,1,"['UMLS:C0040018', 'UMLS:C0700346', 'UMLS:C2587184']",UMLS:C0420433,missing_drug+missing_disease
@@ -978,10 +948,6 @@ drug_set,condition_id_norm,label,missing_drug_ids,missing_disease_id,reason
 ['CHEBI:3515'],UMLS:C0851989,1,[],UMLS:C0851989,missing_disease
 ['CHEBI:3515'],UMLS:C0852000,1,[],UMLS:C0852000,missing_disease
 ['CHEBI:3515'],UMLS:C2367228,1,[],UMLS:C2367228,missing_disease
-"['CHEBI:35176', 'DRUGBANK:DB11360', 'DRUGBANK:DB14222', 'Error']",MONDO:0001517,1,['Error'],,missing_drug
-"['CHEBI:35176', 'DRUGBANK:DB11360', 'DRUGBANK:DB14222', 'Error']",UMLS:C0947873,1,['Error'],UMLS:C0947873,missing_drug+missing_disease
-"['CHEBI:35176', 'Error']",MONDO:0000945,0,['Error'],,missing_drug
-"['CHEBI:35176', 'Error']",MONDO:0003778,0,['Error'],,missing_drug
 ['CHEBI:3534'],UMLS:C0852158,1,[],UMLS:C0852158,missing_disease
 ['CHEBI:3568'],UMLS:C0271105,0,[],UMLS:C0271105,missing_disease
 ['CHEBI:3568'],UMLS:C5880014,0,[],UMLS:C5880014,missing_disease
@@ -1163,8 +1129,6 @@ drug_set,condition_id_norm,label,missing_drug_ids,missing_disease_id,reason
 "['CHEBI:4814', 'CHEBI:5778']",UMLS:C0862906,1,[],UMLS:C0862906,missing_disease
 "['CHEBI:48213', 'CHEBI:48220']",UMLS:C0729771,1,[],UMLS:C0729771,missing_disease
 "['CHEBI:4822', 'CHEBI:64318']",UMLS:C0522613,1,[],UMLS:C0522613,missing_disease
-"['CHEBI:4853', 'Error']",MONDO:0018076,0,['Error'],,missing_drug
-"['CHEBI:4853', 'Error']",UMLS:C0948998,0,['Error'],UMLS:C0948998,missing_drug+missing_disease
 ['CHEBI:4856'],UMLS:C0264890,0,[],UMLS:C0264890,missing_disease
 ['CHEBI:4856'],UMLS:C1609524,0,[],UMLS:C1609524,missing_disease
 ['CHEBI:4873'],UMLS:C5442256,1,[],UMLS:C5442256,missing_disease
@@ -1881,8 +1845,6 @@ drug_set,condition_id_norm,label,missing_drug_ids,missing_disease_id,reason
 "['DRUGBANK:DB11330', 'UMLS:C0982025']",MONDO:0002243,1,['UMLS:C0982025'],,missing_drug
 "['DRUGBANK:DB11330', 'UMLS:C0982025']",MONDO:0010602,1,['UMLS:C0982025'],,missing_drug
 "['DRUGBANK:DB11330', 'UMLS:C0982025']",MONDO:0010604,1,['UMLS:C0982025'],,missing_drug
-"['DRUGBANK:DB11360', 'Error']",MONDO:0000945,0,['Error'],,missing_drug
-"['DRUGBANK:DB11360', 'Error']",MONDO:0003778,0,['Error'],,missing_drug
 ['DRUGBANK:DB12249'],UMLS:C0433405,1,[],UMLS:C0433405,missing_disease
 ['DRUGBANK:DB12249'],UMLS:C1283106,1,[],UMLS:C1283106,missing_disease
 "['DRUGBANK:DB13195', 'DRUGBANK:DB14343']",MONDO:0002049,0,"['DRUGBANK:DB13195', 'DRUGBANK:DB14343']",,missing_drug
@@ -1900,8 +1862,6 @@ drug_set,condition_id_norm,label,missing_drug_ids,missing_disease_id,reason
 "['DRUGBANK:DB14016', 'UMLS:C0111046']",MONDO:0001684,1,"['DRUGBANK:DB14016', 'UMLS:C0111046']",,missing_drug
 "['DRUGBANK:DB14016', 'UMLS:C0111046']",NCIT:C78213,1,"['DRUGBANK:DB14016', 'UMLS:C0111046']",NCIT:C78213,missing_drug+missing_disease
 ['DRUGBANK:DB14115'],MONDO:0001341,0,['DRUGBANK:DB14115'],,missing_drug
-"['DRUGBANK:DB14222', 'Error']",MONDO:0000945,0,['Error'],,missing_drug
-"['DRUGBANK:DB14222', 'Error']",MONDO:0003778,0,['Error'],,missing_drug
 ['DRUGBANK:DB14230'],MONDO:0000605,0,['DRUGBANK:DB14230'],,missing_drug
 ['DRUGBANK:DB14230'],UMLS:C5395247,0,['DRUGBANK:DB14230'],UMLS:C5395247,missing_drug+missing_disease
 "['DRUGBANK:DB14322', 'DRUGBANK:DB15836']",MONDO:0012511,0,"['DRUGBANK:DB14322', 'DRUGBANK:DB15836']",,missing_drug
@@ -1995,21 +1955,6 @@ drug_set,condition_id_norm,label,missing_drug_ids,missing_disease_id,reason
 ['DRUGBANK:DB19434'],MONDO:0005300,1,['DRUGBANK:DB19434'],,missing_drug
 ['DRUGBANK:DB19434'],UMLS:C1142276,1,['DRUGBANK:DB19434'],UMLS:C1142276,missing_drug+missing_disease
 ['Drugs with a new indication for the treatment of recurrent or metastatic head and neck cancer.'],UNII:DPT0O3T46P|MONDO:0005627,1,['Drugs with a new indication for the treatment of recurrent or metastatic head and neck cancer.'],UNII:DPT0O3T46P|MONDO:0005627,missing_drug+missing_disease
-"['Error', 'Error']",MONDO:0017373,1,"['Error', 'Error']",,missing_drug
-"['Error', 'Error', 'Error']",MONDO:0017941,1,"['Error', 'Error', 'Error']",,missing_drug
-"['Error', 'UNII:T9S008S8JL']",HP:0040334,1,"['Error', 'UNII:T9S008S8JL']",,missing_drug
-"['Error', 'UNII:T9S008S8JL']",MONDO:0001039,1,"['Error', 'UNII:T9S008S8JL']",,missing_drug
-"['Error', 'UNII:T9S008S8JL']",MONDO:0002508,1,"['Error', 'UNII:T9S008S8JL']",,missing_drug
-"['Error', 'UNII:T9S008S8JL']",MONDO:0004566,0,"['Error', 'UNII:T9S008S8JL']",,missing_drug
-"['Error', 'UNII:T9S008S8JL']",MONDO:0004777,1,"['Error', 'UNII:T9S008S8JL']",,missing_drug
-"['Error', 'UNII:T9S008S8JL']",MONDO:0005113,1,"['Error', 'UNII:T9S008S8JL']",,missing_drug
-"['Error', 'UNII:T9S008S8JL']",MONDO:0005961,1,"['Error', 'UNII:T9S008S8JL']",,missing_drug
-"['Error', 'UNII:T9S008S8JL']",MONDO:0006723,1,"['Error', 'UNII:T9S008S8JL']",,missing_drug
-"['Error', 'UNII:T9S008S8JL']",NCIT:C50717,1,"['Error', 'UNII:T9S008S8JL']",,missing_drug
-"['Error', 'UNII:T9S008S8JL']",UMLS:C0339800,0,"['Error', 'UNII:T9S008S8JL']",UMLS:C0339800,missing_drug+missing_disease
-"['Error', 'UNII:T9S008S8JL']",UMLS:C0342398,0,"['Error', 'UNII:T9S008S8JL']",UMLS:C0342398,missing_drug+missing_disease
-"['Error', 'UNII:T9S008S8JL']",UMLS:C1384493,1,"['Error', 'UNII:T9S008S8JL']",,missing_drug
-"['Error', 'UNII:T9S008S8JL']",UMLS:C1699100,1,"['Error', 'UNII:T9S008S8JL']",UMLS:C1699100,missing_drug+missing_disease
 ['Expedited review.'],CHEBI:84500|MONDO:0008575,1,['Expedited review.'],CHEBI:84500|MONDO:0008575,missing_drug+missing_disease
 ['HMDB:HMDB0253501'],MONDO:0005015,1,['HMDB:HMDB0253501'],,missing_drug
 ['HMDB:HMDB0257437'],MONDO:0005494,1,['HMDB:HMDB0257437'],,missing_drug
@@ -4688,10 +4633,6 @@ drug_set,condition_id_norm,label,missing_drug_ids,missing_disease_id,reason
 ['UNII:ZL1R02VT79'],UMLS:C3537442,1,[],UMLS:C3537442,missing_disease
 ['UNII:ZR36MFA9P8'],HP:0002013,1,['UNII:ZR36MFA9P8'],,missing_drug
 ['UNII:ZR36MFA9P8'],HP:0002018,1,['UNII:ZR36MFA9P8'],,missing_drug
-"[""['Error']""]",HP:0100607,1,"[""['Error']""]",,missing_drug
-"[""['Error']""]",MONDO:0005133,1,"[""['Error']""]",,missing_drug
-"[""['Error']""]",MONDO:0011827,1,"[""['Error']""]",,missing_drug
-"[""['Error']""]",MONDO:0100096,1,"[""['Error']""]",,missing_drug
 ['[Combination chemotherapy with anti-cancer drgs]'],CHEBI:27899|MONDO:0005062,1,['[Combination chemotherapy with anti-cancer drgs]'],CHEBI:27899|MONDO:0005062,missing_drug+missing_disease
 ['[Combination chemotherapy with anti-cancer drgs]'],CHEBI:6888|MONDO:0005062,1,['[Combination chemotherapy with anti-cancer drgs]'],CHEBI:6888|MONDO:0005062,missing_drug+missing_disease
 ['[Combination chemotherapy with anti-cancer drgs]'],UNII:22966TX7J5|MONDO:0007254,1,['[Combination chemotherapy with anti-cancer drgs]'],UNII:22966TX7J5|MONDO:0007254,missing_drug+missing_disease

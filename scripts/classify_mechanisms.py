@@ -67,6 +67,8 @@ def _load_source_df(path: str, source_file: str, label: int) -> pd.DataFrame:
         condition_id = str(row["condition_id_norm"]).strip()
         if not condition_id or condition_id.lower() in {"nan", "none"}:
             continue
+        if condition_id.startswith("Error"):
+            continue
 
         drug_labels = data_lib.normalize_id_list(primary_labels[idx] + secondary_labels[idx])
         example_key = mechanism.canonical_example_key(drug_ids, condition_id)

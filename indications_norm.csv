@@ -38,7 +38,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB00835'],['DRUGBANK:DB00126'],MONDO:0005271,['CHEBI:3183'],['Brompheniramine'],['CHEBI:22652'],['Ascorbic acid']
 ['DRUGBANK:DB11114'],['DRUGBANK:DB14156'],UMLS:C0281856,['UNII:2R04ONI662'],['Eucalyptus oil'],['CHEBI:36773'],['camphor']
 ['DRUGBANK:DB14487'],['DRUGBANK:DB09345'],NCIT:C121616,['CHEBI:62984'],['Zinc acetate'],['CHEBI:8357'],['Pramocaine']
-['DRUGBANK:DB15820'],"['DRUGBANK:DB11065', 'DRUGBANK:DB11066', 'DRUGBANK:DB14016', 'DRUGBANK:DB13147', 'DRUGBANK:DB09512']",MONDO:0005281,[['Error']],[['Error']],"['UMLS:C0301812', 'UMLS:C2722896', 'DRUGBANK:DB14016', 'UMLS:C0443469', 'CHEBI:31498']","['Pancreatic amylase', 'pancrelipase protease', 'Ox bile extract', 'pancreatic lipase', 'Simethicone']"
 ['DRUGBANK:DB09074'],['DRUGBANK:DB00112'],UMLS:C0863127,['CHEBI:83766'],['Olaparib'],['UMLS:C0796392'],['bevacizumab']
 ['DRUGBANK:DB09074'],['DRUGBANK:DB00112'],UMLS:C0863127,['CHEBI:83766'],['Olaparib'],['UMLS:C0796392'],['bevacizumab']
 ['DRUGBANK:DB01010'],['DRUGBANK:DB00572'],HP:0002791,['CHEBI:251408'],['Edrophonium'],['CHEBI:92712'],['ENDO-ATROPINE']
@@ -233,7 +232,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB00514'],"['DRUGBANK:DB00388', 'DRUGBANK:DB01069']",HP:0001742,['CHEBI:4470'],['Dextromethorphan'],"['CHEBI:8093', 'CHEBI:8461']","['Phenylephrine', 'Promethazine']"
 ['DRUGBANK:DB01744'],['DRUGBANK:DB00825'],HP:0001742,['CHEBI:36773'],['camphor'],['CHEBI:25187'],['Menthol']
 ['DRUGBANK:DB00959'],['DRUGBANK:DB00281'],MONDO:0002183,['CHEBI:6888'],['Methylprednisolone'],['CHEBI:6456'],['Lidocaine']
-['DRUGBANK:DB21767'],"['DRUGBANK:DB21766', 'DRUGBANK:DB21768']",MONDO:0017941,[['Error']],[['Error']],"[['Error'], ['Error']]","[['Error'], ['Error']]"
 ['DRUGBANK:DB09153'],"['DRUGBANK:DB04398', 'DRUGBANK:DB01164', 'DRUGBANK:DB00761']",UMLS:C0235395,['CHEBI:26710'],['Sodium chloride'],"['CHEBI:78320', 'CHEBI:3312', 'CHEBI:32588']","['Lactic acid', 'Calol', 'Potassium chloride']"
 ['DRUGBANK:DB01164'],"['DRUGBANK:DB00761', 'DRUGBANK:DB09153', 'DRUGBANK:DB09341', 'DRUGBANK:DB09407']",UMLS:C0235395,['CHEBI:3312'],['Calol'],"['CHEBI:32588', 'CHEBI:26710', 'CHEBI:17234', 'CHEBI:25107']","['Potassium chloride', 'Sodium chloride', 'D-glucose', 'magnesium atom']"
 ['DRUGBANK:DB08818'],['DRUGBANK:DB00281'],MONDO:0001835,['CHEBI:16336'],['Hyaluronic acid'],['CHEBI:6456'],['Lidocaine']
@@ -261,7 +259,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB11582'],['DRUGBANK:DB04743'],NCIT:C34887,['CHEBI:94557'],['Thiocolchicoside'],['CHEBI:44445'],['Nimesulide']
 ['DRUGBANK:DB11582'],['DRUGBANK:DB04743'],NCIT:C34887,['CHEBI:94557'],['Thiocolchicoside'],['CHEBI:44445'],['Nimesulide']
 ['DRUGBANK:DB06723'],"['DRUGBANK:DB09104', 'DRUGBANK:DB09512']",HP:0033589,['CHEBI:33130'],['algeldrate'],"['CHEBI:6637', 'CHEBI:31498']","['Nemalite', 'Simethicone']"
-['DRUGBANK:DB00085'],"['DRUGBANK:DB14016', 'DRUGBANK:DB15820', 'DRUGBANK:DB09512']",HP:0033589,['UMLS:C0111046'],['Creon'],"['DRUGBANK:DB14016', ['Error'], 'CHEBI:31498']","['Ox bile extract', ['Error'], 'Simethicone']"
 ['DRUGBANK:DB00712'],['DRUGBANK:DB11582'],NCIT:C34887,['CHEBI:5130'],['Flurbiprofen'],['CHEBI:94557'],['Thiocolchicoside']
 ['DRUGBANK:DB10787'],"['DRUGBANK:DB10797', 'DRUGBANK:DB10788', 'DRUGBANK:DB10789', 'DRUGBANK:DB10796', 'DRUGBANK:DB10583', 'DRUGBANK:DB10790', 'DRUGBANK:DB10795', 'DRUGBANK:DB10342', 'DRUGBANK:DB11627', 'DRUGBANK:DB10584']",MONDO:0017373,['UMLS:C2725005'],"['Bordetella pertussis toxoid vaccine, inactivated']","['DRUGBANK:DB10797', 'UMLS:C2725003', 'UMLS:C2725004', 'DRUGBANK:DB10796', 'UMLS:C0305062', 'UMLS:C2746157', 'DRUGBANK:DB10795', 'DRUGBANK:DB10342', 'DRUGBANK:DB11627', 'DRUGBANK:DB09877']","['Poliovirus type 3 antigen (formaldehyde inactivated)', 'Bordetella pertussis filamentous hemagglutinin vaccine, inactivated', 'pertactin', 'Poliovirus type 2 antigen (formaldehyde inactivated)', 'Tetanus Toxoid', 'Bordetella pertussis fimbriae 2/3 vaccine, inactivated', 'Poliovirus type 1 antigen (formaldehyde inactivated)', 'Haemophilus influenzae type B capsular polysaccharide meningococcal outer membrane protein conjugate antigen', 'Hepatitis B Vaccine (Recombinant)', 'Corynebacterium diphtheriae']"
 ['DRUGBANK:DB00994'],['DRUGBANK:DB00626'],UMLS:C0406519,['CHEBI:7507'],['Framycetin'],['UMLS:C0004599'],['bacitracin']
@@ -546,7 +543,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB11074'],['DRUGBANK:DB08938'],MONDO:0005412,['CHEBI:31498'],['Simethicone'],['UNII:6V88E24N5T'],['Magaldrate']
 ['DRUGBANK:DB09095'],['DRUGBANK:DB01321'],MONDO:0006723,['CHEBI:135624'],['Difluocortolone'],['CHEBI:31739'],['Josamycin']
 ['DRUGBANK:DB00852'],['DRUGBANK:DB00514'],UMLS:C0152029,['CHEBI:51209'],['Pseudoephedrine'],['CHEBI:4470'],['Dextromethorphan']
-['DRUGBANK:DB16362'],['DRUGBANK:DB15988'],MONDO:0006723,[['Error']],[['Error']],['UNII:T9S008S8JL'],['Ephedrine levulinate']
 ['DRUGBANK:DB00297'],"['DRUGBANK:DB00620', 'DRUGBANK:DB00281', 'DRUGBANK:DB00959']",MONDO:0005306,['CHEBI:3215'],['Bupivacaine'],"['CHEBI:9667', 'CHEBI:6456', 'CHEBI:6888']","['Triamcinolone', 'Lidocaine', 'Methylprednisolone']"
 ['DRUGBANK:DB10994'],['DRUGBANK:DB10995'],NCBITaxon:337042,['UMLS:C0083858'],"['L1 protein, human papillomavirus type 16 vaccine']",['UMLS:C2724167'],"['human papillomavirus type 18, L1 capsid protein (residues 2-472) vaccine']"
 ['DRUGBANK:DB00620'],['DRUGBANK:DB00618'],MONDO:0005276,['CHEBI:9667'],['Triamcinolone'],['CHEBI:4392'],['Demeclocycline']
@@ -1110,7 +1106,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB01001'],['DRUGBANK:DB00180'],MONDO:0004849,['CHEBI:2549'],['Albuterol'],['CHEBI:5106'],['Flunisolide']
 ['DRUGBANK:DB01127'],['DRUGBANK:DB00620'],MONDO:0021340,['CHEBI:4754'],['Econazole'],['CHEBI:9667'],['Triamcinolone']
 ['DRUGBANK:DB00446'],"['DRUGBANK:DB01111', 'DRUGBANK:DB00759']",MONDO:0006668,['CHEBI:17698'],['Chloramphenicol'],"['UMLS:C0009315', 'CHEBI:27902']","['colistimethate', 'Tetracycline']"
-['DRUGBANK:DB01750'],['DRUGBANK:DB16617'],MONDO:0002887,['CHEBI:32918'],['1-naphthaleneacetic acid'],[['Error']],[['Error']]
 ['DRUGBANK:DB01495'],"['DRUGBANK:DB06706', 'DRUGBANK:DB00316']",UMLS:C0042376,['UNII:YYX637R279'],['Dichloralphenazone'],"['CHEBI:134765', 'CHEBI:46195']","['Isometheptene', 'Acetaminophen']"
 ['DRUGBANK:DB10992'],"['DRUGBANK:DB10797', 'DRUGBANK:DB10584', 'DRUGBANK:DB10795', 'DRUGBANK:DB10991', 'DRUGBANK:DB10796', 'DRUGBANK:DB10583', 'DRUGBANK:DB10788']",MONDO:0005504,['UMLS:C2725004'],['pertactin'],"['DRUGBANK:DB10797', 'DRUGBANK:DB09877', 'DRUGBANK:DB10795', 'UMLS:C2725005', 'DRUGBANK:DB10796', 'UMLS:C0305062', 'UMLS:C2725003']","['Poliovirus type 3 antigen (formaldehyde inactivated)', 'Corynebacterium diphtheriae', 'Poliovirus type 1 antigen (formaldehyde inactivated)', 'Bordetella pertussis toxoid vaccine, inactivated', 'Poliovirus type 2 antigen (formaldehyde inactivated)', 'Tetanus Toxoid', 'Bordetella pertussis filamentous hemagglutinin vaccine, inactivated']"
 ['DRUGBANK:DB01044'],['DRUGBANK:DB15566'],UMLS:C0851772,['CHEBI:5280'],['Gatifloxacin'],['CHEBI:8378'],['Prednisolone']
@@ -1371,7 +1366,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB11581'],['DRUGBANK:DB00928'],UMLS:C0796611,['CHEBI:133021'],['Venetoclax'],['CHEBI:2038'],['Azacitidine']
 ['DRUGBANK:DB13152'],"['DRUGBANK:DB13148', 'DRUGBANK:DB13149', 'DRUGBANK:DB11312', 'DRUGBANK:DB11311', 'DRUGBANK:DB13150']",MONDO:0001244,['NCBIGene:2158'],['F9'],"['UMLS:C2826078', 'NCBIGene:5627', 'DRUGBANK:DB11312', 'UMLS:C2828369', 'DRUGBANK:DB13150']","['Coagadex', 'PROS1', 'Protein C', 'Prothrombin', 'Coagulation factor VII human']"
 ['DRUGBANK:DB00165'],['DRUGBANK:DB00115'],MONDO:0008599,['CHEBI:27306'],['vitamin B6'],['CHEBI:17439'],['Cyanocobalamin']
-['DRUGBANK:DB16362'],['DRUGBANK:DB15988'],NCIT:C50717,[['Error']],[['Error']],['UNII:T9S008S8JL'],['Ephedrine levulinate']
 ['DRUGBANK:DB04930'],['DRUGBANK:DB00602'],MONDO:0004525,['CHEBI:34911'],['Permethrin'],['CHEBI:6078'],['Ivermectin']
 ['DRUGBANK:DB02513'],"['DRUGBANK:DB01744', 'DRUGBANK:DB00825', 'DRUGBANK:DB09543']",HP:0003750,['CHEBI:27607'],['Thymol'],"['CHEBI:36773', 'CHEBI:25187', 'CHEBI:31832']","['camphor', 'Menthol', 'Methyl salicylate']"
 ['DRUGBANK:DB01050'],['DRUGBANK:DB00316'],UMLS:C0234251,['CHEBI:5855'],['Ibuprofen'],['CHEBI:46195'],['Acetaminophen']
@@ -1387,7 +1381,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB09350'],['DRUGBANK:DB11087'],MONDO:0003472,['CHEBI:32687'],['Piperonyl butoxide'],['CHEBI:39098'],['pyrethrins']
 ['DRUGBANK:DB01131'],['DRUGBANK:DB01117'],MONDO:0005920,['CHEBI:8455'],['Proguanil'],['CHEBI:575568'],['Atovaquone']
 ['DRUGBANK:DB00994'],['DRUGBANK:DB00860'],MONDO:0004605,['CHEBI:7507'],['Framycetin'],['CHEBI:8378'],['Prednisolone']
-['DRUGBANK:DB16362'],['DRUGBANK:DB15988'],MONDO:0004777,[['Error']],[['Error']],['UNII:T9S008S8JL'],['Ephedrine levulinate']
 ['DRUGBANK:DB00994'],['DRUGBANK:DB11750'],MONDO:0004605,['CHEBI:7507'],['Framycetin'],['CHEBI:205919'],['Clobetasol']
 ['DRUGBANK:DB09280'],['DRUGBANK:DB08820'],MONDO:0009061,['CHEBI:90951'],['Lumacaftor'],['CHEBI:66901'],['Ivacaftor']
 ['DRUGBANK:DB09273'],['DRUGBANK:DB06151'],MONDO:0005002,['CHEBI:94714'],['Doxofylline'],['CHEBI:28939'],['Acetylcysteine']
@@ -1770,7 +1763,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB00388'],"['DRUGBANK:DB00835', 'DRUGBANK:DB00514']",MONDO:0005709,['CHEBI:8093'],['Phenylephrine'],"['CHEBI:3183', 'CHEBI:4470']","['Brompheniramine', 'Dextromethorphan']"
 ['DRUGBANK:DB00440'],['DRUGBANK:DB00781'],MONDO:0005113,['CHEBI:45924'],['Trimethoprim'],['CHEBI:8310'],['Polymyxin B']
 ['DRUGBANK:DB00620'],['DRUGBANK:DB01172'],MONDO:0017475,['CHEBI:9667'],['Triamcinolone'],['CHEBI:17630'],['Kanamycin']
-['DRUGBANK:DB01750'],['DRUGBANK:DB16617'],MONDO:0005281,['CHEBI:32918'],['1-naphthaleneacetic acid'],[['Error']],[['Error']]
 ['DRUGBANK:DB15696'],['DRUGBANK:DB17088'],MONDO:0100130,['UNII:JSV288Q5CV'],['Famtozinameran'],['UNII:JSV288Q5CV'],['Famtozinameran']
 ['DRUGBANK:DB00860'],['DRUGBANK:DB01165'],MONDO:0005129,['CHEBI:8378'],['Prednisolone'],['CHEBI:194135'],['Ofloxacin']
 ['DRUGBANK:DB15763'],['DRUGBANK:DB00159'],MONDO:0001356,['UNII:UM5219H89V'],['teferrol'],['CHEBI:28364'],['Icosapent']
@@ -1964,9 +1956,7 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB00852'],"['DRUGBANK:DB00874', 'DRUGBANK:DB00427']",HP:0001742,['CHEBI:51209'],['Pseudoephedrine'],"['CHEBI:5551', 'CHEBI:84116']","['Guaifenesin', 'Triprolidine']"
 ['DRUGBANK:DB00514'],"['DRUGBANK:DB00388', 'DRUGBANK:DB00427']",HP:0001742,['CHEBI:4470'],['Dextromethorphan'],"['CHEBI:8093', 'CHEBI:84116']","['Phenylephrine', 'Triprolidine']"
 ['DRUGBANK:DB01114'],['DRUGBANK:DB00388'],HP:0001742,['CHEBI:52010'],['chlorphenamine'],['CHEBI:8093'],['Phenylephrine']
-['DRUGBANK:DB21768'],"['DRUGBANK:DB21766', 'DRUGBANK:DB21767']",MONDO:0017941,[['Error']],[['Error']],"[['Error'], ['Error']]","[['Error'], ['Error']]"
 ['DRUGBANK:DB08801'],['DRUGBANK:DB00388'],MONDO:0004514,['CHEBI:135222'],['Dimetindene'],['CHEBI:8093'],['Phenylephrine']
-['DRUGBANK:DB21766'],"['DRUGBANK:DB21767', 'DRUGBANK:DB21768']",MONDO:0017941,[['Error']],[['Error']],"[['Error'], ['Error']]","[['Error'], ['Error']]"
 ['DRUGBANK:DB00443'],"['DRUGBANK:DB00446', 'DRUGBANK:DB01111', 'DRUGBANK:DB01301']",MONDO:0020283,['CHEBI:3077'],['Betamethasone'],"['CHEBI:17698', 'UMLS:C0009315', 'CHEBI:63334']","['Chloramphenicol', 'colistimethate', 'Rolitetracycline']"
 ['DRUGBANK:DB01050'],['DRUGBANK:DB09300'],UMLS:C0149875,['CHEBI:5855'],['Ibuprofen'],['PUBCHEM.COMPOUND:160883'],['Butylscopolamine']
 ['DRUGBANK:DB00182'],['DRUGBANK:DB01576'],MONDO:0005302,['CHEBI:132233'],['Amphetamine'],['CHEBI:4469'],['dexamfetamine']
@@ -1986,7 +1976,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB09512'],['DRUGBANK:DB00804'],HP:0011848,['CHEBI:31498'],['Simethicone'],['CHEBI:4514'],['Dicyclomine']
 ['DRUGBANK:DB09065'],['DRUGBANK:DB01264'],MONDO:0005109,['CHEBI:72291'],['Cobicistat'],['CHEBI:367163'],['Darunavir']
 ['DRUGBANK:DB14360'],"['DRUGBANK:DB01593', 'DRUGBANK:DB00165', 'DRUGBANK:DB11251', 'DRUGBANK:DB11135', 'DRUGBANK:DB00115', 'DRUGBANK:DB00158', 'DRUGBANK:DB00163', 'DRUGBANK:DB11231']",MONDO:0042976,['UNII:J7WWH9M8QS'],['Saw palmetto'],"['CHEBI:27363', 'CHEBI:27306', 'CHEBI:27013', 'CHEBI:27568', 'CHEBI:17439', 'CHEBI:27470', 'CHEBI:18145', 'CHEBI:15948']","['Zinc', 'vitamin B6', 'Tocopherol', 'Selenium', 'Cyanocobalamin', 'Folic acid', 'Vitamin E', 'Lycopene']"
-['DRUGBANK:DB16362'],['DRUGBANK:DB15988'],UMLS:C1384493,[['Error']],[['Error']],['UNII:T9S008S8JL'],['Ephedrine levulinate']
 ['DRUGBANK:DB01110'],['DRUGBANK:DB11573'],MONDO:0006608,['CHEBI:6923'],['Miconazole'],['PUBCHEM.COMPOUND:71586946'],['Aluminum chlorohydrate']
 ['DRUGBANK:DB00112'],"['DRUGBANK:DB00958', 'DRUGBANK:DB01229']",MONDO:0056806,['UMLS:C0796392'],['bevacizumab'],"['CHEBI:31355', 'CHEBI:45863']","['Carboplatin', 'Paclitaxel']"
 ['DRUGBANK:DB00297'],['DRUGBANK:DB00668'],NCIT:C92821,['CHEBI:3215'],['Bupivacaine'],['CHEBI:28918'],['Epinephrine']
@@ -1995,7 +1984,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB09321'],['DRUGBANK:DB11321'],UMLS:C0332686,['CHEBI:36560'],['Zinc oxide'],['DRUGBANK:DB11321'],['Cod liver oil']
 ['DRUGBANK:DB00297'],"['DRUGBANK:DB00959', 'DRUGBANK:DB00281']",UMLS:C0920235,['CHEBI:3215'],['Bupivacaine'],"['CHEBI:6888', 'CHEBI:6456']","['Methylprednisolone', 'Lidocaine']"
 ['DRUGBANK:DB15907'],['DRUGBANK:DB00936'],UMLS:C0006107,['UNII:RUU8G67GQM'],['Escin'],['CHEBI:16914'],['Salicylic acid']
-['DRUGBANK:DB15820'],"['DRUGBANK:DB14016', 'DRUGBANK:DB11074', 'DRUGBANK:DB00085']",HP:0004396,[['Error']],[['Error']],"['DRUGBANK:DB14016', 'CHEBI:31498', 'UMLS:C0111046']","['Ox bile extract', 'Simethicone', 'Creon']"
 ['DRUGBANK:DB09512'],['DRUGBANK:DB00804'],HP:0033589,['CHEBI:31498'],['Simethicone'],['CHEBI:4514'],['Dicyclomine']
 ['DRUGBANK:DB00297'],['DRUGBANK:DB00668'],NCIT:C34887,['CHEBI:3215'],['Bupivacaine'],['CHEBI:28918'],['Epinephrine']
 ['DRUGBANK:DB00085'],"['DRUGBANK:DB09512', 'DRUGBANK:DB11074']",HP:0033589,['UMLS:C0111046'],['Creon'],"['CHEBI:31498', 'CHEBI:31498']","['Simethicone', 'Simethicone']"
@@ -3227,7 +3215,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB15907'],['DRUGBANK:DB00936'],MONDO:0008638,['UNII:RUU8G67GQM'],['Escin'],['CHEBI:16914'],['Salicylic acid']
 ['DRUGBANK:DB01114'],"['DRUGBANK:DB00874', 'DRUGBANK:DB06767']",HP:0012735,['CHEBI:52010'],['chlorphenamine'],"['CHEBI:5551', 'CHEBI:31206']","['Guaifenesin', 'Chloroaminium']"
 ['DRUGBANK:DB09037'],['DRUGBANK:DB09078'],MONDO:0005086,['UNII:DPT0O3T46P'],['Pembrolizumab'],['CHEBI:85994'],['Lenvatinib']
-['DRUGBANK:DB16579'],['DRUGBANK:DB16578'],MONDO:0017373,[['Error']],[['Error']],[['Error']],[['Error']]
 ['DRUGBANK:DB11198'],"['DRUGBANK:DB11114', 'DRUGBANK:DB00825', 'DRUGBANK:DB01744']",HP:0012735,['UNII:AV092KU4JH'],['Peppermint oil'],"['UNII:2R04ONI662', 'CHEBI:25187', 'CHEBI:36773']","['Eucalyptus oil', 'Menthol', 'camphor']"
 ['DRUGBANK:DB00514'],['DRUGBANK:DB06767'],HP:0012735,['CHEBI:4470'],['Dextromethorphan'],['CHEBI:31206'],['Chloroaminium']
 ['DRUGBANK:DB09395'],"['DRUGBANK:DB09407', 'DRUGBANK:DB09106', 'DRUGBANK:DB00761', 'DRUGBANK:DB09153']",HP:0011106,['CHEBI:32954'],['Sodium acetate'],"['CHEBI:25107', 'DRUGBANK:DB09106', 'CHEBI:32588', 'CHEBI:26710']","['magnesium atom', 'hetastarch', 'Potassium chloride', 'Sodium chloride']"
@@ -4039,7 +4026,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB09350'],['DRUGBANK:DB11087'],MONDO:0003482,['CHEBI:32687'],['Piperonyl butoxide'],['CHEBI:39098'],['pyrethrins']
 ['DRUGBANK:DB13195'],['DRUGBANK:DB00936'],HP:0003419,['DRUGBANK:DB13195'],['Horse chestnut'],['CHEBI:16914'],['Salicylic acid']
 ['DRUGBANK:DB15694'],['DRUGBANK:DB01262'],MONDO:0004614,['UNII:39IS23Q1EW'],['Cedazuridine'],['CHEBI:50131'],['Decitabine']
-['DRUGBANK:DB14222'],"['DRUGBANK:DB15751', 'DRUGBANK:DB11360', 'DRUGBANK:DB09322']",UMLS:C0947873,['DRUGBANK:DB14222'],['Bifidobacterium longum infantis'],"[['Error'], 'DRUGBANK:DB11360', 'CHEBI:35176']","[['Error'], 'Lactobacillus plantarum', 'Zinc sulfate']"
 ['DRUGBANK:DB11323'],"['DRUGBANK:DB00825', 'DRUGBANK:DB14156', 'DRUGBANK:DB14003']",HP:0003419,['CHEBI:86541'],['Glycol salicylate'],"['CHEBI:25187', 'CHEBI:36773', 'CHEBI:18145']","['Menthol', 'camphor', 'Vitamin E']"
 ['DRUGBANK:DB09125'],['DRUGBANK:DB09154'],MONDO:0024306,['CHEBI:64733'],['Potassium citrate'],['CHEBI:30769'],['Citric acid']
 ['DRUGBANK:DB11739'],['DRUGBANK:DB01060'],MONDO:0005113,['CHEBI:136048'],['Vonoprazan'],['CHEBI:2676'],['Amoxicillin']
@@ -4074,7 +4060,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB00603'],['DRUGBANK:DB00286'],MONDO:0005298,['CHEBI:6715'],['medroxyprogesterone'],['PUBCHEM.COMPOUND:45357473'],['Estratab']
 ['DRUGBANK:DB13257'],['DRUGBANK:DB00158'],MONDO:0001860,['CHEBI:75832'],['ferrous sulfate'],['CHEBI:27470'],['Folic acid']
 ['DRUGBANK:DB09321'],"['DRUGBANK:DB11057', 'DRUGBANK:DB11074']",UMLS:C4228089,['CHEBI:36560'],['Zinc oxide'],"['PUBCHEM.COMPOUND:139291139', 'CHEBI:31498']","['Mineral oil', 'Simethicone']"
-['DRUGBANK:DB16362'],['DRUGBANK:DB15988'],MONDO:0005961,[['Error']],[['Error']],['UNII:T9S008S8JL'],['Ephedrine levulinate']
 ['DRUGBANK:DB01099'],['DRUGBANK:DB00681'],UMLS:C0343890,['CHEBI:5100'],['Flucytosine'],['CHEBI:2682'],['Amphotericin B']
 ['DRUGBANK:DB01146'],"['DRUGBANK:DB00626', 'DRUGBANK:DB04209']",UMLS:C0858739,['CHEBI:59788'],['Diphenylpyraline'],"['UMLS:C0004599', 'CHEBI:41872']","['bacitracin', 'Dequalinium']"
 ['DRUGBANK:DB00759'],"['DRUGBANK:DB01438', 'DRUGBANK:DB00576']",MONDO:0006032,['CHEBI:27902'],['Tetracycline'],"['UNII:K2J09EMJ52', 'CHEBI:9331']","['Phenazopyridine', 'Sulfamethizole']"
@@ -4216,7 +4201,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB00877'],['DRUGBANK:DB00091'],EFO:0009573,['CHEBI:9168'],['Sirolimus'],['UMLS:C0010592'],['cyclosporine']
 ['DRUGBANK:DB09037'],['DRUGBANK:DB00072'],MONDO:0003219,['UNII:DPT0O3T46P'],['Pembrolizumab'],['UMLS:C0338204'],['Herceptin']
 ['DRUGBANK:DB01373'],['DRUGBANK:DB00153'],MONDO:0011996,['CHEBI:22984'],['Calcium'],['CHEBI:27300'],['Ergocalciferol']
-['DRUGBANK:DB15820'],"['DRUGBANK:DB11065', 'DRUGBANK:DB11066', 'DRUGBANK:DB13147', 'DRUGBANK:DB09512', 'DRUGBANK:DB14016']",UMLS:C0852271,[['Error']],[['Error']],"['UMLS:C0301812', 'UMLS:C2722896', 'UMLS:C0443469', 'CHEBI:31498', 'DRUGBANK:DB14016']","['Pancreatic amylase', 'pancrelipase protease', 'pancreatic lipase', 'Simethicone', 'Ox bile extract']"
 ['DRUGBANK:DB13147'],"['DRUGBANK:DB11066', 'DRUGBANK:DB11065']",MONDO:0001684,['UMLS:C0443469'],['pancreatic lipase'],"['UMLS:C2722896', 'UMLS:C0301812']","['pancrelipase protease', 'Pancreatic amylase']"
 ['DRUGBANK:DB00852'],['DRUGBANK:DB00945'],UMLS:C0852402,['CHEBI:51209'],['Pseudoephedrine'],['CHEBI:15365'],['Aspirin']
 ['DRUGBANK:DB01115'],['DRUGBANK:DB00281'],NCIT:C78587,['CHEBI:7565'],['Nifedipine'],['CHEBI:6456'],['Lidocaine']
@@ -4365,7 +4349,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB00112'],"['DRUGBANK:DB01229', 'DRUGBANK:DB01030']",MONDO:0004992,['UMLS:C0796392'],['bevacizumab'],"['CHEBI:45863', 'CHEBI:63632']","['Paclitaxel', 'Topotecan']"
 ['DRUGBANK:DB16394'],['DRUGBANK:DB16393'],UNII:JSV288Q5CV,['UMLS:C5432264'],['tixagevimab'],['UMLS:C5432263'],['cilgavimab']
 ['DRUGBANK:DB15940'],['DRUGBANK:DB15941'],MONDO:0100096,['UNII:2Z3DQD2JHM'],['Imdevimab'],['UMLS:C5422688'],['casirivimab']
-['DRUGBANK:DB16362'],['DRUGBANK:DB15988'],MONDO:0005113,[['Error']],[['Error']],['UNII:T9S008S8JL'],['Ephedrine levulinate']
 ['DRUGBANK:DB11978'],['DRUGBANK:DB00987'],MONDO:0700048,['CHEBI:145428'],['Glasdegib'],['CHEBI:28680'],['Cytarabine']
 ['DRUGBANK:DB00936'],"['DRUGBANK:DB09353', 'DRUGBANK:DB03793']",MONDO:0006547,['CHEBI:16914'],['Salicylic acid'],"['CHEBI:29385', 'CHEBI:30746']","['Octasulfur', 'Benzoic acid']"
 ['DRUGBANK:DB01275'],['DRUGBANK:DB00883'],MONDO:0005009,['CHEBI:5775'],['Hydralazine'],['CHEBI:6061'],['Isosorbide dinitrate']
@@ -4410,7 +4393,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB09324'],['DRUGBANK:DB00415'],UMLS:C0852351,['CHEBI:9321'],['Sulbactam'],['CHEBI:28971'],['Ampicillin']
 ['DRUGBANK:DB03904'],['DRUGBANK:DB14539'],MONDO:0006540,['CHEBI:16199'],['Urea'],['CHEBI:17650'],['Hydrocortisone']
 ['DRUGBANK:DB14006'],['DRUGBANK:DB00201'],HP:0003418,['CHEBI:15354'],['Choline'],['CHEBI:27732'],['Caffeine']
-['DRUGBANK:DB11360'],"['DRUGBANK:DB09322', 'DRUGBANK:DB15751', 'DRUGBANK:DB14222']",MONDO:0001517,['DRUGBANK:DB11360'],['Lactobacillus plantarum'],"['CHEBI:35176', ['Error'], 'DRUGBANK:DB14222']","['Zinc sulfate', ['Error'], 'Bifidobacterium longum infantis']"
 ['DRUGBANK:DB14496'],"['DRUGBANK:DB09314', 'DRUGBANK:DB09145', 'DRUGBANK:DB09153']",MONDO:0003240,['CHEBI:75215'],['CID 4384450'],"['CHEBI:33353', 'CHEBI:15377', 'CHEBI:26710']","['technetium atom', 'Water', 'Sodium chloride']"
 ['DRUGBANK:DB01390'],['DRUGBANK:DB01129'],MONDO:0019610,['CHEBI:32139'],['CID 22590783'],['CHEBI:8768'],['Rabeprazole']
 ['DRUGBANK:DB00994'],['DRUGBANK:DB00663'],UMLS:C5441647,['CHEBI:7507'],['Framycetin'],['CHEBI:34764'],['Flumethasone']
@@ -4694,7 +4676,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB11093'],"['DRUGBANK:DB00169', 'DRUGBANK:DB00158']",MONDO:0000755,['CHEBI:190513'],['Calcium citrate'],"['CHEBI:27300', 'CHEBI:27470']","['Ergocalciferol', 'Folic acid']"
 ['DRUGBANK:DB11093'],"['DRUGBANK:DB00169', 'DRUGBANK:DB00158']",MONDO:0000755,['CHEBI:190513'],['Calcium citrate'],"['CHEBI:27300', 'CHEBI:27470']","['Ergocalciferol', 'Folic acid']"
 ['DRUGBANK:DB15823'],['DRUGBANK:DB04573'],MONDO:0001433,['DRUGBANK:DB15823'],['Lactobacillus acidophilus'],['CHEBI:27974'],['Estriol']
-['DRUGBANK:DB15820'],"['DRUGBANK:DB14016', 'DRUGBANK:DB13147', 'DRUGBANK:DB11065', 'DRUGBANK:DB11066', 'DRUGBANK:DB09512']",MONDO:0005003,[['Error']],[['Error']],"['DRUGBANK:DB14016', 'UMLS:C0443469', 'UMLS:C0301812', 'UMLS:C2722896', 'CHEBI:31498']","['Ox bile extract', 'pancreatic lipase', 'Pancreatic amylase', 'pancrelipase protease', 'Simethicone']"
 ['DRUGBANK:DB01069'],['DRUGBANK:DB00388'],UMLS:C0749874,['CHEBI:8461'],['Promethazine'],['CHEBI:8093'],['Phenylephrine']
 ['DRUGBANK:DB14488'],['DRUGBANK:DB00158'],MONDO:0000755,['CHEBI:31608'],['ferrous gluconate'],['CHEBI:27470'],['Folic acid']
 ['DRUGBANK:DB14488'],['DRUGBANK:DB00158'],MONDO:0000755,['CHEBI:31608'],['ferrous gluconate'],['CHEBI:27470'],['Folic acid']
@@ -4790,7 +4771,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB00626'],"['DRUGBANK:DB04815', 'DRUGBANK:DB00994']",MONDO:0011438,['UMLS:C0004599'],['bacitracin'],"['CHEBI:74460', 'CHEBI:7507']","['Clioquinol', 'Framycetin']"
 ['DRUGBANK:DB09214'],['DRUGBANK:DB11582'],MONDO:0019735,['CHEBI:76128'],['Dexketoprofen'],['CHEBI:94557'],['Thiocolchicoside']
 ['DRUGBANK:DB15763'],['DRUGBANK:DB00159'],MONDO:0001356,['UNII:UM5219H89V'],['teferrol'],['CHEBI:28364'],['Icosapent']
-['DRUGBANK:DB16362'],['DRUGBANK:DB15988'],HP:0040334,[['Error']],[['Error']],['UNII:T9S008S8JL'],['Ephedrine levulinate']
 ['DRUGBANK:DB00936'],['DRUGBANK:DB00663'],MONDO:0019289,['CHEBI:16914'],['Salicylic acid'],['CHEBI:34764'],['Flumethasone']
 ['DRUGBANK:DB11279'],"['DRUGBANK:DB13373', 'DRUGBANK:DB00406']",MONDO:0021562,['CHEBI:88176'],['brilliant green'],"['CHEBI:74729', 'CHEBI:77181']","['Acriflavine', 'gentian violet']"
 ['DRUGBANK:DB00852'],"['DRUGBANK:DB00366', 'DRUGBANK:DB00316', 'DRUGBANK:DB00514']",MONDO:0005709,['CHEBI:51209'],['Pseudoephedrine'],"['CHEBI:51380', 'CHEBI:46195', 'CHEBI:4470']","['Doxylamine', 'Acetaminophen', 'Dextromethorphan']"
@@ -4991,7 +4971,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB09154'],"['DRUGBANK:DB01114', 'DRUGBANK:DB06767', 'DRUGBANK:DB00388']",UBERON:0016552,['CHEBI:30769'],['Citric acid'],"['CHEBI:52010', 'CHEBI:31206', 'CHEBI:8093']","['chlorphenamine', 'Chloroaminium', 'Phenylephrine']"
 ['DRUGBANK:DB00316'],"['DRUGBANK:DB08797', 'DRUGBANK:DB01114']",HP:0001742,['CHEBI:46195'],['Acetaminophen'],"['CHEBI:32114', 'CHEBI:52010']","['Salicylamide', 'chlorphenamine']"
 ['DRUGBANK:DB16560'],"['DRUGBANK:DB11118', 'DRUGBANK:DB14312', 'DRUGBANK:DB11223']",UBERON:0016552,['CHEBI:173313'],['Ethyl nitrite'],"['CHEBI:16134', 'UNII:61ZBX54883', 'UNII:TD2LE91MBE']","['Ammonia', 'LICORICE', 'Tolu balsam']"
-['DRUGBANK:DB16362'],['DRUGBANK:DB15988'],MONDO:0001039,[['Error']],[['Error']],['UNII:T9S008S8JL'],['Ephedrine levulinate']
 ['DRUGBANK:DB01114'],"['DRUGBANK:DB00316', 'DRUGBANK:DB00388', 'DRUGBANK:DB00874']",HP:0001742,['CHEBI:52010'],['chlorphenamine'],"['CHEBI:46195', 'CHEBI:8093', 'CHEBI:5551']","['Acetaminophen', 'Phenylephrine', 'Guaifenesin']"
 ['DRUGBANK:DB00852'],"['DRUGBANK:DB00514', 'DRUGBANK:DB01069']",HP:0001742,['CHEBI:51209'],['Pseudoephedrine'],"['CHEBI:4470', 'CHEBI:8461']","['Dextromethorphan', 'Promethazine']"
 ['DRUGBANK:DB00388'],['DRUGBANK:DB01114'],HP:0001742,['CHEBI:8093'],['Phenylephrine'],['CHEBI:52010'],['chlorphenamine']
@@ -5083,7 +5062,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB11201'],"['DRUGBANK:DB01744', 'DRUGBANK:DB00825']",HP:0002829,['CHEBI:135976'],['Menthyl salicylate'],"['CHEBI:36773', 'CHEBI:25187']","['camphor', 'Menthol']"
 ['DRUGBANK:DB11201'],['DRUGBANK:DB00825'],HP:0002829,['CHEBI:135976'],['Menthyl salicylate'],['CHEBI:25187'],['Menthol']
 ['DRUGBANK:DB01914'],['DRUGBANK:DB00761'],MONDO:0004946,['CHEBI:17234'],['D-glucose'],['CHEBI:32588'],['Potassium chloride']
-['DRUGBANK:DB15820'],"['DRUGBANK:DB14016', 'DRUGBANK:DB13147', 'DRUGBANK:DB11065', 'DRUGBANK:DB11066', 'DRUGBANK:DB09512']",NCIT:C78213,[['Error']],[['Error']],"['DRUGBANK:DB14016', 'UMLS:C0443469', 'UMLS:C0301812', 'UMLS:C2722896', 'CHEBI:31498']","['Ox bile extract', 'pancreatic lipase', 'Pancreatic amylase', 'pancrelipase protease', 'Simethicone']"
 ['DRUGBANK:DB11326'],"['DRUGBANK:DB03255', 'DRUGBANK:DB11085']",MONDO:0024268,['CHEBI:33118'],['Boric acid'],"['CHEBI:15882', 'CHEBI:27810']","['Phenol', 'Resorcinol']"
 ['DRUGBANK:DB09462'],['DRUGBANK:DB11059'],UMLS:C0234655,['CHEBI:17754'],['Glycerin'],['UNII:K679OBS311'],['Carboxymethylcellulose Sodium']
 ['DRUGBANK:DB00388'],"['DRUGBANK:DB01050', 'DRUGBANK:DB00967']",MONDO:0005709,['CHEBI:8093'],['Phenylephrine'],"['CHEBI:5855', 'CHEBI:291342']","['Ibuprofen', 'Desloratadine']"
@@ -5132,7 +5110,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB00112'],['DRUGBANK:DB00530'],UMLS:C3266992,['UMLS:C0796392'],['bevacizumab'],['CHEBI:114785'],['Erlotinib']
 ['DRUGBANK:DB11571'],['DRUGBANK:DB09222'],HP:0430034,['UMLS:C2369149'],"['thrombin, human']",['UMLS:C2587184'],['Parenogen']
 ['DRUGBANK:DB00843'],['DRUGBANK:DB09081'],MONDO:0004975,['CHEBI:145499'],['Donepezil'],['CHEBI:31687'],['Idebenone']
-['DRUGBANK:DB00085'],"['DRUGBANK:DB15820', 'DRUGBANK:DB14016', 'DRUGBANK:DB09512']",MONDO:0004574,['UMLS:C0111046'],['Creon'],"[['Error'], 'DRUGBANK:DB14016', 'CHEBI:31498']","[['Error'], 'Ox bile extract', 'Simethicone']"
 ['DRUGBANK:DB00749'],"['DRUGBANK:DB11582', 'DRUGBANK:DB00927']",MONDO:0007186,['CHEBI:4909'],['Etodolac'],"['CHEBI:94557', 'CHEBI:4975']","['Thiocolchicoside', 'Famotidine']"
 ['DRUGBANK:DB00373'],['DRUGBANK:DB00484'],MONDO:0015912,['CHEBI:9599'],['Timolol'],['CHEBI:3175'],['Brimonidine']
 ['DRUGBANK:DB11652'],['DRUGBANK:DB00072'],CHEBI:5971,['UNII:234248D0HH'],['Tucatinib'],['UMLS:C0338204'],['Herceptin']
@@ -5297,7 +5274,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB09035'],['DRUGBANK:DB06186'],MONDO:0024883,['UMLS:C2346820'],['MDX-1106'],['UMLS:C1367202'],['ipilimumab']
 ['DRUGBANK:DB14761'],['DRUGBANK:DB11817'],MONDO:0004753,['CHEBI:145994'],['Remdesivir'],['CHEBI:95341'],['Baricitinib']
 ['DRUGBANK:DB15940'],['DRUGBANK:DB15941'],MONDO:0005821,['UNII:2Z3DQD2JHM'],['Imdevimab'],['UMLS:C5422688'],['casirivimab']
-['DRUGBANK:DB01750'],['DRUGBANK:DB16617'],MONDO:0005725,['CHEBI:32918'],['1-naphthaleneacetic acid'],[['Error']],[['Error']]
 ['DRUGBANK:DB09325'],"['DRUGBANK:DB16622', 'DRUGBANK:DB13290']",MONDO:0004038,['CHEBI:28741'],['Sodium fluoride'],"['UNII:Q3B1Y93C1S', 'UNII:8NY9L8837D']","['Dectaflur', 'Olaflur']"
 ['DRUGBANK:DB01248'],['DRUGBANK:DB00515'],MONDO:0005233,['CHEBI:4672'],['Docetaxel'],['CHEBI:27899'],['Cisplatin']
 ['DRUGBANK:DB00591'],['DRUGBANK:DB00798'],NCIT:C111970,['CHEBI:31623'],['Fluocinolone acetonide'],['PUBCHEM.COMPOUND:3467'],['gentamicin']
@@ -5390,7 +5366,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB06764'],['DRUGBANK:DB00443'],MONDO:0005961,['CHEBI:28674'],['Tetryzoline'],['CHEBI:3077'],['Betamethasone']
 ['DRUGBANK:DB09154'],"['DRUGBANK:DB09153', 'DRUGBANK:DB04272', 'DRUGBANK:DB09125']",MONDO:0005393,['CHEBI:30769'],['Citric acid'],"['CHEBI:26710', 'CHEBI:30769', 'CHEBI:64733']","['Sodium chloride', 'Citric acid', 'Potassium citrate']"
 ['DRUGBANK:DB00741'],['DRUGBANK:DB09345'],HP:0012390,['CHEBI:17650'],['Hydrocortisone'],['CHEBI:8357'],['Pramocaine']
-['DRUGBANK:DB16362'],['DRUGBANK:DB15988'],MONDO:0005961,[['Error']],[['Error']],['UNII:T9S008S8JL'],['Ephedrine levulinate']
 ['DRUGBANK:DB14005'],['DRUGBANK:DB00620'],UMLS:C0043345,['CHEBI:31498'],['Simethicone'],['CHEBI:9667'],['Triamcinolone']
 ['DRUGBANK:DB13524'],"['DRUGBANK:DB00241', 'DRUGBANK:DB00201']",MONDO:0005554,['CHEBI:135538'],['Propyphenazone'],"['CHEBI:102524', 'CHEBI:27732']","['Butalbital', 'Caffeine']"
 ['DRUGBANK:DB13787'],['DRUGBANK:DB01183'],UMLS:C0278140,['CHEBI:77822'],['Tilidine'],['CHEBI:7459'],['Naloxone']
@@ -5469,7 +5444,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB04815'],['DRUGBANK:DB00741'],MONDO:0021340,['CHEBI:74460'],['Clioquinol'],['CHEBI:17650'],['Hydrocortisone']
 ['DRUGBANK:DB00873'],['DRUGBANK:DB11105'],MONDO:0020950,['CHEBI:50848'],['Loteprednol'],['CHEBI:135611'],['Benzalkonium']
 ['DRUGBANK:DB11326'],"['DRUGBANK:DB14505', 'DRUGBANK:DB11111']",MONDO:0000950,['CHEBI:33118'],['Boric acid'],"['CHEBI:33118', 'DRUGBANK:DB11111']","['Boric acid', 'Witch hazel']"
-['DRUGBANK:DB15820'],"['DRUGBANK:DB00085', 'DRUGBANK:DB14016', 'DRUGBANK:DB11074']",HP:0002591,[['Error']],[['Error']],"['UMLS:C0111046', 'DRUGBANK:DB14016', 'CHEBI:31498']","['Creon', 'Ox bile extract', 'Simethicone']"
 ['DRUGBANK:DB13855'],['DRUGBANK:DB15759'],MONDO:0005644,['CHEBI:135136'],['Nifuroxazide'],['CHEBI:6909'],['Metronidazole']
 ['DRUGBANK:DB00696'],['DRUGBANK:DB00201'],UMLS:C0042376,['CHEBI:64318'],['Ergotamine'],['CHEBI:27732'],['Caffeine']
 ['DRUGBANK:DB01234'],['DRUGBANK:DB01044'],UMLS:C0851772,['CHEBI:41879'],['Dexamethasone'],['CHEBI:5280'],['Gatifloxacin']
@@ -5504,7 +5478,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB06292'],['DRUGBANK:DB06335'],MONDO:0005148,['CHEBI:85078'],['Dapagliflozin'],['CHEBI:71272'],['Saxagliptin']
 ['DRUGBANK:DB00331'],['DRUGBANK:DB01016'],MONDO:0005148,['CHEBI:6801'],['Metformin'],['CHEBI:5441'],['Glyburide']
 ['DRUGBANK:DB11288'],"['DRUGBANK:DB15573', 'DRUGBANK:DB15920', 'DRUGBANK:DB03852', 'DRUGBANK:DB15917', 'DRUGBANK:DB15574', 'DRUGBANK:DB00825']",MONDO:0005154,['CHEBI:28093'],['Borneol'],"['CHEBI:36740', 'CHEBI:36503', 'PUBCHEM.COMPOUND:2758', 'CHEBI:3830', 'CHEBI:50025', 'CHEBI:25187']","['alpha-Pinene', 'Menthone', 'cineole', 'Camphene', 'beta-Pinene', 'Menthol']"
-['DRUGBANK:DB15820'],"['DRUGBANK:DB11066', 'DRUGBANK:DB11065', 'DRUGBANK:DB14016', 'DRUGBANK:DB13147', 'DRUGBANK:DB09512']",UMLS:C0936186,[['Error']],[['Error']],"['UMLS:C2722896', 'UMLS:C0301812', 'DRUGBANK:DB14016', 'UMLS:C0443469', 'CHEBI:31498']","['pancrelipase protease', 'Pancreatic amylase', 'Ox bile extract', 'pancreatic lipase', 'Simethicone']"
 ['DRUGBANK:DB01593'],"['DRUGBANK:DB01110', 'DRUGBANK:DB11058']",UMLS:C0011974,['CHEBI:27363'],['Zinc'],"['CHEBI:6923', 'DRUGBANK:DB11058']","['Miconazole', 'Petrolatum']"
 ['DRUGBANK:DB06764'],['DRUGBANK:DB00324'],MONDO:0004926,['CHEBI:28674'],['Tetryzoline'],['CHEBI:31625'],['Fluorometholone']
 ['DRUGBANK:DB11936'],['DRUGBANK:DB00973'],MONDO:0005439,['CHEBI:149601'],['Bempedoic acid'],['CHEBI:49040'],['Ezetimibe']
@@ -5675,7 +5648,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB00150'],"['DRUGBANK:DB00134', 'DRUGBANK:DB00117', 'DRUGBANK:DB00123', 'DRUGBANK:DB00149', 'DRUGBANK:DB00156', 'DRUGBANK:DB00120', 'DRUGBANK:DB00161', 'DRUGBANK:DB00167']",UMLS:C0542211,['CHEBI:16828'],['Tryptophan'],"['UMLS:C0025646', 'CHEBI:15971', 'CHEBI:133538', 'CHEBI:15603', 'CHEBI:16857', 'UMLS:C0031453', 'UMLS:C0042285', 'CHEBI:17191']","['methionine', 'Histidine', 'Lysine', 'Leucine', 'Threonine', 'phenylalanine', 'valine', 'Isoleucine']"
 ['DRUGBANK:DB13257'],['DRUGBANK:DB00152'],MONDO:0000755,['CHEBI:75832'],['ferrous sulfate'],['CHEBI:18385'],['Thiamine']
 ['DRUGBANK:DB13257'],['DRUGBANK:DB00152'],MONDO:0000755,['CHEBI:75832'],['ferrous sulfate'],['CHEBI:18385'],['Thiamine']
-['DRUGBANK:DB16362'],['DRUGBANK:DB15988'],MONDO:0002508,[['Error']],[['Error']],['UNII:T9S008S8JL'],['Ephedrine levulinate']
 ['DRUGBANK:DB06707'],['DRUGBANK:DB00961'],MONDO:0005276,['CHEBI:10304'],['Levonordefrin'],['CHEBI:6759'],['Mepivacaine']
 ['DRUGBANK:DB13248'],"['DRUGBANK:DB00614', 'DRUGBANK:DB00916']",HP:0002027,['CHEBI:9336'],['Phthalylsulfathiazole'],"['CHEBI:5195', 'CHEBI:6909']","['furazolidone', 'Metronidazole']"
 ['DRUGBANK:DB11158'],"['DRUGBANK:DB01575', 'DRUGBANK:DB00614']",MONDO:0025598,['CHEBI:17309'],['pectin'],"['UNII:24H4NWX5CO', 'CHEBI:5195']","['Kaolin', 'furazolidone']"
@@ -5829,7 +5801,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB00878'],['DRUGBANK:DB00712'],UMLS:C0011389,['CHEBI:3614'],['Chlorhexidine'],['CHEBI:5130'],['Flurbiprofen']
 ['DRUGBANK:DB14539'],['DRUGBANK:DB06811'],MONDO:0004872,['CHEBI:17650'],['Hydrocortisone'],['CHEBI:46859'],['Polidocanol']
 ['DRUGBANK:DB00257'],['DRUGBANK:DB01234'],MONDO:0001461,['CHEBI:3764'],['Clotrimazole'],['CHEBI:41879'],['Dexamethasone']
-['DRUGBANK:DB11105'],"['DRUGBANK:DB14539', 'DRUGBANK:DB16614', 'DRUGBANK:DB01086', 'DRUGBANK:DB13155']",MONDO:0004872,['CHEBI:135611'],['Benzalkonium'],"['CHEBI:17650', ['Error'], 'CHEBI:116735', 'CHEBI:4853']","['Hydrocortisone', ['Error'], 'Benzocaine', 'Esculin']"
 ['DRUGBANK:DB00620'],['DRUGBANK:DB00994'],MONDO:0004872,['CHEBI:9667'],['Triamcinolone'],['CHEBI:7507'],['Framycetin']
 ['DRUGBANK:DB00586'],['DRUGBANK:DB01173'],NCIT:C3244,['CHEBI:47381'],['Diclofenac'],['CHEBI:7789'],['Orphenadrine']
 ['DRUGBANK:DB00199'],['DRUGBANK:DB00982'],MONDO:0011438,['CHEBI:42355'],['Erythromycin'],['CHEBI:6067'],['Isotretinoin']
@@ -6629,7 +6600,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB11323'],"['DRUGBANK:DB14156', 'DRUGBANK:DB14003', 'DRUGBANK:DB00825']",HP:0003326,['CHEBI:86541'],['Glycol salicylate'],"['CHEBI:36773', 'CHEBI:18145', 'CHEBI:25187']","['camphor', 'Vitamin E', 'Menthol']"
 ['DRUGBANK:DB06724'],"['DRUGBANK:DB11126', 'DRUGBANK:DB13231']",MONDO:0005557,['CHEBI:3311'],['Calcium carbonate'],"['CHEBI:3309', 'UNII:2URQ2N32W3']","['Calcium gluconate', 'Calcium lactate']"
 ['DRUGBANK:DB11201'],"['DRUGBANK:DB00825', 'DRUGBANK:DB01744']",HP:0003418,['CHEBI:135976'],['Menthyl salicylate'],"['CHEBI:25187', 'CHEBI:36773']","['Menthol', 'camphor']"
-['DRUGBANK:DB14222'],"['DRUGBANK:DB15751', 'DRUGBANK:DB11360', 'DRUGBANK:DB09322']",MONDO:0001517,['DRUGBANK:DB14222'],['Bifidobacterium longum infantis'],"[['Error'], 'DRUGBANK:DB11360', 'CHEBI:35176']","[['Error'], 'Lactobacillus plantarum', 'Zinc sulfate']"
 ['DRUGBANK:DB10992'],"['DRUGBANK:DB10584', 'DRUGBANK:DB10788', 'DRUGBANK:DB10583', 'DRUGBANK:DB10991']",MONDO:0005526,['UMLS:C2725004'],['pertactin'],"['DRUGBANK:DB09877', 'UMLS:C2725003', 'UMLS:C0305062', 'UMLS:C2725005']","['Corynebacterium diphtheriae', 'Bordetella pertussis filamentous hemagglutinin vaccine, inactivated', 'Tetanus Toxoid', 'Bordetella pertussis toxoid vaccine, inactivated']"
 ['DRUGBANK:DB03904'],['DRUGBANK:DB14539'],UMLS:C5441647,['CHEBI:16199'],['Urea'],['CHEBI:17650'],['Hydrocortisone']
 ['DRUGBANK:DB00825'],['DRUGBANK:DB11082'],MONDO:0006609,['CHEBI:25187'],['Menthol'],['DRUGBANK:DB11082'],['Coal tar']
@@ -6660,7 +6630,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB00761'],"['DRUGBANK:DB13180', 'DRUGBANK:DB09395', 'DRUGBANK:DB01914', 'DRUGBANK:DB09407', 'DRUGBANK:DB09153']",UMLS:C0855232,['CHEBI:32588'],['Potassium chloride'],"['CHEBI:33198', 'CHEBI:32954', 'CHEBI:17234', 'CHEBI:25107', 'CHEBI:26710']","['Gluconic Acid', 'Sodium acetate', 'D-glucose', 'magnesium atom', 'Sodium chloride']"
 ['DRUGBANK:DB00537'],['DRUGBANK:DB00916'],UMLS:C1112209,['CHEBI:100241'],['Ciprofloxacin'],['CHEBI:6909'],['Metronidazole']
 ['DRUGBANK:DB00951'],"['DRUGBANK:DB01045', 'DRUGBANK:DB00339']",MONDO:0100481,['CHEBI:6030'],['Isoniazid'],"['CHEBI:28077', 'CHEBI:45285']","['Rifampin', 'Pyrazinamide']"
-['DRUGBANK:DB15820'],"['DRUGBANK:DB11074', 'DRUGBANK:DB00085', 'DRUGBANK:DB14016']",HP:0003270,[['Error']],[['Error']],"['CHEBI:31498', 'UMLS:C0111046', 'DRUGBANK:DB14016']","['Simethicone', 'Creon', 'Ox bile extract']"
 ['DRUGBANK:DB11596'],['DRUGBANK:DB00544'],UMLS:C4721579,['CHEBI:63606'],['Levoleucovorin'],['CHEBI:46345'],['Fluorouracil']
 ['DRUGBANK:DB13962'],['DRUGBANK:DB11126'],HP:0002918,['UNII:SST07NLK7J'],['Calcium saccharate'],['CHEBI:3309'],['Calcium gluconate']
 ['DRUGBANK:DB00985'],['DRUGBANK:DB00165'],MONDO:0008015,['CHEBI:94848'],['Dimenhydrinate'],['CHEBI:27306'],['vitamin B6']
@@ -6677,7 +6646,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB01168'],"['DRUGBANK:DB00635', 'DRUGBANK:DB00541', 'DRUGBANK:DB00888']",UMLS:C0677954,['CHEBI:71417'],['Procarbazine'],"['CHEBI:8382', 'CHEBI:28445', 'CHEBI:28925']","['Prednisone', 'vincristine', 'Mechlorethamine']"
 ['DRUGBANK:DB09214'],['DRUGBANK:DB11582'],UMLS:C0423673,['CHEBI:76128'],['Dexketoprofen'],['CHEBI:94557'],['Thiocolchicoside']
 ['DRUGBANK:DB00945'],['DRUGBANK:DB00852'],NCIT:C78302,['CHEBI:15365'],['Aspirin'],['CHEBI:51209'],['Pseudoephedrine']
-['DRUGBANK:DB16362'],['DRUGBANK:DB15988'],UMLS:C1699100,[['Error']],[['Error']],['UNII:T9S008S8JL'],['Ephedrine levulinate']
 ['DRUGBANK:DB00825'],"['DRUGBANK:DB11323', 'DRUGBANK:DB01109']",NCIT:C50579,['CHEBI:25187'],['Menthol'],"['CHEBI:86541', 'CHEBI:28304']","['Glycol salicylate', 'Heparin']"
 ['DRUGBANK:DB00586'],['DRUGBANK:DB00281'],UMLS:C0423673,['CHEBI:47381'],['Diclofenac'],['CHEBI:6456'],['Lidocaine']
 ['DRUGBANK:DB15774'],['DRUGBANK:DB00936'],NCIT:C50579,['CHEBI:2500'],['beta-Escin'],['CHEBI:16914'],['Salicylic acid']
@@ -6942,7 +6910,6 @@ primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary
 ['DRUGBANK:DB13257'],"['DRUGBANK:DB00158', 'DRUGBANK:DB00126']",MONDO:0000755,['CHEBI:75832'],['ferrous sulfate'],"['CHEBI:27470', 'CHEBI:22652']","['Folic acid', 'Ascorbic acid']"
 ['DRUGBANK:DB13257'],"['DRUGBANK:DB00158', 'DRUGBANK:DB00126']",MONDO:0000755,['CHEBI:75832'],['ferrous sulfate'],"['CHEBI:27470', 'CHEBI:22652']","['Folic acid', 'Ascorbic acid']"
 ['DRUGBANK:DB01233'],"['DRUGBANK:DB01390', 'DRUGBANK:DB11074', 'DRUGBANK:DB04272', 'DRUGBANK:DB09125', 'DRUGBANK:DB09459']",UMLS:C0232574,['CHEBI:107736'],['Metoclopramide'],"['CHEBI:32139', 'CHEBI:31498', 'CHEBI:30769', 'CHEBI:64733', 'CHEBI:15671']","['CID 22590783', 'Simethicone', 'Citric acid', 'Potassium citrate', 'L-tartaric acid']"
-['DRUGBANK:DB15820'],"['DRUGBANK:DB14016', 'DRUGBANK:DB09512', 'DRUGBANK:DB11065', 'DRUGBANK:DB11066', 'DRUGBANK:DB13147']",HP:0002239,[['Error']],[['Error']],"['DRUGBANK:DB14016', 'CHEBI:31498', 'UMLS:C0301812', 'UMLS:C2722896', 'UMLS:C0443469']","['Ox bile extract', 'Simethicone', 'Pancreatic amylase', 'pancrelipase protease', 'pancreatic lipase']"
 ['DRUGBANK:DB01216'],['DRUGBANK:DB00590'],UMLS:C3888488,['CHEBI:5062'],['Finasteride'],['CHEBI:4708'],['Doxazosin']
 ['DRUGBANK:DB00208'],['DRUGBANK:DB00945'],UMLS:C3889030,['CHEBI:9588'],['Ticlopidine'],['CHEBI:15365'],['Aspirin']
 ['DRUGBANK:DB00603'],['DRUGBANK:DB13956'],MONDO:0005298,['CHEBI:6715'],['medroxyprogesterone'],['CHEBI:16469'],['Estradiol']

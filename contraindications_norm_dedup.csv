@@ -1,8 +1,4 @@
 primary_drug_id,secondary_drug_id,condition_id_norm,primary_drug_id_norm,primary_drug_id_norm_label,secondary_drug_id_norm,secondary_drug_id_norm_label,condition_id_norm_norm,condition_id_norm_norm_label
-DB16617,DB01750,MONDO:0004868,['Error'],['Error'],CHEBI:32918,1-naphthaleneacetic acid,MONDO:0004868,biliary tract disorder
-DB15988,DB16362,MONDO:0004566,UNII:T9S008S8JL,Ephedrine levulinate,['Error'],['Error'],MONDO:0004566,postgastrectomy syndrome
-DB16613,DB00798,MONDO:0005046,['Error'],['Error'],CHEBI:17833,Gentamicin,MONDO:0005046,immune system disorder
-DB16613,DB00798,MONDO:0003900,['Error'],['Error'],CHEBI:17833,Gentamicin,MONDO:0003900,connective tissue disorder
 DB16000,DB00115,UMLS:C1996939,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:17439,Cyanocobalamin,UMLS:C1996939,History of hemorrhage into ventricle of brain
 DB15956,DB03852,UMLS:C1096063,CHEBI:22469,Terpineol,CHEBI:27961,Eucalyptol,UMLS:C1096063,Drug Resistant Epilepsy
 DB16000,DB00115,MONDO:0001866,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:17439,Cyanocobalamin,MONDO:0001866,bipolar I disorder
@@ -16,16 +12,12 @@ DB15903,DB00977,MONDO:0005399,CHEBI:31394,chlormadinone,CHEBI:4903,Ethinylestrad
 DB15907,DB00936,MONDO:0019289,PUBCHEM.COMPOUND:6433489,Escin,CHEBI:16914,Salicylic acid,MONDO:0019289,hyperpigmentation of the skin
 DB13166,DB00999,HP:0100545,CHEBI:78539,Zofenopril,CHEBI:5778,Hydrochlorothiazide,HP:0100545,Arterial stenosis
 DB16625,DB13956,UMLS:C0855239,UNII:2W8I1S6T5L,Prasterone enantate,CHEBI:16469,Estradiol,UMLS:C0855239,Anti-DNA antibodies positive
-DB15988,DB16362,UMLS:C0342398,UNII:T9S008S8JL,Ephedrine levulinate,['Error'],['Error'],UMLS:C0342398,Hypophysectomy-induced hypopituitarism
-DB15889,DB15860,HP:0002027,DRUGBANK:DB15889,Senna leaf,['Error'],['Error'],HP:0002027,Abdominal pain
-DB15988,DB16362,UMLS:C0339800,UNII:T9S008S8JL,Ephedrine levulinate,['Error'],['Error'],UMLS:C0339800,Rhinitis sicca
 DB15903,DB00977,MONDO:0002691,CHEBI:31394,chlormadinone,CHEBI:4903,Ethinylestradiol,MONDO:0002691,liver cancer
 DB16625,DB13956,MONDO:0002304,UNII:2W8I1S6T5L,Prasterone enantate,CHEBI:16469,Estradiol,MONDO:0002304,protein S deficiency
 DB00397,DB00874,MONDO:0001106,PUBCHEM.COMPOUND:4786,Phenylpropanolamine,CHEBI:5551,Guaifenesin,MONDO:0001106,kidney failure
 DB16000,DB08940,UMLS:C0151664,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:31749,Kebuzone,UMLS:C0151664,Gastrointestinal perforation
 DB16625,DB13956,UMLS:C1277614,UNII:2W8I1S6T5L,Prasterone enantate,CHEBI:16469,Estradiol,UMLS:C1277614,Suspected endometrial cancer
 DB15903,DB00977,MONDO:0025598,CHEBI:31394,chlormadinone,CHEBI:4903,Ethinylestradiol,MONDO:0025598,pneumonia caused by chlamydia
-DB15889,DB15860,UMLS:C0267596,DRUGBANK:DB15889,Senna leaf,['Error'],['Error'],UMLS:C0267596,Rectal hemorrhage
 DB16000,DB00281,UMLS:C1996939,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:6456,Lidocaine,UMLS:C1996939,History of hemorrhage into ventricle of brain
 DB16000,DB00281,MONDO:0001866,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:6456,Lidocaine,MONDO:0001866,bipolar I disorder
 DB16000,DB01234,MONDO:0007263,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:41879,Dexamethasone,MONDO:0007263,Arrhythmia
@@ -44,7 +36,6 @@ DB09096,DB01190,MONDO:0000705,CHEBI:82405,Benzoyl peroxide,CHEBI:3746,Evoclin (T
 DB09096,DB01190,MONDO:0005101,CHEBI:82405,Benzoyl peroxide,CHEBI:3746,Evoclin (TN),MONDO:0005101,ulcerative colitis
 DB13238,DB06151,UBERON:0002363,CHEBI:134753,Tuaminoheptane,CHEBI:28939,Acetylcysteine,UBERON:0002363,dura mater
 DB01301,DB00446,MONDO:0004785,CHEBI:63334,Rolitetracycline,CHEBI:17698,Chloramphenicol,MONDO:0004785,blepharitis
-DB15860,DB15889,UMLS:C0267596,['Error'],['Error'],DRUGBANK:DB15889,Senna leaf,UMLS:C0267596,Rectal hemorrhage
 DB01301,DB01111,MONDO:0006668,CHEBI:63334,Rolitetracycline,CHEBI:37943,Colistin,MONDO:0006668,bacterial conjunctivitis
 DB15815,DB11365,HP:0002027,DRUGBANK:DB15815,Boldo leaf extract,UNII:3FYP5M0IJX,Sennosides,HP:0002027,Abdominal pain
 DB09375,DB11193,MONDO:0001106,UNII:BVS505O332,Chymotrypsin,DRUGBANK:DB11193,Papain,MONDO:0001106,kidney failure
@@ -65,7 +56,6 @@ DB13312,DB09238,MONDO:0005252,CHEBI:135735,Delapril,CHEBI:135849,Manidipine,MOND
 DB13238,DB06151,HP:0032807,CHEBI:134753,Tuaminoheptane,CHEBI:28939,Acetylcysteine,HP:0032807,Neonatal seizure
 DB15821,DB00527,MONDO:0019289,CHEBI:177866,Fluocortolone caproate,CHEBI:247956,Cinchocaine,MONDO:0019289,hyperpigmentation of the skin
 DB13754,DB00316,MONDO:0001106,CHEBI:134916,Mephenoxalone,CHEBI:46195,Acetaminophen,MONDO:0001106,kidney failure
-DB15860,DB15889,HP:0002027,['Error'],['Error'],DRUGBANK:DB15889,Senna leaf,HP:0002027,Abdominal pain
 DB15815,DB11365,UMLS:C0267596,DRUGBANK:DB15815,Boldo leaf extract,UNII:3FYP5M0IJX,Sennosides,UMLS:C0267596,Rectal hemorrhage
 DB01301,DB00443,MONDO:0004785,CHEBI:63334,Rolitetracycline,CHEBI:3077,Betamethasone,MONDO:0004785,blepharitis
 DB01301,DB00443,MONDO:0006668,CHEBI:63334,Rolitetracycline,CHEBI:3077,Betamethasone,MONDO:0006668,bacterial conjunctivitis
@@ -104,7 +94,6 @@ DB00297,DB00814,MONDO:0005271,CHEBI:3215,Bupivacaine,CHEBI:6741,Meloxicam,MONDO:
 DB13673,DB13158,UMLS:C5818401,CHEBI:28098,Bekanamycin,CHEBI:31415,clobetasone butyrate,UMLS:C5818401,Type of antimicrobial resistant organism
 DB09093,DB00620,MONDO:0006604,CHEBI:27644,Chlortetracycline,CHEBI:9667,Triamcinolone,MONDO:0006604,rosacea
 DB15777,DB00281,UMLS:C0565653,CHEBI:177427,Fluocortolone pivalate,CHEBI:6456,Lidocaine,UMLS:C0565653,Immunization reaction
-DB15860,DB15889,MONDO:0004565,['Error'],['Error'],DRUGBANK:DB15889,Senna leaf,MONDO:0004565,intestinal obstruction
 DB15815,DB15478,MONDO:0004565,DRUGBANK:DB15815,Boldo leaf extract,DRUGBANK:DB15478,Frangula purshiana bark,MONDO:0004565,intestinal obstruction
 DB00331,DB09038,MONDO:0005252,CHEBI:6801,Metformin,CHEBI:82720,Empagliflozin,MONDO:0005252,heart failure
 DB00331,DB09038,HP:0001259,CHEBI:6801,Metformin,CHEBI:82720,Empagliflozin,HP:0001259,Coma
@@ -169,8 +158,6 @@ DB01167,DB11581,MONDO:0004948,CHEBI:6076,Itraconazole,CHEBI:133021,Venetoclax,MO
 DB01243,DB00443,UMLS:C0162628,CHEBI:59477,Chloroxine,CHEBI:3077,Betamethasone,UMLS:C0162628,"Skin Diseases, Viral"
 DB16625,DB13956,MONDO:0006716,UNII:2W8I1S6T5L,Prasterone enantate,CHEBI:16469,Estradiol,MONDO:0006716,coronary thrombosis
 DB09124,DB00286,MONDO:0006716,CHEBI:135446,Medrogestone,CHEBI:8389,Conjugated estrogens,MONDO:0006716,coronary thrombosis
-DB13195,DB01109,MONDO:0002049,['Error'],['Error'],CHEBI:28304,Heparin,MONDO:0002049,thrombocytopenia
-DB15889,DB15860,HP:0002018,DRUGBANK:DB15889,Senna leaf,['Error'],['Error'],HP:0002018,Nausea
 DB16000,DB00281,HP:0002239,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:6456,Lidocaine,HP:0002239,Gastrointestinal hemorrhage
 DB16000,DB00115,MONDO:0002049,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:17439,Cyanocobalamin,MONDO:0002049,thrombocytopenia
 DB00091,DB11082,MONDO:0005083,CHEBI:4031,Cyclosporine,DRUGBANK:DB11082,Coal tar,MONDO:0005083,psoriasis
@@ -180,12 +167,9 @@ DB01243,DB00443,MONDO:0000755,CHEBI:59477,Chloroxine,CHEBI:3077,Betamethasone,MO
 DB01015,DB00440,MONDO:0000755,CHEBI:9332,Sulfamethoxazole,CHEBI:45924,Trimethoprim,MONDO:0000755,ectopic pregnancy
 DB00440,DB01015,MONDO:0000755,CHEBI:45924,Trimethoprim,CHEBI:9332,Sulfamethoxazole,MONDO:0000755,ectopic pregnancy
 DB16625,DB13956,MONDO:0000755,UNII:2W8I1S6T5L,Prasterone enantate,CHEBI:16469,Estradiol,MONDO:0000755,ectopic pregnancy
-DB15889,DB15860,MONDO:0000755,DRUGBANK:DB15889,Senna leaf,['Error'],['Error'],MONDO:0000755,ectopic pregnancy
 DB16022,DB11105,MONDO:0000755,CHEBI:186232,Thenyldiamine,CHEBI:135611,Benzalkonium,MONDO:0000755,ectopic pregnancy
-DB16613,DB00798,MONDO:0000755,['Error'],['Error'],CHEBI:17833,Gentamicin,MONDO:0000755,ectopic pregnancy
 DB15821,DB15777,MONDO:0000755,CHEBI:177866,Fluocortolone caproate,CHEBI:177427,Fluocortolone pivalate,MONDO:0000755,ectopic pregnancy
 DB00091,DB00563,MONDO:0005083,CHEBI:4031,Cyclosporine,CHEBI:44185,Methotrexate,MONDO:0005083,psoriasis
-DB13195,DB14343,MONDO:0002049,['Error'],['Error'],DRUGBANK:DB14343,Arnica montana flower,MONDO:0002049,thrombocytopenia
 DB16000,DB01234,HP:0002239,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:41879,Dexamethasone,HP:0002239,Gastrointestinal hemorrhage
 DB16000,DB08940,MONDO:0002049,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:31749,Kebuzone,MONDO:0002049,thrombocytopenia
 DB16022,DB00388,MONDO:0000755,CHEBI:186232,Thenyldiamine,CHEBI:8093,Phenylephrine,MONDO:0000755,ectopic pregnancy
@@ -195,12 +179,9 @@ DB16000,DB00115,HP:0002239,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:17439,C
 DB16000,DB01234,MONDO:0002049,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:41879,Dexamethasone,MONDO:0002049,thrombocytopenia
 DB12911,DB11324,MONDO:0002406,CHEBI:32322,Nicoboxil,CHEBI:46936,Nonivamide,MONDO:0002406,dermatitis
 DB15785,DB00936,MONDO:0002406,CHEBI:135096,Myrtecaine,CHEBI:16914,Salicylic acid,MONDO:0002406,dermatitis
-DB13194,DB00318,UMLS:C1623040,['Error'],['Error'],CHEBI:16714,Codeine,UMLS:C1623040,Breastfeeding (mother)
 DB00440,DB01015,UMLS:C1623040,CHEBI:45924,Trimethoprim,CHEBI:9332,Sulfamethoxazole,UMLS:C1623040,Breastfeeding (mother)
 DB01015,DB00440,UMLS:C1623040,CHEBI:9332,Sulfamethoxazole,CHEBI:45924,Trimethoprim,UMLS:C1623040,Breastfeeding (mother)
-DB15889,DB15860,UMLS:C1623040,DRUGBANK:DB15889,Senna leaf,['Error'],['Error'],UMLS:C1623040,Breastfeeding (mother)
 DB15821,DB15777,UMLS:C1623040,CHEBI:177866,Fluocortolone caproate,CHEBI:177427,Fluocortolone pivalate,UMLS:C1623040,Breastfeeding (mother)
-DB16613,DB00798,UMLS:C1623040,['Error'],['Error'],CHEBI:17833,Gentamicin,UMLS:C1623040,Breastfeeding (mother)
 DB15785,DB00936,UMLS:C1623040,CHEBI:135096,Myrtecaine,CHEBI:16914,Salicylic acid,UMLS:C1623040,Breastfeeding (mother)
 DB16622,DB13290,MONDO:0006722,UNII:Q3B1Y93C1S,Dectaflur,UNII:8NY9L8837D,Olaflur,MONDO:0006722,dental fluorosis
 DB15903,DB00977,HP:0001410,CHEBI:31394,chlormadinone,CHEBI:4903,Ethinylestradiol,HP:0001410,Decreased liver function
@@ -215,7 +196,6 @@ DB00440,DB01015,MONDO:0001106,CHEBI:45924,Trimethoprim,CHEBI:9332,Sulfamethoxazo
 DB00440,DB01015,CHEBI:45924,CHEBI:45924,Trimethoprim,CHEBI:9332,Sulfamethoxazole,CHEBI:45924,Trimethoprim
 DB01015,DB00440,MONDO:0001106,CHEBI:9332,Sulfamethoxazole,CHEBI:45924,Trimethoprim,MONDO:0001106,kidney failure
 DB01015,DB00440,CHEBI:45924,CHEBI:9332,Sulfamethoxazole,CHEBI:45924,Trimethoprim,CHEBI:45924,Trimethoprim
-DB16617,DB01750,UBERON:0001174,['Error'],['Error'],CHEBI:32918,1-naphthaleneacetic acid,UBERON:0001174,common bile duct
 DB15998,DB13359,HP:0011105,UNII:5UW00M8KR0,Potassium hydrogen DL-aspartate,UNII:R17X820ROL,Magnesium aspartate,HP:0011105,Hypervolemia
 DB15975,DB00440,HP:0011105,CHEBI:88258,Sulfametrole,CHEBI:45924,Trimethoprim,HP:0011105,Hypervolemia
 DB00398,DB01229,MONDO:0005097,CHEBI:50924,Sorafenib,CHEBI:45863,Paclitaxel,MONDO:0005097,squamous cell lung carcinoma
@@ -225,7 +205,6 @@ DB15983,DB14482,MONDO:0005027,UNII:C3B9R0E116,Menglytate,CHEBI:22652,Ascorbic ac
 DB16000,DB08940,MONDO:0001166,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:31749,Kebuzone,MONDO:0001166,nephritis
 DB15998,DB13359,MONDO:0001166,UNII:5UW00M8KR0,Potassium hydrogen DL-aspartate,UNII:R17X820ROL,Magnesium aspartate,MONDO:0001166,nephritis
 DB13569,DB06715,NCIT:C35607,CHEBI:30812,iron dichloride,CHEBI:8346,Potassium Iodide,NCIT:C35607,Blood Alkaline Phosphatase Increased
-DB15889,DB15860,MONDO:0004565,DRUGBANK:DB15889,Senna leaf,['Error'],['Error'],MONDO:0004565,intestinal obstruction
 DB15576,DB13882,HP:0012042,CHEBI:88839,Ethyl salicylate,CHEBI:134761,Methyl nicotinate,HP:0012042,Aspirin-induced asthma
 DB16000,DB00115,MONDO:0001166,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:17439,Cyanocobalamin,MONDO:0001166,nephritis
 DB13569,DB14533,NCIT:C35607,CHEBI:30812,iron dichloride,UNII:86Q357L16B,Zinc chloride,NCIT:C35607,Blood Alkaline Phosphatase Increased
@@ -242,11 +221,9 @@ DB16020,DB00591,UMLS:C0162628,UNII:WA1RT89G9X,Ketocaine,CHEBI:5108,Fluocinolone,
 DB15790,DB00316,MONDO:0018460,CHEBI:135360,Mecloxamine,CHEBI:46195,Acetaminophen,MONDO:0018460,Eales disease
 DB15790,DB00696,MONDO:0018460,CHEBI:135360,Mecloxamine,CHEBI:64318,Ergotamine,MONDO:0018460,Eales disease
 DB15790,DB00201,MONDO:0018460,CHEBI:135360,Mecloxamine,CHEBI:27732,Caffeine,MONDO:0018460,Eales disease
-DB15836,DB11120,MONDO:0012511,['Error'],['Error'],UNII:XJ6RUH0O4G,Turpentine,MONDO:0012511,preterm premature rupture of the membranes
 DB13735,DB00514,HP:0002791,CHEBI:85537,Sulfogaiacol,CHEBI:4470,Dextromethorphan,HP:0002791,Hypoventilation
 DB13238,DB06151,MONDO:0004995,CHEBI:134753,Tuaminoheptane,CHEBI:28939,Acetylcysteine,MONDO:0004995,cardiovascular disorder
 DB13735,DB00514,MONDO:0005249,CHEBI:85537,Sulfogaiacol,CHEBI:4470,Dextromethorphan,MONDO:0005249,pneumonia
-DB15860,DB15889,HP:0002018,['Error'],['Error'],DRUGBANK:DB15889,Senna leaf,HP:0002018,Nausea
 DB15815,DB15478,HP:0002018,DRUGBANK:DB15815,Boldo leaf extract,DRUGBANK:DB15478,Frangula purshiana bark,HP:0002018,Nausea
 DB13803,DB00384,MONDO:0000755,CHEBI:135499,Xipamide,CHEBI:9671,Triamterene,MONDO:0000755,ectopic pregnancy
 DB15975,DB00440,MONDO:0002049,CHEBI:88258,Sulfametrole,CHEBI:45924,Trimethoprim,MONDO:0002049,thrombocytopenia
@@ -256,22 +233,15 @@ DB00331,DB09038,MONDO:0000755,CHEBI:6801,Metformin,CHEBI:82720,Empagliflozin,MON
 DB15790,DB00201,MONDO:0000755,CHEBI:135360,Mecloxamine,CHEBI:27732,Caffeine,MONDO:0000755,ectopic pregnancy
 DB15761,DB01060,MONDO:0000755,CHEBI:9321,Sulbactam,CHEBI:2676,Amoxicillin,MONDO:0000755,ectopic pregnancy
 DB15975,DB00440,MONDO:0000755,CHEBI:88258,Sulfametrole,CHEBI:45924,Trimethoprim,MONDO:0000755,ectopic pregnancy
-DB15860,DB15889,MONDO:0000755,['Error'],['Error'],DRUGBANK:DB15889,Senna leaf,MONDO:0000755,ectopic pregnancy
-DB15836,DB00373,MONDO:0012511,['Error'],['Error'],CHEBI:9599,Timolol,MONDO:0012511,preterm premature rupture of the membranes
 DB15815,DB11365,HP:0002018,DRUGBANK:DB15815,Boldo leaf extract,UNII:3FYP5M0IJX,Sennosides,HP:0002018,Nausea
 DB15790,DB00696,MONDO:0000755,CHEBI:135360,Mecloxamine,CHEBI:64318,Ergotamine,MONDO:0000755,ectopic pregnancy
-DB15836,DB03852,MONDO:0012511,['Error'],['Error'],CHEBI:27961,Eucalyptol,MONDO:0012511,preterm premature rupture of the membranes
 DB15790,DB00316,MONDO:0000755,CHEBI:135360,Mecloxamine,CHEBI:46195,Acetaminophen,MONDO:0000755,ectopic pregnancy
-DB15836,DB01744,MONDO:0012511,['Error'],['Error'],CHEBI:36773,camphor,MONDO:0012511,preterm premature rupture of the membranes
-DB15836,DB00825,MONDO:0012511,['Error'],['Error'],CHEBI:15409,Levomenthol,MONDO:0012511,preterm premature rupture of the membranes
-DB15836,DB14322,MONDO:0012511,['Error'],['Error'],['Error'],['Error'],MONDO:0012511,preterm premature rupture of the membranes
 DB01407,DB06742,MONDO:0019289,CHEBI:174690,Clenbuterol,CHEBI:135590,Ambroxol,MONDO:0019289,hyperpigmentation of the skin
 DB13735,DB00514,UMLS:C1623040,CHEBI:85537,Sulfogaiacol,CHEBI:4470,Dextromethorphan,UMLS:C1623040,Breastfeeding (mother)
 DB13803,DB00384,UMLS:C1623040,CHEBI:135499,Xipamide,CHEBI:9671,Triamterene,UMLS:C1623040,Breastfeeding (mother)
 DB15790,DB00696,UMLS:C1623040,CHEBI:135360,Mecloxamine,CHEBI:64318,Ergotamine,UMLS:C1623040,Breastfeeding (mother)
 DB15761,DB01060,UMLS:C1623040,CHEBI:9321,Sulbactam,CHEBI:2676,Amoxicillin,UMLS:C1623040,Breastfeeding (mother)
 DB15975,DB00440,UMLS:C1623040,CHEBI:88258,Sulfametrole,CHEBI:45924,Trimethoprim,UMLS:C1623040,Breastfeeding (mother)
-DB15860,DB15889,UMLS:C1623040,['Error'],['Error'],DRUGBANK:DB15889,Senna leaf,UMLS:C1623040,Breastfeeding (mother)
 DB15764,DB08984,UMLS:C1623040,CHEBI:15940,Niacin,CHEBI:94731,Etofenamate,UMLS:C1623040,Breastfeeding (mother)
 DB13415,DB01551,UMLS:C1623040,CHEBI:34910,Pentetrazol,CHEBI:135276,Dihydrocodeine,UMLS:C1623040,Breastfeeding (mother)
 DB15790,DB00201,UMLS:C1623040,CHEBI:135360,Mecloxamine,CHEBI:27732,Caffeine,UMLS:C1623040,Breastfeeding (mother)
@@ -326,15 +296,12 @@ DB15998,DB13359,MONDO:0001106,UNII:5UW00M8KR0,Potassium hydrogen DL-aspartate,UN
 DB15975,DB00440,MONDO:0005009,CHEBI:88258,Sulfametrole,CHEBI:45924,Trimethoprim,MONDO:0005009,congestive heart failure
 DB15998,DB13359,MONDO:0005009,UNII:5UW00M8KR0,Potassium hydrogen DL-aspartate,UNII:R17X820ROL,Magnesium aspartate,MONDO:0005009,congestive heart failure
 DB00976,DB01394,HP:0001410,CHEBI:29688,Telithromycin,CHEBI:27882,Colchicine,HP:0001410,Decreased liver function
-DB16617,DB01750,HP:0002910,['Error'],['Error'],CHEBI:32918,1-naphthaleneacetic acid,HP:0002910,Elevated circulating hepatic transaminase concentration
 DB09124,DB00286,UMLS:C1261367,CHEBI:135446,Medrogestone,CHEBI:8389,Conjugated estrogens,UMLS:C1261367,Family history of stroke
-DB13195,DB14343,MONDO:0018746,['Error'],['Error'],DRUGBANK:DB14343,Arnica montana flower,MONDO:0018746,mucous membrane pemphigoid
 DB15903,DB00977,MONDO:0005148,CHEBI:31394,chlormadinone,CHEBI:4903,Ethinylestradiol,MONDO:0005148,type 2 diabetes mellitus
 DB01243,DB00443,MONDO:0021948,CHEBI:59477,Chloroxine,CHEBI:3077,Betamethasone,MONDO:0021948,cutaneous tuberculosis
 DB00957,DB00977,EFO:0009573,CHEBI:50815,Norgestimate,CHEBI:4903,Ethinylestradiol,EFO:0009573,high-risk pregnancy
 DB16000,DB00115,MONDO:0005485,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:17439,Cyanocobalamin,MONDO:0005485,psychosis
 DB11237,DB01698,MONDO:0017123,CHEBI:9765,Trypsin,CHEBI:28527,Rutin,MONDO:0017123,ARC syndrome
-DB13195,DB01109,MONDO:0018746,['Error'],['Error'],CHEBI:28304,Heparin,MONDO:0018746,mucous membrane pemphigoid
 DB16000,DB08940,MONDO:0005485,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:31749,Kebuzone,MONDO:0005485,psychosis
 DB16000,DB01234,MONDO:0005485,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:41879,Dexamethasone,MONDO:0005485,psychosis
 DB01243,DB00443,NCIT:C111970,CHEBI:59477,Chloroxine,CHEBI:3077,Betamethasone,NCIT:C111970,Bulla
@@ -346,7 +313,6 @@ DB15998,DB13359,MONDO:0006684,UNII:5UW00M8KR0,Potassium hydrogen DL-aspartate,UN
 DB15903,DB00977,MONDO:0001751,CHEBI:31394,chlormadinone,CHEBI:4903,Ethinylestradiol,MONDO:0001751,cholestasis
 DB15903,DB00977,MONDO:0009380,CHEBI:31394,chlormadinone,CHEBI:4903,Ethinylestradiol,MONDO:0009380,Dubin-Johnson syndrome
 DB15998,DB13359,MONDO:0006932,UNII:5UW00M8KR0,Potassium hydrogen DL-aspartate,UNII:R17X820ROL,Magnesium aspartate,MONDO:0006932,pulmonary edema
-DB16617,DB01750,MONDO:0001548,['Error'],['Error'],CHEBI:32918,1-naphthaleneacetic acid,MONDO:0001548,hepatic coma
 DB00916,DB00822,MONDO:0007079,CHEBI:6909,Metronidazole,CHEBI:4659,Disulfiram,MONDO:0007079,alcohol dependence
 DB15903,DB00977,HP:0000952,CHEBI:31394,chlormadinone,CHEBI:4903,Ethinylestradiol,HP:0000952,Jaundice
 DB16000,DB00281,MONDO:0005267,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:6456,Lidocaine,MONDO:0005267,heart disorder
@@ -355,10 +321,7 @@ DB09124,DB00286,MONDO:0001531,CHEBI:135446,Medrogestone,CHEBI:8389,Conjugated es
 DB11237,DB01698,MONDO:0001531,CHEBI:9765,Trypsin,CHEBI:28527,Rutin,MONDO:0001531,blood coagulation disease
 DB16000,DB01234,MONDO:0005468,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:41879,Dexamethasone,MONDO:0005468,hypotension
 DB16622,DB13290,UMLS:C1536052,UNII:Q3B1Y93C1S,Dectaflur,UNII:8NY9L8837D,Olaflur,UMLS:C1536052,Oral mucosal exfoliation
-DB16617,DB01750,MONDO:0004565,['Error'],['Error'],CHEBI:32918,1-naphthaleneacetic acid,MONDO:0004565,intestinal obstruction
 DB09124,DB00286,MONDO:0005098,CHEBI:135446,Medrogestone,CHEBI:8389,Conjugated estrogens,MONDO:0005098,stroke disorder
-DB15889,DB15860,HP:0002013,DRUGBANK:DB15889,Senna leaf,['Error'],['Error'],HP:0002013,Vomiting
-DB16617,DB01750,MONDO:0006515,['Error'],['Error'],CHEBI:32918,1-naphthaleneacetic acid,MONDO:0006515,acute pancreatitis
 DB16625,DB13956,MONDO:0005098,UNII:2W8I1S6T5L,Prasterone enantate,CHEBI:16469,Estradiol,MONDO:0005098,stroke disorder
 DB16622,DB13290,HP:0002015,UNII:Q3B1Y93C1S,Dectaflur,UNII:8NY9L8837D,Olaflur,HP:0002015,Dysphagia
 DB00397,DB00874,MONDO:0005010,PUBCHEM.COMPOUND:4786,Phenylpropanolamine,CHEBI:5551,Guaifenesin,MONDO:0005010,coronary artery disorder
@@ -366,12 +329,8 @@ DB13166,DB00999,MONDO:0000755,CHEBI:78539,Zofenopril,CHEBI:5778,Hydrochlorothiaz
 DB15903,DB00977,MONDO:0002887,CHEBI:31394,chlormadinone,CHEBI:4903,Ethinylestradiol,MONDO:0002887,bile duct disorder
 DB13574,DB01381,MONDO:0010138,CHEBI:94362,Heptaminol,UNII:19FUJ2C58T,Ginkgo biloba,MONDO:0010138,thyrotoxicosis
 DB16000,DB01234,UMLS:C0948998,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:41879,Dexamethasone,UMLS:C0948998,Viral infectious disorders
-DB16614,DB11105,UMLS:C0948998,['Error'],['Error'],CHEBI:135611,Benzalkonium,UMLS:C0948998,Viral infectious disorders
 DB00397,DB00874,MONDO:0010138,PUBCHEM.COMPOUND:4786,Phenylpropanolamine,CHEBI:5551,Guaifenesin,MONDO:0010138,thyrotoxicosis
 DB16022,DB11105,MONDO:0010138,CHEBI:186232,Thenyldiamine,CHEBI:135611,Benzalkonium,MONDO:0010138,thyrotoxicosis
-DB15751,DB14222,MONDO:0003778,['Error'],['Error'],DRUGBANK:DB14222,Bifidobacterium longum infantis,MONDO:0003778,inborn error of immunity
-DB16617,DB01750,UMLS:C0014012,['Error'],['Error'],CHEBI:32918,1-naphthaleneacetic acid,UMLS:C0014012,"Empyema, Gallbladder"
-DB16617,DB01750,UMLS:C0151824,['Error'],['Error'],CHEBI:32918,1-naphthaleneacetic acid,UMLS:C0151824,Biliary Colic
 DB16625,DB13956,MONDO:0008560,UNII:2W8I1S6T5L,Prasterone enantate,CHEBI:16469,Estradiol,MONDO:0008560,thrombophilia due to activated protein C resistance
 DB15785,DB00936,MONDO:0004980,CHEBI:135096,Myrtecaine,CHEBI:16914,Salicylic acid,MONDO:0004980,atopic eczema
 DB15357,DB00209,UMLS:C0585136,CHEBI:10056,Xanomeline,CHEBI:32270,trospium chloride,UMLS:C0585136,Gastric retention
@@ -396,9 +355,7 @@ DB16622,DB09325,UMLS:C1536052,UNII:Q3B1Y93C1S,Dectaflur,CHEBI:28741,Sodium fluor
 DB16622,DB09325,HP:0002015,UNII:Q3B1Y93C1S,Dectaflur,CHEBI:28741,Sodium fluoride,HP:0002015,Dysphagia
 DB13574,DB13124,MONDO:0010138,CHEBI:94362,Heptaminol,UNII:7Y4N11PXO8,Troxerutin,MONDO:0010138,thyrotoxicosis
 DB16000,DB00115,UMLS:C0948998,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:17439,Cyanocobalamin,UMLS:C0948998,Viral infectious disorders
-DB16614,DB13155,UMLS:C0948998,['Error'],['Error'],CHEBI:4853,Esculin,UMLS:C0948998,Viral infectious disorders
 DB16022,DB00388,MONDO:0010138,CHEBI:186232,Thenyldiamine,CHEBI:8093,Phenylephrine,MONDO:0010138,thyrotoxicosis
-DB15751,DB09322,MONDO:0003778,['Error'],['Error'],CHEBI:35176,Zinc sulfate,MONDO:0003778,inborn error of immunity
 DB16000,DB01234,MONDO:0018542,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:41879,Dexamethasone,MONDO:0018542,severe congenital neutropenia
 DB16000,DB01234,UMLS:C0264714,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:41879,Dexamethasone,UMLS:C0264714,Acute heart failure
 DB13569,DB14533,MONDO:0001751,CHEBI:30812,iron dichloride,UNII:86Q357L16B,Zinc chloride,MONDO:0001751,cholestasis
@@ -408,8 +365,6 @@ DB16000,DB01234,MONDO:0003240,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:4187
 DB16000,DB01234,MONDO:0005267,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:41879,Dexamethasone,MONDO:0005267,heart disorder
 DB16000,DB00115,MONDO:0005468,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:17439,Cyanocobalamin,MONDO:0005468,hypotension
 DB16000,DB00281,UMLS:C0948998,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:6456,Lidocaine,UMLS:C0948998,Viral infectious disorders
-DB16614,DB01086,UMLS:C0948998,['Error'],['Error'],CHEBI:116735,Benzocaine,UMLS:C0948998,Viral infectious disorders
-DB15751,DB11360,MONDO:0003778,['Error'],['Error'],DRUGBANK:DB11360,Lactobacillus plantarum,MONDO:0003778,inborn error of immunity
 DB16000,DB00281,MONDO:0018542,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:6456,Lidocaine,MONDO:0018542,severe congenital neutropenia
 DB16000,DB00115,UMLS:C0264714,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:17439,Cyanocobalamin,UMLS:C0264714,Acute heart failure
 DB13569,DB09131,MONDO:0001751,CHEBI:30812,iron dichloride,CHEBI:49553,Cupric Chloride,MONDO:0001751,cholestasis
@@ -419,7 +374,6 @@ DB16000,DB00281,MONDO:0003240,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:6456
 DB16000,DB00115,MONDO:0005267,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:17439,Cyanocobalamin,MONDO:0005267,heart disorder
 DB16000,DB08940,MONDO:0005468,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:31749,Kebuzone,MONDO:0005468,hypotension
 DB16000,DB08940,UMLS:C0948998,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:31749,Kebuzone,UMLS:C0948998,Viral infectious disorders
-DB16614,DB14539,UMLS:C0948998,['Error'],['Error'],CHEBI:17650,Hydrocortisone,UMLS:C0948998,Viral infectious disorders
 DB16000,DB00115,MONDO:0018542,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:17439,Cyanocobalamin,MONDO:0018542,severe congenital neutropenia
 DB16000,DB00281,UMLS:C0264714,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:6456,Lidocaine,UMLS:C0264714,Acute heart failure
 DB13569,DB09325,MONDO:0001751,CHEBI:30812,iron dichloride,CHEBI:28741,Sodium fluoride,MONDO:0001751,cholestasis
@@ -455,7 +409,6 @@ DB13415,DB01551,MONDO:0002203,CHEBI:34910,Pentetrazol,CHEBI:135276,Dihydrocodein
 DB12235,DB01395,HP:0200119,CHEBI:142773,Estetrol,CHEBI:50838,Drospirenone,HP:0200119,Acute hepatitis
 DB13384,DB00875,UMLS:C0542052,CHEBI:135214,Melitracen,CHEBI:10454,Flupentixol,UMLS:C0542052,Coronary artery insufficiency
 DB13384,DB00875,UMLS:C1998297,CHEBI:135214,Melitracen,CHEBI:10454,Flupentixol,UMLS:C1998297,Recent myocardial infarction
-DB15860,DB15889,HP:0002013,['Error'],['Error'],DRUGBANK:DB15889,Senna leaf,HP:0002013,Vomiting
 DB15815,DB15478,HP:0002013,DRUGBANK:DB15815,Boldo leaf extract,DRUGBANK:DB15478,Frangula purshiana bark,HP:0002013,Vomiting
 DB13673,DB13158,MONDO:0020944,CHEBI:28098,Bekanamycin,CHEBI:31415,clobetasone butyrate,MONDO:0020944,fungal infection of eye
 DB15790,DB00696,UMLS:C0243026,CHEBI:135360,Mecloxamine,CHEBI:64318,Ergotamine,UMLS:C0243026,Sepsis
@@ -466,7 +419,6 @@ DB13312,DB09238,MONDO:0000755,CHEBI:135735,Delapril,CHEBI:135849,Manidipine,MOND
 DB13735,DB00514,MONDO:0010138,CHEBI:85537,Sulfogaiacol,CHEBI:4470,Dextromethorphan,MONDO:0010138,thyrotoxicosis
 DB09375,DB11193,MONDO:0012354,UNII:BVS505O332,Chymotrypsin,DRUGBANK:DB11193,Papain,MONDO:0012354,platelet-type bleeding disorder 8
 DB09415,DB00271,UMLS:C2047834,CHEBI:59732,Meglumine,CHEBI:53691,Diatrizoate,UMLS:C2047834,hysterosalpingography: bilateral obstruction
-DB14222,DB15751,MONDO:0003778,DRUGBANK:DB14222,Bifidobacterium longum infantis,['Error'],['Error'],MONDO:0003778,inborn error of immunity
 DB09093,DB00620,UMLS:C0948998,CHEBI:27644,Chlortetracycline,CHEBI:9667,Triamcinolone,UMLS:C0948998,Viral infectious disorders
 DB13238,DB06151,MONDO:0010138,CHEBI:134753,Tuaminoheptane,CHEBI:28939,Acetylcysteine,MONDO:0010138,thyrotoxicosis
 DB09415,DB00271,MONDO:0010138,CHEBI:59732,Meglumine,CHEBI:53691,Diatrizoate,MONDO:0010138,thyrotoxicosis
@@ -554,11 +506,7 @@ DB14512,DB00768,MONDO:0018076,CHEBI:6970,Mometasone,CHEBI:31933,Olopatadine hydr
 DB01243,DB00443,MONDO:0004609,CHEBI:59477,Chloroxine,CHEBI:3077,Betamethasone,MONDO:0004609,herpes simplex
 DB00768,DB14512,MONDO:0018076,CHEBI:31933,Olopatadine hydrochloride,CHEBI:6970,Mometasone,MONDO:0018076,tuberculosis
 DB15999,DB00527,MONDO:0018076,UNII:0PA7CJ4RFB,Prednisolone caproate,CHEBI:247956,Cinchocaine,MONDO:0018076,tuberculosis
-DB16614,DB01086,MONDO:0018076,['Error'],['Error'],CHEBI:116735,Benzocaine,MONDO:0018076,tuberculosis
 DB15357,DB00209,HP:0000016,CHEBI:10056,Xanomeline,CHEBI:32270,trospium chloride,HP:0000016,Urinary retention
-DB16614,DB14539,MONDO:0018076,['Error'],['Error'],CHEBI:17650,Hydrocortisone,MONDO:0018076,tuberculosis
-DB16614,DB11105,MONDO:0018076,['Error'],['Error'],CHEBI:135611,Benzalkonium,MONDO:0018076,tuberculosis
-DB16614,DB13155,MONDO:0018076,['Error'],['Error'],CHEBI:4853,Esculin,MONDO:0018076,tuberculosis
 DB14669,DB00443,MONDO:0008558,CHEBI:68603,Betamethasone phosphate,CHEBI:3077,Betamethasone,MONDO:0008558,autoimmune thrombocytopenic purpura
 DB15975,DB00440,UMLS:C0472387,CHEBI:88258,Sulfametrole,CHEBI:45924,Trimethoprim,UMLS:C0472387,Vasogenic Cerebral Edema
 DB13166,DB00999,MONDO:0010481,CHEBI:78539,Zofenopril,CHEBI:5778,Hydrochlorothiazide,MONDO:0010481,angioedema
@@ -575,12 +523,9 @@ DB16000,DB01234,MONDO:0002474,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:4187
 DB00397,DB00874,MONDO:0005041,PUBCHEM.COMPOUND:4786,Phenylpropanolamine,CHEBI:5551,Guaifenesin,MONDO:0005041,glaucoma
 DB16000,DB01234,MONDO:0005041,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:41879,Dexamethasone,MONDO:0005041,glaucoma
 DB16022,DB11105,MONDO:0005041,CHEBI:186232,Thenyldiamine,CHEBI:135611,Benzalkonium,MONDO:0005041,glaucoma
-DB15751,DB11360,MONDO:0000945,['Error'],['Error'],DRUGBANK:DB11360,Lactobacillus plantarum,MONDO:0000945,venous insufficiency
 DB16000,DB00281,MONDO:0005041,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:6456,Lidocaine,MONDO:0005041,glaucoma
 DB16022,DB00388,MONDO:0005041,CHEBI:186232,Thenyldiamine,CHEBI:8093,Phenylephrine,MONDO:0005041,glaucoma
-DB15751,DB14222,MONDO:0000945,['Error'],['Error'],DRUGBANK:DB14222,Bifidobacterium longum infantis,MONDO:0000945,venous insufficiency
 DB16000,DB00115,MONDO:0005041,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:17439,Cyanocobalamin,MONDO:0005041,glaucoma
-DB15751,DB09322,MONDO:0000945,['Error'],['Error'],CHEBI:35176,Zinc sulfate,MONDO:0000945,venous insufficiency
 DB16000,DB08940,MONDO:0005041,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:31749,Kebuzone,MONDO:0005041,glaucoma
 DB13166,DB00999,MONDO:0001106,CHEBI:78539,Zofenopril,CHEBI:5778,Hydrochlorothiazide,MONDO:0001106,kidney failure
 DB06292,DB00331,MONDO:0001106,CHEBI:85078,Dapagliflozin,CHEBI:6801,Metformin,MONDO:0001106,kidney failure
@@ -652,16 +597,13 @@ DB16022,DB00388,MONDO:0001345,CHEBI:186232,Thenyldiamine,CHEBI:8093,Phenylephrin
 DB01243,DB00443,MONDO:0006604,CHEBI:59477,Chloroxine,CHEBI:3077,Betamethasone,MONDO:0006604,rosacea
 DB01243,DB00443,MONDO:0005608,CHEBI:59477,Chloroxine,CHEBI:3077,Betamethasone,MONDO:0005608,varicella zoster infection
 DB15999,DB00527,MONDO:0002595,UNII:0PA7CJ4RFB,Prednisolone caproate,CHEBI:247956,Cinchocaine,MONDO:0002595,vaccinia
-DB13194,DB00318,HP:0012450,['Error'],['Error'],CHEBI:16714,Codeine,HP:0012450,Chronic constipation
 DB16022,DB11105,MONDO:0001345,CHEBI:186232,Thenyldiamine,CHEBI:135611,Benzalkonium,MONDO:0001345,antidepressant type abuse
 DB12911,DB11324,UMLS:C0332798,CHEBI:32322,Nicoboxil,CHEBI:46936,Nonivamide,UMLS:C0332798,Open wound
 DB16000,DB08940,MONDO:0004670,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:31749,Kebuzone,MONDO:0004670,lupus erythematosus
 DB15907,DB00936,UMLS:C0332798,PUBCHEM.COMPOUND:6433489,Escin,CHEBI:16914,Salicylic acid,UMLS:C0332798,Open wound
 DB16022,DB11105,MONDO:0009383,CHEBI:186232,Thenyldiamine,CHEBI:135611,Benzalkonium,MONDO:0009383,transient familial neonatal hyperbilirubinemia
-DB13195,DB01109,UMLS:C0332798,['Error'],['Error'],CHEBI:28304,Heparin,UMLS:C0332798,Open wound
 DB16000,DB00281,MONDO:0004670,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:6456,Lidocaine,MONDO:0004670,lupus erythematosus
 DB16022,DB00388,MONDO:0009383,CHEBI:186232,Thenyldiamine,CHEBI:8093,Phenylephrine,MONDO:0009383,transient familial neonatal hyperbilirubinemia
-DB13195,DB14343,UMLS:C0332798,['Error'],['Error'],DRUGBANK:DB14343,Arnica montana flower,UMLS:C0332798,Open wound
 DB16000,DB00115,MONDO:0004670,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:17439,Cyanocobalamin,MONDO:0004670,lupus erythematosus
 DB16000,DB01234,MONDO:0004670,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:41879,Dexamethasone,MONDO:0004670,lupus erythematosus
 DB16625,DB13956,UMLS:C3805038,UNII:2W8I1S6T5L,Prasterone enantate,CHEBI:16469,Estradiol,UMLS:C3805038,Acquired antithrombin III deficiency
@@ -671,15 +613,11 @@ DB16625,DB13956,MONDO:0011962,UNII:2W8I1S6T5L,Prasterone enantate,CHEBI:16469,Es
 DB15903,DB00977,HP:0040298,CHEBI:31394,chlormadinone,CHEBI:4903,Ethinylestradiol,HP:0040298,Hyperplasia of the endometrium
 DB15999,DB00527,MONDO:0005976,UNII:0PA7CJ4RFB,Prednisolone caproate,CHEBI:247956,Cinchocaine,MONDO:0005976,syphilis
 DB01243,DB00443,MONDO:0016047,CHEBI:59477,Chloroxine,CHEBI:3077,Betamethasone,MONDO:0016047,endophthalmitis
-DB13194,DB00318,MONDO:0021113,['Error'],['Error'],CHEBI:16714,Codeine,MONDO:0021113,respiratory failure
 DB15903,DB00977,UMLS:C0588008,CHEBI:31394,chlormadinone,CHEBI:4903,Ethinylestradiol,UMLS:C0588008,Severe depression
 DB00273,DB00331,MONDO:0024306,CHEBI:63631,Topiramate,CHEBI:6801,Metformin,MONDO:0024306,lactic acidosis
 DB15998,DB13359,UMLS:C3472181,UNII:5UW00M8KR0,Potassium hydrogen DL-aspartate,UNII:R17X820ROL,Magnesium aspartate,UMLS:C3472181,Severe dehydration
-DB15889,DB15860,UMLS:C3472181,DRUGBANK:DB15889,Senna leaf,['Error'],['Error'],UMLS:C3472181,Severe dehydration
-DB13194,DB00318,UMLS:C3203681,['Error'],['Error'],CHEBI:16714,Codeine,UMLS:C3203681,CYP2D6 ultrarapid metaboliser status
 DB13157,DB09154,UMLS:C0947759,UNII:D0Y70F2B9J,Sodium lauryl sulfoacetate,CHEBI:30769,Citric acid,UMLS:C0947759,Anal and rectal conditions NEC
 DB01243,DB00443,UMLS:C0332575,CHEBI:59477,Chloroxine,CHEBI:3077,Betamethasone,UMLS:C0332575,Redness
-DB16617,DB01750,UMLS:C0276622,['Error'],['Error'],CHEBI:32918,1-naphthaleneacetic acid,UMLS:C0276622,Acute viral hepatitis
 DB16625,DB13956,UMLS:C0877371,UNII:2W8I1S6T5L,Prasterone enantate,CHEBI:16469,Estradiol,UMLS:C0877371,Antiphospholipid antibodies positive
 DB15999,DB00527,MONDO:0005700,UNII:0PA7CJ4RFB,Prednisolone caproate,CHEBI:247956,Cinchocaine,MONDO:0005700,chickenpox
 DB01015,DB00440,MONDO:0005570,CHEBI:9332,Sulfamethoxazole,CHEBI:45924,Trimethoprim,MONDO:0005570,hematologic disorder
@@ -700,7 +638,6 @@ DB16023,DB00650,MONDO:0005070,CHEBI:18338,Monophosphothiamine,CHEBI:15640,Leucov
 DB16023,DB00165,MONDO:0005070,CHEBI:18338,Monophosphothiamine,CHEBI:16709,Pyridoxine,MONDO:0005070,neoplasm
 DB16023,DB00115,MONDO:0005070,CHEBI:18338,Monophosphothiamine,CHEBI:17439,Cyanocobalamin,MONDO:0005070,neoplasm
 DB15903,DB00977,MONDO:0004922,CHEBI:31394,chlormadinone,CHEBI:4903,Ethinylestradiol,MONDO:0004922,developmental coordination disorder
-DB13195,DB01109,UMLS:C1096398,['Error'],['Error'],CHEBI:28304,Heparin,UMLS:C1096398,Eczema weeping
 DB15903,DB00977,MONDO:0007788,CHEBI:31394,chlormadinone,CHEBI:4903,Ethinylestradiol,MONDO:0007788,hypertriglyceridemia 1
 DB13166,DB00999,UMLS:C1802373,CHEBI:78539,Zofenopril,CHEBI:5778,Hydrochlorothiazide,UMLS:C1802373,Diabetes mellitus (incl subtypes)
 DB08822,DB09026,UMLS:C1802373,CHEBI:68845,Azilsartan medoxomil,CHEBI:601027,Aliskiren,UMLS:C1802373,Diabetes mellitus (incl subtypes)
@@ -708,9 +645,7 @@ DB00397,DB00874,UMLS:C1802373,PUBCHEM.COMPOUND:4786,Phenylpropanolamine,CHEBI:55
 DB01029,DB09026,UMLS:C1802373,CHEBI:5959,Irbesartan,CHEBI:601027,Aliskiren,UMLS:C1802373,Diabetes mellitus (incl subtypes)
 DB00492,DB09026,UMLS:C1802373,CHEBI:5164,fosinopril sodium,CHEBI:601027,Aliskiren,UMLS:C1802373,Diabetes mellitus (incl subtypes)
 DB00519,DB09026,UMLS:C1802373,CHEBI:9649,Trandolapril,CHEBI:601027,Aliskiren,UMLS:C1802373,Diabetes mellitus (incl subtypes)
-DB15889,DB15860,UMLS:C1802373,DRUGBANK:DB15889,Senna leaf,['Error'],['Error'],UMLS:C1802373,Diabetes mellitus (incl subtypes)
 DB00966,DB00966,UMLS:C1802373,CHEBI:9434,Telmisartan,CHEBI:9434,Telmisartan,UMLS:C1802373,Diabetes mellitus (incl subtypes)
-DB13195,DB14343,UMLS:C1096398,['Error'],['Error'],DRUGBANK:DB14343,Arnica montana flower,UMLS:C1096398,Eczema weeping
 DB13166,DB09026,UMLS:C1802373,CHEBI:78539,Zofenopril,CHEBI:601027,Aliskiren,UMLS:C1802373,Diabetes mellitus (incl subtypes)
 DB00966,DB09026,UMLS:C1802373,CHEBI:9434,Telmisartan,CHEBI:601027,Aliskiren,UMLS:C1802373,Diabetes mellitus (incl subtypes)
 DB09124,DB00286,MONDO:0019142,CHEBI:135446,Medrogestone,CHEBI:8389,Conjugated estrogens,MONDO:0019142,porphyria
@@ -721,14 +656,12 @@ DB15903,DB00977,MONDO:0019142,CHEBI:31394,chlormadinone,CHEBI:4903,Ethinylestrad
 DB16000,DB00281,MONDO:0019142,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:6456,Lidocaine,MONDO:0019142,porphyria
 DB16000,DB00115,MONDO:0019142,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:17439,Cyanocobalamin,MONDO:0019142,porphyria
 DB16000,DB01234,MONDO:0019142,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:41879,Dexamethasone,MONDO:0019142,porphyria
-DB13195,DB14343,MONDO:0002243,['Error'],['Error'],DRUGBANK:DB14343,Arnica montana flower,MONDO:0002243,hemorrhagic disease
 DB00352,DB01033,HP:0000855,CHEBI:9555,Tioguanine,CHEBI:2208,purine-6-thiol,HP:0000855,Insulin resistance
 DB16000,DB00281,MONDO:0010030,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:6456,Lidocaine,MONDO:0010030,Sicca Syndrome
 DB09124,DB00286,MONDO:0007254,CHEBI:135446,Medrogestone,CHEBI:8389,Conjugated estrogens,MONDO:0007254,breast cancer
 DB00957,DB00977,MONDO:0007254,CHEBI:50815,Norgestimate,CHEBI:4903,Ethinylestradiol,MONDO:0007254,breast cancer
 DB16625,DB13956,MONDO:0007254,UNII:2W8I1S6T5L,Prasterone enantate,CHEBI:16469,Estradiol,MONDO:0007254,breast cancer
 DB16000,DB00281,MONDO:0010602,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:6456,Lidocaine,MONDO:0010602,hemophilia A
-DB13195,DB01109,MONDO:0002243,['Error'],['Error'],CHEBI:28304,Heparin,MONDO:0002243,hemorrhagic disease
 DB16000,DB00115,MONDO:0010030,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:17439,Cyanocobalamin,MONDO:0010030,Sicca Syndrome
 DB16000,DB01234,MONDO:0010602,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:41879,Dexamethasone,MONDO:0010602,hemophilia A
 DB16000,DB08940,MONDO:0010030,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:31749,Kebuzone,MONDO:0010030,Sicca Syndrome
@@ -762,25 +695,20 @@ DB00717,DB00783,HP:0001907,CHEBI:7627,Norethisterone,CHEBI:16469,Estradiol,HP:00
 DB16625,DB13956,HP:0025343,UNII:2W8I1S6T5L,Prasterone enantate,CHEBI:16469,Estradiol,HP:0025343,Lupus anticoagulant
 DB09124,DB00286,HP:0002910,CHEBI:135446,Medrogestone,CHEBI:8389,Conjugated estrogens,HP:0002910,Elevated circulating hepatic transaminase concentration
 DB15908,DB09512,MONDO:0018570,UNII:JDN69ZV6XV,Alexitol sodium,CHEBI:31498,Dimethicone,MONDO:0018570,hypophosphatasia
-DB15889,DB15860,UMLS:C0267465,DRUGBANK:DB15889,Senna leaf,['Error'],['Error'],UMLS:C0267465,Stenosis of intestine
 DB16625,DB13956,HP:0002910,UNII:2W8I1S6T5L,Prasterone enantate,CHEBI:16469,Estradiol,HP:0002910,Elevated circulating hepatic transaminase concentration
 DB15903,DB00977,HP:0002240,CHEBI:31394,chlormadinone,CHEBI:4903,Ethinylestradiol,HP:0002240,Hepatomegaly
 DB15908,DB09104,MONDO:0018570,UNII:JDN69ZV6XV,Alexitol sodium,CHEBI:6637,Magnesium hydroxide,MONDO:0018570,hypophosphatasia
 DB09124,DB00286,UMLS:C0743516,CHEBI:135446,Medrogestone,CHEBI:8389,Conjugated estrogens,UMLS:C0743516,Endometrial thickening
 DB01243,DB00443,MONDO:0002610,CHEBI:59477,Chloroxine,CHEBI:3077,Betamethasone,MONDO:0002610,purpura
-DB13194,DB00318,HP:0001410,['Error'],['Error'],CHEBI:16714,Codeine,HP:0001410,Decreased liver function
 DB15903,DB00977,MONDO:0001836,CHEBI:31394,chlormadinone,CHEBI:4903,Ethinylestradiol,MONDO:0001836,amenorrhea
 DB11237,DB13281,HP:0001410,CHEBI:9765,Trypsin,DRUGBANK:DB13281,Bromelains,HP:0001410,Decreased liver function
 DB15998,DB13359,MONDO:0000468,UNII:5UW00M8KR0,Potassium hydrogen DL-aspartate,UNII:R17X820ROL,Magnesium aspartate,MONDO:0000468,third-degree atrioventricular block
 DB11237,DB01698,HP:0001410,CHEBI:9765,Trypsin,CHEBI:28527,Rutin,HP:0001410,Decreased liver function
-DB13195,DB01109,UMLS:C0005902,['Error'],['Error'],CHEBI:28304,Heparin,UMLS:C0005902,Body Surface Area
-DB16613,DB00798,MONDO:0001106,['Error'],['Error'],CHEBI:17833,Gentamicin,MONDO:0001106,kidney failure
 DB16000,DB00115,MONDO:0002243,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:17439,Cyanocobalamin,MONDO:0002243,hemorrhagic disease
 DB01026,DB00976,MONDO:0001106,CHEBI:47519,Ketoconazole,CHEBI:29688,Telithromycin,MONDO:0001106,kidney failure
 DB01026,DB06702,MONDO:0001106,CHEBI:47519,Ketoconazole,CHEBI:135920,Fesoterodine,MONDO:0001106,kidney failure
 DB01026,DB01211,MONDO:0001106,CHEBI:47519,Ketoconazole,CHEBI:3732,Clarithromycin,MONDO:0001106,kidney failure
 DB00976,DB01394,MONDO:0001106,CHEBI:29688,Telithromycin,CHEBI:27882,Colchicine,MONDO:0001106,kidney failure
-DB13195,DB14343,UMLS:C0005902,['Error'],['Error'],DRUGBANK:DB14343,Arnica montana flower,UMLS:C0005902,Body Surface Area
 DB13166,DB09026,MONDO:0001106,CHEBI:78539,Zofenopril,CHEBI:601027,Aliskiren,MONDO:0001106,kidney failure
 DB16000,DB00281,MONDO:0002243,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:6456,Lidocaine,MONDO:0002243,hemorrhagic disease
 DB16000,DB01234,MONDO:0002243,CHEBI:134850,Salicylamide O-acetic acid,CHEBI:41879,Dexamethasone,MONDO:0002243,hemorrhagic disease
@@ -828,7 +756,6 @@ DB00627,DB00152,UMLS:C0342951,CHEBI:15940,Niacin,CHEBI:18385,Thiamine,UMLS:C0342
 DB13735,DB00514,MONDO:0005041,CHEBI:85537,Sulfogaiacol,CHEBI:4470,Dextromethorphan,MONDO:0005041,glaucoma
 DB15975,DB00440,MONDO:0003664,CHEBI:88258,Sulfametrole,CHEBI:45924,Trimethoprim,MONDO:0003664,hemolytic anemia
 DB15790,DB00201,MONDO:0005041,CHEBI:135360,Mecloxamine,CHEBI:27732,Caffeine,MONDO:0005041,glaucoma
-DB14222,DB15751,MONDO:0000945,DRUGBANK:DB14222,Bifidobacterium longum infantis,['Error'],['Error'],MONDO:0000945,venous insufficiency
 DB15842,DB01914,UMLS:C0040793,CHEBI:114786,Sodium metabisulfite,CHEBI:17234,D-glucose,UMLS:C0040793,Traumatic anuria
 DB00627,DB00163,UMLS:C0342951,CHEBI:15940,Niacin,CHEBI:18145,Vitamin E,UMLS:C0342951,Hypervitaminosis
 DB15790,DB00316,MONDO:0005041,CHEBI:135360,Mecloxamine,CHEBI:46195,Acetaminophen,MONDO:0005041,glaucoma
@@ -933,14 +860,8 @@ DB15761,DB01060,MONDO:0005810,CHEBI:9321,Sulbactam,CHEBI:2676,Amoxicillin,MONDO:
 DB13312,DB09238,MONDO:0005852,CHEBI:135735,Delapril,CHEBI:135849,Manidipine,MONDO:0005852,Mitral stenosis
 DB09375,DB11193,UMLS:C0178808,UNII:BVS505O332,Chymotrypsin,DRUGBANK:DB11193,Papain,UMLS:C0178808,Preoperative state
 DB15975,DB00440,MONDO:0004670,CHEBI:88258,Sulfametrole,CHEBI:45924,Trimethoprim,MONDO:0004670,lupus erythematosus
-DB15836,DB01744,UMLS:C0332798,['Error'],['Error'],CHEBI:36773,camphor,UMLS:C0332798,Open wound
 DB01395,DB00977,MONDO:0009383,CHEBI:50838,Drospirenone,CHEBI:4903,Ethinylestradiol,MONDO:0009383,transient familial neonatal hyperbilirubinemia
 DB09375,DB11237,UMLS:C0178808,UNII:BVS505O332,Chymotrypsin,CHEBI:9765,Trypsin,UMLS:C0178808,Preoperative state
-DB15836,DB11120,UMLS:C0332798,['Error'],['Error'],UNII:XJ6RUH0O4G,Turpentine,UMLS:C0332798,Open wound
-DB15836,DB00373,UMLS:C0332798,['Error'],['Error'],CHEBI:9599,Timolol,UMLS:C0332798,Open wound
-DB15836,DB03852,UMLS:C0332798,['Error'],['Error'],CHEBI:27961,Eucalyptol,UMLS:C0332798,Open wound
-DB15836,DB14322,UMLS:C0332798,['Error'],['Error'],['Error'],['Error'],UMLS:C0332798,Open wound
-DB15836,DB00825,UMLS:C0332798,['Error'],['Error'],CHEBI:15409,Levomenthol,UMLS:C0332798,Open wound
 DB01301,DB00443,MONDO:0001642,CHEBI:63334,Rolitetracycline,CHEBI:3077,Betamethasone,MONDO:0001642,hordeolum externum
 DB01407,DB06742,MONDO:0021759,CHEBI:174690,Clenbuterol,CHEBI:135590,Ambroxol,MONDO:0021759,acquired fructose intolerance
 DB13803,DB00384,MONDO:0001566,CHEBI:135499,Xipamide,CHEBI:9671,Triamterene,MONDO:0001566,hypercalcemia
@@ -960,7 +881,6 @@ DB12235,DB01395,MONDO:0005155,CHEBI:142773,Estetrol,CHEBI:50838,Drospirenone,MON
 DB01395,DB00977,MONDO:0000004,CHEBI:50838,Drospirenone,CHEBI:4903,Ethinylestradiol,MONDO:0000004,adrenocortical insufficiency
 DB09415,DB00271,UMLS:C0436510,CHEBI:59732,Meglumine,CHEBI:53691,Diatrizoate,UMLS:C0436510,Myelography abnormal
 DB15790,DB00316,MONDO:0005475,CHEBI:135360,Mecloxamine,CHEBI:46195,Acetaminophen,MONDO:0005475,migraine with aura
-DB15860,DB15889,UMLS:C3472181,['Error'],['Error'],DRUGBANK:DB15889,Senna leaf,UMLS:C3472181,Severe dehydration
 DB15815,DB15478,UMLS:C3472181,DRUGBANK:DB15815,Boldo leaf extract,DRUGBANK:DB15478,Frangula purshiana bark,UMLS:C3472181,Severe dehydration
 DB15790,DB00696,MONDO:0005475,CHEBI:135360,Mecloxamine,CHEBI:64318,Ergotamine,MONDO:0005475,migraine with aura
 DB15815,DB11365,UMLS:C3472181,DRUGBANK:DB15815,Boldo leaf extract,UNII:3FYP5M0IJX,Sennosides,UMLS:C3472181,Severe dehydration
@@ -1005,7 +925,6 @@ DB00177,DB09026,UMLS:C1802373,CHEBI:9927,Valsartan,CHEBI:601027,Aliskiren,UMLS:C
 DB00796,DB09026,UMLS:C1802373,CHEBI:3347,Candesartan,CHEBI:601027,Aliskiren,UMLS:C1802373,Diabetes mellitus (incl subtypes)
 DB00691,DB09026,UMLS:C1802373,CHEBI:6960,Moexipril,CHEBI:601027,Aliskiren,UMLS:C1802373,Diabetes mellitus (incl subtypes)
 DB00178,DB09026,UMLS:C1802373,CHEBI:8774,Ramipril,CHEBI:601027,Aliskiren,UMLS:C1802373,Diabetes mellitus (incl subtypes)
-DB15860,DB15889,UMLS:C1802373,['Error'],['Error'],DRUGBANK:DB15889,Senna leaf,UMLS:C1802373,Diabetes mellitus (incl subtypes)
 DB00275,DB09026,UMLS:C1802373,CHEBI:31932,olmesartan,CHEBI:601027,Aliskiren,UMLS:C1802373,Diabetes mellitus (incl subtypes)
 DB13312,DB09026,UMLS:C1802373,CHEBI:135735,Delapril,CHEBI:601027,Aliskiren,UMLS:C1802373,Diabetes mellitus (incl subtypes)
 DB15821,DB15777,MONDO:0000741,CHEBI:177866,Fluocortolone caproate,CHEBI:177427,Fluocortolone pivalate,MONDO:0000741,angular cheilitis
@@ -1065,7 +984,6 @@ DB14500,DB09341,MONDO:0002909,CHEBI:26216,potassium atom,CHEBI:17234,D-glucose,M
 DB13673,DB13158,MONDO:0006875,CHEBI:28098,Bekanamycin,CHEBI:31415,clobetasone butyrate,MONDO:0006875,ocular hypertension
 DB15975,DB00440,MONDO:0016474,CHEBI:88258,Sulfametrole,CHEBI:45924,Trimethoprim,MONDO:0016474,drug-induced lupus erythematosus
 DB01301,DB00443,MONDO:0006875,CHEBI:63334,Rolitetracycline,CHEBI:3077,Betamethasone,MONDO:0006875,ocular hypertension
-DB15860,DB15889,UMLS:C0267465,['Error'],['Error'],DRUGBANK:DB15889,Senna leaf,UMLS:C0267465,Stenosis of intestine
 DB00879,DB09299,MONDO:0005109,CHEBI:31536,Emtricitabine,CHEBI:90923,tenofovir alafenamide fumarate,MONDO:0005109,HIV infection
 DB13238,DB06151,MONDO:0001744,CHEBI:134753,Tuaminoheptane,CHEBI:28939,Acetylcysteine,MONDO:0001744,angle-closure glaucoma
 DB15815,DB11365,UMLS:C0267465,DRUGBANK:DB15815,Boldo leaf extract,UNII:3FYP5M0IJX,Sennosides,UMLS:C0267465,Stenosis of intestine
