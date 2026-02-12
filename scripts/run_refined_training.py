@@ -13,15 +13,19 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Train and evaluate on refined ground-truth CSVs and compare against baseline."
     )
-    parser.add_argument("--baseline-output-dir", default="artifacts")
+    parser.add_argument("--baseline-output-dir", default="artifacts_baseline")
     parser.add_argument("--refined-output-dir", default="artifacts_refined")
+    parser.add_argument("--baseline-indications", default="indications_norm_dedup.csv")
+    parser.add_argument(
+        "--baseline-contraindications", default="contraindications_norm_dedup.csv"
+    )
     parser.add_argument(
         "--refined-indications",
         default="artifacts/refined_gt/refined_indications.csv",
     )
     parser.add_argument(
         "--refined-contraindications",
-        default="artifacts/refined_gt/refined_contraindications.csv",
+        default="contraindications_norm_dedup.csv",
     )
     parser.add_argument("--config", default=None)
     parser.add_argument("--kg", default="kg_edges.parquet")
@@ -73,6 +77,18 @@ def main() -> None:
     args = parse_args()
 
     py = shlex.quote(sys.executable)
+    baseline_train_cmd = (
+        f"{py} train.py"
+        f" --indications {shlex.quote(args.baseline_indications)}"
+        f" --contraindications {shlex.quote(args.baseline_contraindications)}"
+        f" --kg {shlex.quote(args.kg)}"
+        f" --output-dir {shlex.quote(args.baseline_output_dir)}"
+        f"{_build_optional_flag('config', args.config)}"
+        f"{_build_optional_flag('batch-size', args.batch_size)}"
+        f"{_build_optional_flag('epochs', args.epochs)}"
+    )
+    _run_command(baseline_train_cmd)
+
     train_cmd = (
         f"{py} train.py"
         f" --indications {shlex.quote(args.refined_indications)}"
@@ -97,6 +113,8 @@ def main() -> None:
 
     baseline_eval_cmd = (
         f"{py} evaluate.py"
+        f" --indications {shlex.quote(args.baseline_indications)}"
+        f" --contraindications {shlex.quote(args.baseline_contraindications)}"
         f" --output-dir {shlex.quote(args.baseline_output_dir)}"
         f" --kg {shlex.quote(args.kg)}"
         f"{_build_optional_flag('config', args.config)}"
@@ -104,6 +122,10 @@ def main() -> None:
     baseline_metrics = _run_eval_capture(baseline_eval_cmd)
 
     comparison = {
+        "baseline_indications": args.baseline_indications,
+        "baseline_contraindications": args.baseline_contraindications,
+        "refined_indications": args.refined_indications,
+        "refined_contraindications": args.refined_contraindications,
         "baseline_output_dir": args.baseline_output_dir,
         "refined_output_dir": args.refined_output_dir,
         "baseline_test_metrics": baseline_metrics,
