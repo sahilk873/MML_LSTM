@@ -7,3 +7,4 @@ node2vec
 gensim
 pyarrow
 pecanpy
+openai

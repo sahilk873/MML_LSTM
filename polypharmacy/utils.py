@@ -4,18 +4,23 @@ import random
 from typing import Any, Dict
 
 import numpy as np
-import torch
+
+try:
+    import torch
+except Exception:  # pragma: no cover - fallback for environments without torch
+    torch = None
 
 
 def set_seeds(seed: int) -> None:
     """Set all relevant RNG seeds for reproducibility."""
     random.seed(seed)
     np.random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+    if torch is not None:
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
 
 
 def ensure_dir(path: str) -> None:

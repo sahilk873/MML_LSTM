@@ -21,10 +21,19 @@ def _parse_list_column(value: object) -> List[str]:
     if isinstance(value, list):
         return value
     if isinstance(value, str):
-        # CSV stores list-like strings (e.g., "['CHEBI:6413']") that need literal_eval.
-        parsed = ast.literal_eval(value)
-        if isinstance(parsed, list):
-            return parsed
+        text = value.strip()
+        if not text or text.lower() in {"nan", "none"}:
+            return []
+        # CSV typically stores list-like strings (e.g., "['CHEBI:6413']"), but some
+        # deduplicated exports contain bare IDs (e.g., "CHEBI:6413"). Accept both.
+        try:
+            parsed = ast.literal_eval(text)
+            if isinstance(parsed, list):
+                return parsed
+            if isinstance(parsed, str):
+                return [parsed]
+        except (SyntaxError, ValueError):
+            return [text]
     raise ValueError(f"Unable to parse list column value: {value!r}")
 
 
