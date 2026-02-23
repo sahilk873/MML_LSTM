@@ -13,7 +13,7 @@ Classify each (drug combination, disease) example into exactly one category.
 Return only JSON that matches the provided schema.
 
 Category definitions:
-- mechanistically_synergistic: drugs are jointly intended to target the indexed disease mechanism or therapeutic effect.
+- mechanistically_synergistic: multiple drugs target a single disease in a way that strengthens the effect on a single pathway, or the drugs target multiple concurrent pathways to impact that same disease mechanism or therapeutic effect.
 - side_effect_relief: one drug primarily reduces adverse effects caused by another while supporting treatment of the indexed disease.
 - common_comorbidity: combination is likely due to co-occurring conditions rather than joint mechanism for the indexed disease.
 - other: insufficient information, ambiguous, or outside these categories.
@@ -97,7 +97,6 @@ class OpenAIMechanismClassifier:
     def _responses_api_classify(self, user_prompt: str) -> mechanism.MechanismClassification:
         response = self.client.responses.create(
             model=self.model,
-            temperature=0,
             input=[
                 {
                     "role": "system",
