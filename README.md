@@ -147,9 +147,33 @@ PYTHONPATH=. .venv312/bin/python evaluate.py \
 
 ## Artifacts housekeeping
 
-- Keep only one “gold” workspace (e.g., `artifacts/redo_20260221_161114/`).
-- Archive outdated runs under `artifacts_archive/<date>/...` (see `2026-02-redo-cutover`).
-- Raw KG embeddings and manual reviews sit under `artifacts/precomputed_embeddings/` and `artifacts/redo_20260221_161114/mechanism_labels/` respectively.
+- Keep only one “gold” workspace (e.g., `artifacts/redo_20260221_161114/`), and treat
+  the other `artifacts_*` folders as reproducible references you can replace when
+  needed.
+- Archive outdated runs under `artifacts_archive/<date>/<run-name>/` so the root stays
+  manageable. We already moved the previous mechanism/refined runs into
+  `artifacts_archive/2026-02-redo-cutover/`.
+
+### How to archive a run
+
+1. Pick the run folder you want to retire (e.g., `artifacts/mechanism_labels/`).
+2. Create a dated archive directory if it does not exist:
+
+   ```bash
+   mkdir -p artifacts_archive/$(date +%Y-%m-%d)-run
+   ```
+
+3. Move the run folder into that archive:
+
+   ```bash
+   mv artifacts/mechanism_labels artifacts_archive/2026-02-redo-cutover/mechanism_labels
+   ```
+
+4. Update this README section if you rename/archive additional folders.
+5. Keep an `artifacts_archive/<date>/README.md` describing the contents and why it was archived.
+
+- Raw KG embeddings and manual reviews live under `artifacts/precomputed_embeddings/`
+  and `artifacts/redo_20260221_161114/mechanism_labels/` for quick reference.
 
 ## Troubleshooting & tips
 

@@ -16,6 +16,21 @@ env/
 .DS_Store
 .Rhistory
 
+.venv312/
+
+# Artifact noise
+artifacts/**/classification_cache.jsonl
+artifacts/**/train_log.csv
+artifacts/**/test_*predictions.parquet
+artifacts/**/best_model.pt
+artifacts/**/kg_embeddings.npz
+artifacts/redo_20260221_161114/**/*
+artifacts/triplet*/**/*
+
+# Node caches
+nodes/
+nodes_with_embeddings/
+
 # Data artifacts
 # Track most artifacts, but keep generated embedding dumps local.
 artifacts/precomputed_embeddings/
