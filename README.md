@@ -189,3 +189,6 @@ PYTHONPATH=. .venv312/bin/python evaluate.py \
 1. Update `polypharmacy/llm_classifier.py`’s `SYSTEM_PROMPT` if you want to try a new prompt version (e.g., `v2`).
 2. Use `scripts/run_refined_training.py` to benchmark new variants against the baseline.
 3. Keep `artifacts_archive/2026-02-redo-cutover/README.md` updated every time you retire an old run.
+
+
+README was created with help of codex - Note to reviewers. 
