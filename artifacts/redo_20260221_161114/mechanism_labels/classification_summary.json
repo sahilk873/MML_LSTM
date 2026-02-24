@@ -1,0 +1,19 @@
+{
+  "category_counts": {
+    "common_comorbidity": 409,
+    "mechanistically_synergistic": 4337,
+    "other": 810,
+    "side_effect_relief": 206
+  },
+  "confidence": {
+    "max": 0.95,
+    "mean": 0.8044255466851788,
+    "median": 0.85,
+    "min": 0.12
+  },
+  "model": "gpt-5-mini",
+  "needs_human_review_rate": 0.17094758764317944,
+  "num_failures": 0,
+  "num_rows": 5762,
+  "prompt_version": "v1"
+}

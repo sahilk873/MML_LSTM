@@ -24,7 +24,6 @@ artifacts/**/train_log.csv
 artifacts/**/test_*predictions.parquet
 artifacts/**/best_model.pt
 artifacts/**/kg_embeddings.npz
-artifacts/redo_20260221_161114/**/*
 artifacts/triplet*/**/*
 
 # Node caches
