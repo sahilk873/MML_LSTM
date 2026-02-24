@@ -42,7 +42,7 @@ PYTHONPATH=. .venv312/bin/python train.py \
   --indications indications_norm_dedup.csv \
   --contraindications contraindications_norm_dedup.csv \
   --kg kg_edges.parquet \
-  --output-dir artifacts_baseline
+  --output-dir artifacts/baseline
 ```
 
 Evaluate:
@@ -52,7 +52,7 @@ PYTHONPATH=. .venv312/bin/python evaluate.py \
   --indications indications_norm_dedup.csv \
   --contraindications contraindications_norm_dedup.csv \
   --kg kg_edges.parquet \
-  --output-dir artifacts_baseline
+  --output-dir artifacts/baseline
 ```
 
 ### 2) Mechanism relabeling with OpenAI
@@ -93,7 +93,7 @@ PYTHONPATH=. .venv312/bin/python evaluate.py \
 ```bash
 PYTHONPATH=. .venv312/bin/python scripts/rebuild_ground_truth_from_mechanisms.py \
   --labeled-dataset-csv artifacts/mechanism_labels/mechanism_labeled_dataset.csv \
-  --output-dir artifacts/refined_gt \
+  --output-dir artifacts/redo_20260221_161114/refined_gt \
   --keep-categories mechanistically_synergistic \
   --min-confidence 0.6 \
   --drop-needs-review
@@ -107,31 +107,30 @@ Outputs:
 
 ### 4) Train with refined positives and original negatives
 
-Use precomputed KG embeddings (`artifacts_refined/kg_embeddings.npz`) to skip expensive node2vec:
+Use precomputed KG embeddings (`artifacts/refined/kg_embeddings.npz`) to skip expensive node2vec:
 
 ```bash
 PYTHONPATH=. .venv312/bin/python train.py \
-  --indications artifacts/refined_gt/refined_indications.csv \
+  --indications artifacts/redo_20260221_161114/refined_gt/refined_indications.csv \
   --contraindications contraindications_norm_dedup.csv \
   --kg kg_edges.parquet \
-  --kg-embeddings artifacts_refined/kg_embeddings.npz \
-  --output-dir artifacts_refined
+  --kg-embeddings artifacts/refined/kg_embeddings.npz \
+  --output-dir artifacts/refined
 ```
 
 Evaluate the best checkpoint from that run:
 
 ```bash
 PYTHONPATH=. .venv312/bin/python evaluate.py \
-  --indications artifacts/refined_gt/refined_indications.csv \
+  --indications artifacts/redo_20260221_161114/refined_gt/refined_indications.csv \
   --contraindications contraindications_norm_dedup.csv \
   --kg kg_edges.parquet \
-  --output-dir artifacts_refined
+  --output-dir artifacts/refined
 ```
 
 ### 5) Useful helper scripts
 
-- `scripts/run_refined_training.py`: trains both baseline (
-`artifacts_baseline`) and refined runs (`artifacts_refined`) and writes a comparison report.
+- `scripts/run_refined_training.py`: trains both baseline (`artifacts/baseline`) and refined runs (`artifacts/refined`) and writes a comparison report.
 - `scripts/test_one_row_classification.py`: smoke-test a single row via OpenAI (requires `OPENAI_API_KEY`).
 
 ## Key outputs and navigation
@@ -142,17 +141,17 @@ PYTHONPATH=. .venv312/bin/python evaluate.py \
 | `classification_summary.json` | Aggregated counts + failure stats. |
 | `mechanism_annotations.csv` | Row-level log of classifications. |
 | `category_examples_30_each_manual_review_format.xlsx` | Manual-review workbook (set + classification). |
-| `artifacts/refined_gt/refined_indications.csv` | Training positives after filtering + dedup. |
-| `artifacts_refined/best_model.pt` | Refined-trained checkpoint (uses cached KG embeddings). |
+| `artifacts/redo_20260221_161114/refined_gt/refined_indications.csv` | Training positives after filtering + dedup. |
+| `artifacts/refined/best_model.pt` | Refined-trained checkpoint (uses cached KG embeddings). |
 
 ## Artifacts housekeeping
 
 - Keep only one “gold” workspace (e.g., `artifacts/redo_20260221_161114/`), and treat
-  the other `artifacts_*` folders as reproducible references you can replace when
+  `artifacts/baseline` and `artifacts/refined` as reproducible reference runs you can replace when
   needed.
-- Archive outdated runs under `artifacts_archive/<date>/<run-name>/` so the root stays
+- Archive outdated runs under `artifacts/archive/<date>/<run-name>/` so the root stays
   manageable. We already moved the previous mechanism/refined runs into
-  `artifacts_archive/2026-02-redo-cutover/`.
+  `artifacts/archive/2026-02-redo-cutover/`.
 
 ### How to archive a run
 
@@ -166,11 +165,11 @@ PYTHONPATH=. .venv312/bin/python evaluate.py \
 3. Move the run folder into that archive:
 
    ```bash
-   mv artifacts/mechanism_labels artifacts_archive/2026-02-redo-cutover/mechanism_labels
+   mv artifacts/mechanism_labels artifacts/archive/2026-02-redo-cutover/mechanism_labels
    ```
 
 4. Update this README section if you rename/archive additional folders.
-5. Keep an `artifacts_archive/<date>/README.md` describing the contents and why it was archived.
+5. Keep an `artifacts/archive/<date>/README.md` describing the contents and why it was archived.
 
 - Raw KG embeddings and manual reviews live under `artifacts/precomputed_embeddings/`
   and `artifacts/redo_20260221_161114/mechanism_labels/` for quick reference.

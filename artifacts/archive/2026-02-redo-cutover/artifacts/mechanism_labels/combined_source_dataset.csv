@@ -1,0 +1,2 @@
+example_key,drug_set,condition_id_norm,source_label_binary,source_file,drug_labels,condition_label
+CHEBI:31394|CHEBI:4903||UMLS:C0854381,"['CHEBI:31394', 'CHEBI:4903']",UMLS:C0854381,0,contraindications,"['chlormadinone', 'Ethinylestradiol']",

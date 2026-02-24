@@ -1,0 +1,18 @@
+{
+  "batch_size": 512,
+  "dropout": 0.2,
+  "early_stop_patience": 2,
+  "epochs": 2,
+  "freeze_embeddings": false,
+  "learning_rate": 0.001,
+  "lstm_hidden_dim": 128,
+  "mlp_hidden_dim": 128,
+  "mlp_layers": 2,
+  "num_examples": 20000,
+  "seed": 13,
+  "train_parquet": "train_kushal.parquet",
+  "train_size": 18000,
+  "val_frac": 0.1,
+  "val_size": 2000,
+  "weight_decay": 1e-05
+}

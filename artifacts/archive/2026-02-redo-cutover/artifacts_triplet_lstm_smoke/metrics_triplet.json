@@ -1,0 +1,43 @@
+{
+  "balanced_accuracy": 0.5519537476350264,
+  "enrichment_factors": {
+    "ef_10": {
+      "ef": 4.867149758454107,
+      "fraction": 0.1,
+      "hit_rate_all": 0.016611495636473066,
+      "hit_rate_top": 0.08085063697462133,
+      "k": 9969,
+      "positives_all": 1656,
+      "positives_top": 806
+    },
+    "ef_20": {
+      "ef": 3.285024154589372,
+      "fraction": 0.2,
+      "hit_rate_all": 0.016611495636473066,
+      "hit_rate_top": 0.054569164409669975,
+      "k": 19938,
+      "positives_all": 1656,
+      "positives_top": 1088
+    },
+    "ef_5": {
+      "ef": 6.80019904273385,
+      "fraction": 0.05,
+      "hit_rate_all": 0.016611495636473066,
+      "hit_rate_top": 0.11296147672552168,
+      "k": 4984,
+      "positives_all": 1656,
+      "positives_top": 563
+    }
+  },
+  "f1": 0.14722445695897024,
+  "num_rows": 99690,
+  "precision": 0.22048192771084338,
+  "recall": 0.1105072463768116,
+  "roc_auc": 0.8018011460383605,
+  "threshold": 0.5,
+  "unk_counts": {
+    "disease": 10,
+    "drug": 4,
+    "target": 0
+  }
+}
