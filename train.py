@@ -61,6 +61,33 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Optional RENCI single-therapy contraindications CSV.",
     )
+    parser.add_argument(
+        "--twosides-contraindications",
+        default="twosides_ddi_prefixed_normalized.csv",
+        help="Optional TWOSIDES normalized contraindication-like interaction CSV.",
+    )
+    parser.add_argument(
+        "--enable-mixed-negatives",
+        action="store_true",
+        help="Mix sourced negatives with randomized negatives.",
+    )
+    parser.add_argument(
+        "--random-negative-ratio",
+        type=float,
+        default=1.0,
+        help="Randomized negatives / sourced negatives ratio when mixed negatives are enabled.",
+    )
+    parser.add_argument(
+        "--random-negative-strategy",
+        choices=["disease_shuffle"],
+        default="disease_shuffle",
+        help="Strategy for randomized negative generation.",
+    )
+    parser.add_argument(
+        "--save-mixed-dataset-details",
+        action="store_true",
+        help="Write mixed-negative source/report stats to output directory.",
+    )
     parser.add_argument("--kg", default="kg_edges.parquet")
     parser.add_argument(
         "--kg-embeddings",
@@ -167,11 +194,18 @@ def main() -> None:
     utils.set_seeds(config["seed"])
     utils.ensure_dir(args.output_dir)
 
+    dedupe_report: Dict[str, object] = {}
     deduped_df, conflict_count = data_lib.load_deduped_dataframe(
         args.indications,
         args.contraindications,
         single_therapy_indications_path=args.single_therapy_indications,
         single_therapy_contraindications_path=args.single_therapy_contraindications,
+        twosides_contraindications_path=args.twosides_contraindications,
+        enable_mixed_negatives=args.enable_mixed_negatives,
+        random_negative_ratio=args.random_negative_ratio,
+        random_negative_strategy=args.random_negative_strategy,
+        seed=config["seed"],
+        report_out=dedupe_report,
     )
     print(f"Conflict resolution: {conflict_count} conflicting keys set to label=0")
     single_sources = []
@@ -181,8 +215,18 @@ def main() -> None:
         single_sources.append("single-therapy contraindications")
     if single_sources:
         print(f"Including additional single-therapy data: {', '.join(single_sources)}")
+    if args.enable_mixed_negatives:
+        print(
+            "Mixed negatives enabled: "
+            f"strategy={args.random_negative_strategy}, ratio={args.random_negative_ratio}"
+        )
     deduped_path = os.path.join(args.output_dir, "deduped_dataset.csv")
     deduped_df.to_csv(deduped_path, index=False)
+    if args.save_mixed_dataset_details:
+        utils.save_json(
+            os.path.join(args.output_dir, "mixed_negative_report.json"),
+            dedupe_report,
+        )
     deduped_counts = deduped_df["label"].value_counts().to_dict()
     print(f"Deduped class counts: {deduped_counts}")
 

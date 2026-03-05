@@ -1,185 +1,182 @@
 # MML Polypharmacy Runbook
 
-This repository hosts the full polypharmacy classification workflow from raw deduped U.S. indications/contraindications tables through KG-enhanced LSTM training, plus OpenAI-assisted mechanism relabeling and manual review artifacts.
+This repository contains the polypharmacy training, evaluation, and repurposing workflow built around drug-drug-disease tuples, KG-derived embeddings, mixed negative construction, and downstream RF/LSTM ranking.
 
-## Repo layout at a glance
+## Repo layout
 
 | Area | Description |
 | --- | --- |
-| `train.py` / `evaluate.py` | Core training/evaluation scripts. They rely on `polypharmacy/data.py`, `polypharmacy/kg.py`, and `polypharmacy/model.py`. |
-| `scripts/` | Helpers for LLM classification (`classify_mechanisms.py`), rebuilding refined targets, running comparative experiments, etc. |
-| `polypharmacy/` | Shared modules (data loaders, KG utils, LSTM model, OpenAI classifier prompt). |
-| `artifacts/` | Output directories. Keep only the runners you care about; others live under `artifacts_archive/`. |
+| `train.py` / `evaluate.py` / `generalize.py` / `experiment.py` | Main training, evaluation, generalization, and comparative experiment entrypoints. |
+| `polypharmacy/` | Shared data loading, model, KG, and utility code. |
+| `scripts/` | Helper scripts for ground-truth rebuilding, embedding export, and RF-based ranking over MeDIC. |
+| `artifacts/` | Model checkpoints, metrics, mixed-negative reports, and ranking outputs. |
 
-## Essentials before running
+## Environment
 
-1. Install dependencies:
-
-   ```bash
-   python3.12 -m venv .venv312
-   source .venv312/bin/activate
-   pip install -r requirements.txt
-   ```
-
-2. Run every script from repo root with `PYTHONPATH=.` so local modules resolve correctly:
-
-   ```bash
-   PYTHONPATH=. .venv312/bin/python <script>.py ...
-   ```
-
-3. Primary inputs:
-   - `indications_norm_dedup.csv` and `contraindications_norm_dedup.csv` (normalized drug sets + MONDO diseases).
-   - `kg_edges.parquet` (knowledge graph edges used for embeddings).
-
-## Step-by-step workflow
-
-### 1) Baseline train/eval (original dedup dataset)
-
-Train:
+Create a virtualenv and install dependencies:
 
 ```bash
-PYTHONPATH=. .venv312/bin/python train.py \
-  --indications indications_norm_dedup.csv \
-  --contraindications contraindications_norm_dedup.csv \
-  --kg kg_edges.parquet \
-  --output-dir artifacts/baseline
+python3.12 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-Evaluate:
+Run scripts from repo root with `PYTHONPATH=.`:
 
 ```bash
-PYTHONPATH=. .venv312/bin/python evaluate.py \
-  --indications indications_norm_dedup.csv \
-  --contraindications contraindications_norm_dedup.csv \
-  --kg kg_edges.parquet \
-  --output-dir artifacts/baseline
+PYTHONPATH=. .venv/bin/python <script>.py ...
 ```
 
-### 2) Mechanism relabeling with OpenAI
+## Core datasets
 
-1. Export your OpenAI key:
+Main tuple datasets used in the current workflow:
 
-   ```bash
-   export OPENAI_API_KEY="sk-..."
-   ```
+- `artifacts/refined_gt/refined_indications.csv`
+  - Mechanistically synergistic positive indications.
+- `contraindications_norm_dedup.csv`
+  - Deduplicated sourced contraindication negatives.
+- `twosides_ddi_prefixed_normalized.csv`
+  - Additional sourced DDI-style negative tuples.
+- `MeDIC Drug List.csv`
+  - Drug universe used for RF repurposing candidate generation.
+- `disease_codes_reference.md`
+  - Ten target diseases used in RF repurposing runs.
 
-2. Prepare an empty contraindications CSV if you want to treat current negatives as fixed:
+Embedding assets:
 
-   ```bash
-   PYTHONPATH=. .venv312/bin/python - <<'PY'
-   import pandas as pd
-   cols = pd.read_csv('contraindications_norm_dedup.csv', nrows=0).columns
-   pd.DataFrame(columns=cols).to_csv('artifacts/mechanism_labels/contraindications_empty.csv', index=False)
-   PY
-   ```
+- `artifacts/refined/kg_embeddings.npz`
+  - Precomputed KG embeddings used by training/eval runs.
+- `artifacts/precomputed_embeddings/topological/node_ids.npy`
+- `artifacts/precomputed_embeddings/topological/embeddings.npy`
+- `artifacts/precomputed_embeddings/topological/equivalent_id_to_node_id.parquet`
+  - Global precomputed node IDs, vectors, and alias index used for MeDIC-to-embedding matching.
 
-3. Run the OpenAI classifier (uses `polypharmacy/llm_classifier.py` which now targets `gpt-5-mini` without unsupported params):
+## Mixed-negative training setup
 
-   ```bash
-   OPENAI_API_KEY="$OPENAI_API_KEY" PYTHONPATH=. .venv312/bin/python scripts/classify_mechanisms.py \
-     --indications-csv indications_norm_dedup.csv \
-     --contraindications-csv artifacts/mechanism_labels/contraindications_empty.csv \
-     --output-dir artifacts/mechanism_labels \
-     --model gpt-5-mini \
-     --prompt-version v1 \
-     --workers 8 \
-     --force
-   ```
+The current training path supports:
 
-4. Optional: to relabel both indications and contraindications, point `--contraindications-csv` at `contraindications_norm_dedup.csv` instead of the empty CSV.
+- positives from `refined_indications.csv`
+- sourced negatives from `contraindications_norm_dedup.csv`
+- optional sourced negatives from `twosides_ddi_prefixed_normalized.csv`
+- randomized disease-shuffled negatives at a configurable ratio
 
-### 3) Build refined ground truth
+Shared mixed-negative flags are available in:
 
-```bash
-PYTHONPATH=. .venv312/bin/python scripts/rebuild_ground_truth_from_mechanisms.py \
-  --labeled-dataset-csv artifacts/mechanism_labels/mechanism_labeled_dataset.csv \
-  --output-dir artifacts/refined_gt \
-  --keep-categories mechanistically_synergistic \
-  --min-confidence 0.6 \
-  --drop-needs-review
-```
+- `train.py`
+- `generalize.py`
+- `evaluate.py` fallback rebuild path
+- `experiment.py`
 
-Outputs:
+Relevant flags:
 
-- `artifacts/refined_gt/refined_indications.csv`: new positives (train schema).
-- `artifacts/refined_gt/refined_contraindications.csv`: labeled negatives (often empty for indication-only runs).
-- `artifacts/refined_gt/refined_dataset.csv` + `refinement_report.json`: dedup + filtering stats.
+- `--twosides-contraindications`
+- `--enable-mixed-negatives`
+- `--random-negative-ratio`
+- `--random-negative-strategy`
+- `--save-mixed-dataset-details`
 
-### 4) Train with refined positives and original negatives
+## Training command used for the mixed-negative experiment
 
-Use precomputed KG embeddings (`artifacts/refined/kg_embeddings.npz`) to skip expensive node2vec:
+This is the main experiment configuration used for the refined positives + sourced negatives + TWOSIDES + randomized negatives setup:
 
 ```bash
-PYTHONPATH=. .venv312/bin/python train.py \
+PYTHONPATH=. .venv/bin/python experiment.py \
   --indications artifacts/refined_gt/refined_indications.csv \
   --contraindications contraindications_norm_dedup.csv \
   --kg kg_edges.parquet \
   --kg-embeddings artifacts/refined/kg_embeddings.npz \
-  --output-dir artifacts/refined
+  --twosides-contraindications twosides_ddi_prefixed_normalized.csv \
+  --enable-mixed-negatives \
+  --random-negative-ratio 1.0 \
+  --random-negative-strategy disease_shuffle \
+  --save-mixed-dataset-details \
+  --output-dir artifacts/exp_refined_mixed_twosides_topological512
 ```
 
-Evaluate the best checkpoint from that run:
+Expected outputs in the run directory:
+
+- `best_model.pt`
+- `rf_model.pkl`
+- `rf_model_metadata.json`
+- `metrics.json`
+- `mixed_negative_report.json`
+
+## Precomputed embedding alias index
+
+`scripts/build_precomputed_embeddings.py` now exports `equivalent_id_to_node_id.parquet` alongside the embedding arrays.
+
+The alias index contains:
+
+- `alias_id`
+- `node_id`
+- `match_source`
+
+It is built from canonical `id` plus `equivalent_identifiers` from the source embedding parquet files and improves matching coverage for MeDIC `curie` and `alternate_ids`.
+
+Backfill alias index only:
 
 ```bash
-PYTHONPATH=. .venv312/bin/python evaluate.py \
-  --indications artifacts/refined_gt/refined_indications.csv \
-  --contraindications contraindications_norm_dedup.csv \
-  --kg kg_edges.parquet \
-  --output-dir artifacts/refined
+PYTHONPATH=. .venv/bin/python scripts/build_precomputed_embeddings.py \
+  --only-equivalent-id-index
 ```
 
-### 5) Useful helper scripts
+## RF repurposing ranking over MeDIC
 
-- `scripts/run_refined_training.py`: trains both baseline (`artifacts/baseline`) and refined runs (`artifacts/refined`) and writes a comparison report.
-- `scripts/test_one_row_classification.py`: smoke-test a single row via OpenAI (requires `OPENAI_API_KEY`).
+`scripts/rank_medic_pairs_rf.py` does the following:
 
-## Key outputs and navigation
+- maps `MeDIC Drug List.csv` drugs via `curie + alternate_ids`
+- resolves aliases against `equivalent_id_to_node_id.parquet`
+- uses the full topological precomputed embedding space
+- scores all possible 2-drug combinations for the ten diseases in `disease_codes_reference.md`
+- excludes known disease-specific combos from the training dataset
+- writes top 50 RF-ranked novel pairs per disease plus a combined file
+- adds `drug_name_1` and `drug_name_2` to every ranking CSV automatically
+- supports disease-level parallelism with `--max-workers`
 
-| File | Description |
-| --- | --- |
-| `artifacts/mechanism_labels/mechanism_labeled_dataset.csv` | Full LLM-labeled dataset (drug sets, categories, rationale). |
-| `classification_summary.json` | Aggregated counts + failure stats. |
-| `mechanism_annotations.csv` | Row-level log of classifications. |
-| `category_examples_30_each_manual_review_format.xlsx` | Manual-review workbook (set + classification). |
-| `artifacts/refined_gt/refined_indications.csv` | Training positives after filtering + dedup. |
-| `artifacts/refined/best_model.pt` | Refined-trained checkpoint (uses cached KG embeddings). |
+### Command to run everything
 
-## Artifacts housekeeping
+```bash
+PYTHONPATH=. .venv/bin/python scripts/rank_medic_pairs_rf.py \
+  --model-output-dir artifacts/exp_refined_mixed_twosides_topological512 \
+  --rf-model-path artifacts/exp_refined_mixed_twosides_topological512/rf_model.pkl \
+  --precomputed-node-ids artifacts/precomputed_embeddings/topological/node_ids.npy \
+  --precomputed-embeddings artifacts/precomputed_embeddings/topological/embeddings.npy \
+  --medic-drug-list "MeDIC Drug List.csv" \
+  --alias-index artifacts/precomputed_embeddings/topological/equivalent_id_to_node_id.parquet \
+  --disease-reference-md disease_codes_reference.md \
+  --novelty-source deduped \
+  --top-n 50 \
+  --batch-size 200000 \
+  --max-workers 4 \
+  --output-dir artifacts/rf_repurpose_top50
+```
 
-- Keep one “gold” workspace: `artifacts/mechanism_labels` (LLM labels), `artifacts/refined_gt` (filtered CSVs), and `artifacts/refined` (trained model).
-- Baseline reference run lives at `artifacts/baseline`.
-- Archive outdated runs under `artifacts/archive/<date>/<run-name>/` to keep the root clean (current archive: `artifacts/archive/2026-02-redo-cutover/`).
+Outputs:
 
-### How to archive a run
+- `artifacts/rf_repurpose_top50/<run_name>/top50_all_diseases.csv`
+- `artifacts/rf_repurpose_top50/<run_name>/top50_MONDO_*.csv`
+- `artifacts/rf_repurpose_top50/<run_name>/medic_mapping_matched.csv`
+- `artifacts/rf_repurpose_top50/<run_name>/medic_mapping_unmatched.csv`
+- `artifacts/rf_repurpose_top50/<run_name>/disease_run_summary.csv`
+- `artifacts/rf_repurpose_top50/<run_name>/summary.json`
 
-1) Pick the run folder to retire (e.g., `artifacts/mechanism_labels/`).  
-2) Create an archive dir if absent:
-   ```bash
-   mkdir -p artifacts/archive/$(date +%Y-%m-%d)-run
-   ```
-3) Move the run into it:
-   ```bash
-   mv artifacts/mechanism_labels artifacts/archive/2026-02-redo-cutover/mechanism_labels
-   ```
-4) Update this section if you move/rename runs.  
-5) Keep an `artifacts/archive/<date>/README.md` noting what was archived and why.
+## Tests added for recent changes
 
-- Raw KG embeddings live under `artifacts/precomputed_embeddings/`; manual review workbooks and labeled data live under `artifacts/mechanism_labels/`.
+- `tests/test_mixed_negative_pipeline.py`
+- `tests/test_build_precomputed_embeddings.py`
+- `tests/test_rank_medic_pairs_rf.py`
 
-## Troubleshooting & tips
+Run targeted tests:
 
-| Problem | Notes |
-| --- | --- |
-| `ModuleNotFoundError: polypharmacy` | Always run with `PYTHONPATH=.` or install the package via `pip install -e .`. |
-| OpenAI `temperature` error | Fixed already—`polypharmacy/llm_classifier.py` no longer sets `temperature`. |
-| Node2vec permission issues | Use `--kg-embeddings artifacts_refined/kg_embeddings.npz` to skip running node2vec. |
-| Need deterministic splits? | Splits are saved to `<output-dir>/splits.npz` inside each `artifacts_*` run. |
+```bash
+PYTHONPATH=. .venv/bin/python -m unittest \
+  tests.test_mixed_negative_pipeline \
+  tests.test_build_precomputed_embeddings \
+  tests.test_rank_medic_pairs_rf
+```
 
-## Next steps
+## Notes
 
-1. Update `polypharmacy/llm_classifier.py`’s `SYSTEM_PROMPT` if you want to try a new prompt version (e.g., `v2`).
-2. Use `scripts/run_refined_training.py` to benchmark new variants against the baseline.
-3. Keep `artifacts_archive/2026-02-redo-cutover/README.md` updated every time you retire an old run.
-
-
-README was created with help of codex - Note to reviewers. 
+- RF ranking uses the trained RF model with concatenated `[drug1_emb, drug2_emb, disease_emb]` features.
+- The ranking workflow intentionally uses `curie + alternate_ids` only for MeDIC matching. `ingredient_ids` are excluded to avoid component-vs-product semantic drift.
+- `MONDO:0011699` is substituted to `MONDO:0005265` for IBD because that is the disease embedding used in this workflow.

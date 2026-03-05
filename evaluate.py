@@ -27,6 +27,28 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Optional RENCI single-therapy contraindications CSV.",
     )
+    parser.add_argument(
+        "--twosides-contraindications",
+        default="twosides_ddi_prefixed_normalized.csv",
+        help="Optional TWOSIDES normalized contraindication-like interaction CSV.",
+    )
+    parser.add_argument(
+        "--enable-mixed-negatives",
+        action="store_true",
+        help="Use mixed-negative dataset construction if rebuilding filtered data.",
+    )
+    parser.add_argument(
+        "--random-negative-ratio",
+        type=float,
+        default=1.0,
+        help="Randomized negatives / sourced negatives ratio when mixed negatives are enabled.",
+    )
+    parser.add_argument(
+        "--random-negative-strategy",
+        choices=["disease_shuffle"],
+        default="disease_shuffle",
+        help="Strategy for randomized negative generation.",
+    )
     parser.add_argument("--checkpoint", default=None)
     parser.add_argument("--output-dir", default="artifacts")
     parser.add_argument("--batch-size", type=int, default=128)
@@ -86,6 +108,10 @@ def load_filtered_df(args: argparse.Namespace) -> pd.DataFrame:
         args.contraindications,
         single_therapy_indications_path=args.single_therapy_indications,
         single_therapy_contraindications_path=args.single_therapy_contraindications,
+        twosides_contraindications_path=args.twosides_contraindications,
+        enable_mixed_negatives=args.enable_mixed_negatives,
+        random_negative_ratio=args.random_negative_ratio,
+        random_negative_strategy=args.random_negative_strategy,
     )
     edges = kg_lib.load_edges(args.kg, src_col=args.edge_src_col, dst_col=args.edge_dst_col)
     kg_nodes = kg_lib.extract_kg_nodes(edges)

@@ -12,6 +12,9 @@ from torch.utils.data import Dataset
 LIST_COLUMNS = ("primary_drug_id_norm", "secondary_drug_id_norm")
 SINGLE_THERAPY_DRUG_COLUMN = "final normalized drug id"
 SINGLE_THERAPY_DISEASE_COLUMN = "final normalized disease id"
+TWOSIDES_DRUG_1_COLUMN = "drug_1_rxnorn_id_norm"
+TWOSIDES_DRUG_2_COLUMN = "drug_2_rxnorm_id_norm"
+TWOSIDES_DISEASE_COLUMN = "condition_meddra_id_norm"
 
 
 def _parse_list_column(value: object) -> List[str]:
@@ -66,6 +69,24 @@ def normalize_id_list(values: List[object]) -> List[str]:
     return flattened
 
 
+def _is_invalid_identifier(value: object) -> bool:
+    text = str(value).strip()
+    if not text:
+        return True
+    lower = text.lower()
+    if lower in {"nan", "none"}:
+        return True
+    if text.startswith("Error") or lower.startswith("error"):
+        return True
+    if text.startswith("['Error") or text.startswith('["Error'):
+        return True
+    return False
+
+
+def _canonical_key(drug_set: Sequence[str], condition_id: str) -> Tuple[Tuple[str, ...], str]:
+    return tuple(sorted(str(drug_id) for drug_id in drug_set)), str(condition_id)
+
+
 @dataclass
 class LabeledExample:
     drug_ids: List[str]
@@ -73,7 +94,7 @@ class LabeledExample:
     label: int
 
 
-def _load_csv_df(path: str, label: int) -> pd.DataFrame:
+def _load_csv_df(path: str, label: int, source_name: Optional[str] = None) -> pd.DataFrame:
     df = pd.read_csv(path)
     for column in LIST_COLUMNS:
         df[column] = df[column].apply(parse_list_column)
@@ -82,11 +103,12 @@ def _load_csv_df(path: str, label: int) -> pd.DataFrame:
         lambda ids: sorted(normalize_id_list(ids))
     )
     df = df[df["drug_set"].map(len) > 0]
-    df = df[~df["condition_id_norm"].isin(["nan", "None"])]
-    df = df[~df["condition_id_norm"].str.startswith("Error")]
+    df = df[~df["condition_id_norm"].apply(_is_invalid_identifier)]
     df = df[["drug_set", "condition_id_norm"]].copy()
     # Label is inferred from the file source (indications=1, contraindications=0).
     df["label"] = label
+    if source_name:
+        df["source_name"] = source_name
     return df
 
 
@@ -102,7 +124,9 @@ def _parse_single_therapy_drug_ids(value: object) -> List[str]:
     return normalize_id_list(tokens)
 
 
-def _load_single_therapy_csv(path: str, label: int) -> pd.DataFrame:
+def _load_single_therapy_csv(
+    path: str, label: int, source_name: Optional[str] = None
+) -> pd.DataFrame:
     """Load the RENCI single-therapy CSVs and align them with the standard schema."""
     df = pd.read_csv(path, usecols=[SINGLE_THERAPY_DRUG_COLUMN, SINGLE_THERAPY_DISEASE_COLUMN])
     df = df.rename(
@@ -114,13 +138,116 @@ def _load_single_therapy_csv(path: str, label: int) -> pd.DataFrame:
     df["drug_set"] = df["drug_id"].apply(_parse_single_therapy_drug_ids)
     df["condition_id_norm"] = df["condition_id_norm"].astype(str).str.strip()
     df = df[df["drug_set"].map(len) > 0]
-    invalid_condition = df["condition_id_norm"].str.lower().isin({"nan", "none", ""})
+    invalid_condition = df["condition_id_norm"].apply(_is_invalid_identifier)
     df = df[~invalid_condition]
-    df = df[~df["condition_id_norm"].str.startswith("Error")]
     df = df[["drug_set", "condition_id_norm"]].copy()
     df["drug_set"] = df["drug_set"].apply(lambda ids: sorted(ids))
     df["label"] = label
+    if source_name:
+        df["source_name"] = source_name
     return df
+
+
+def _load_twosides_csv(path: str, source_name: str = "twosides") -> pd.DataFrame:
+    df = pd.read_csv(
+        path,
+        usecols=[TWOSIDES_DRUG_1_COLUMN, TWOSIDES_DRUG_2_COLUMN, TWOSIDES_DISEASE_COLUMN],
+    )
+    df[TWOSIDES_DRUG_1_COLUMN] = df[TWOSIDES_DRUG_1_COLUMN].astype(str).str.strip()
+    df[TWOSIDES_DRUG_2_COLUMN] = df[TWOSIDES_DRUG_2_COLUMN].astype(str).str.strip()
+    df[TWOSIDES_DISEASE_COLUMN] = df[TWOSIDES_DISEASE_COLUMN].astype(str).str.strip()
+
+    rows: List[Dict[str, object]] = []
+    for row in df.itertuples(index=False):
+        drug_1 = getattr(row, TWOSIDES_DRUG_1_COLUMN)
+        drug_2 = getattr(row, TWOSIDES_DRUG_2_COLUMN)
+        disease = getattr(row, TWOSIDES_DISEASE_COLUMN)
+        if (
+            _is_invalid_identifier(drug_1)
+            or _is_invalid_identifier(drug_2)
+            or _is_invalid_identifier(disease)
+        ):
+            continue
+        drug_set = sorted(normalize_id_list([drug_1, drug_2]))
+        if not drug_set:
+            continue
+        rows.append(
+            {
+                "drug_set": drug_set,
+                "condition_id_norm": str(disease),
+                "label": 0,
+                "source_name": source_name,
+            }
+        )
+    return pd.DataFrame(rows, columns=["drug_set", "condition_id_norm", "label", "source_name"])
+
+
+def _build_randomized_disease_shuffle_negatives(
+    sourced_negative_df: pd.DataFrame,
+    positive_df: pd.DataFrame,
+    known_keys: set,
+    ratio: float,
+    seed: int,
+    source_name: str = "randomized_disease_shuffle",
+) -> Tuple[pd.DataFrame, Dict[str, int]]:
+    target = int(round(max(0.0, ratio) * len(sourced_negative_df)))
+    stats: Dict[str, int] = {
+        "target": target,
+        "attempted": 0,
+        "accepted": 0,
+        "rejected_known_key": 0,
+        "rejected_same_disease": 0,
+    }
+    if target <= 0 or sourced_negative_df.empty or positive_df.empty:
+        return (
+            pd.DataFrame(columns=["drug_set", "condition_id_norm", "label", "source_name"]),
+            stats,
+        )
+
+    disease_pool = (
+        positive_df["condition_id_norm"]
+        .astype(str)
+        .apply(str.strip)
+        .loc[lambda s: ~s.apply(_is_invalid_identifier)]
+        .unique()
+    )
+    if len(disease_pool) == 0:
+        return (
+            pd.DataFrame(columns=["drug_set", "condition_id_norm", "label", "source_name"]),
+            stats,
+        )
+
+    rng = np.random.RandomState(seed)
+    source_rows = sourced_negative_df.reset_index(drop=True)
+    accepted: List[Dict[str, object]] = []
+    max_attempts = max(100, target * 30)
+
+    while len(accepted) < target and stats["attempted"] < max_attempts:
+        row = source_rows.iloc[int(rng.randint(len(source_rows)))]
+        random_disease = str(disease_pool[int(rng.randint(len(disease_pool)))])
+        stats["attempted"] += 1
+        if random_disease == str(row.condition_id_norm):
+            stats["rejected_same_disease"] += 1
+            continue
+        key = _canonical_key(row.drug_set, random_disease)
+        if key in known_keys:
+            stats["rejected_known_key"] += 1
+            continue
+        known_keys.add(key)
+        accepted.append(
+            {
+                "drug_set": list(row.drug_set),
+                "condition_id_norm": random_disease,
+                "label": 0,
+                "source_name": source_name,
+            }
+        )
+
+    stats["accepted"] = len(accepted)
+    return (
+        pd.DataFrame(accepted, columns=["drug_set", "condition_id_norm", "label", "source_name"]),
+        stats,
+    )
 
 
 def load_deduped_dataframe(
@@ -128,17 +255,71 @@ def load_deduped_dataframe(
     contraindications_path: str,
     single_therapy_indications_path: Optional[str] = None,
     single_therapy_contraindications_path: Optional[str] = None,
+    twosides_contraindications_path: Optional[str] = None,
+    enable_mixed_negatives: bool = False,
+    random_negative_ratio: float = 1.0,
+    random_negative_strategy: str = "disease_shuffle",
+    seed: int = 13,
+    report_out: Optional[Dict[str, object]] = None,
 ) -> Tuple[pd.DataFrame, int]:
     """Load CSVs, build sorted drug sets, and deduplicate with conflict resolution."""
-    frames = [
-        _load_csv_df(indications_path, label=1),
-        _load_csv_df(contraindications_path, label=0),
+    positive_frames = [
+        _load_csv_df(indications_path, label=1, source_name="indications"),
+    ]
+    negative_frames = [
+        _load_csv_df(contraindications_path, label=0, source_name="contraindications"),
     ]
     if single_therapy_indications_path:
-        frames.append(_load_single_therapy_csv(single_therapy_indications_path, label=1))
+        positive_frames.append(
+            _load_single_therapy_csv(
+                single_therapy_indications_path,
+                label=1,
+                source_name="single_therapy_indications",
+            )
+        )
     if single_therapy_contraindications_path:
-        frames.append(_load_single_therapy_csv(single_therapy_contraindications_path, label=0))
-    combined = pd.concat(frames, ignore_index=True)
+        negative_frames.append(
+            _load_single_therapy_csv(
+                single_therapy_contraindications_path,
+                label=0,
+                source_name="single_therapy_contraindications",
+            )
+        )
+    if enable_mixed_negatives and twosides_contraindications_path:
+        negative_frames.append(
+            _load_twosides_csv(twosides_contraindications_path, source_name="twosides")
+        )
+
+    positives_df = pd.concat(positive_frames, ignore_index=True)
+    sourced_negatives_df = pd.concat(negative_frames, ignore_index=True)
+    combined = pd.concat([positives_df, sourced_negatives_df], ignore_index=True)
+
+    random_stats: Dict[str, int] = {
+        "target": 0,
+        "attempted": 0,
+        "accepted": 0,
+        "rejected_known_key": 0,
+        "rejected_same_disease": 0,
+    }
+    if enable_mixed_negatives:
+        if random_negative_strategy != "disease_shuffle":
+            raise ValueError(
+                f"Unsupported random_negative_strategy={random_negative_strategy!r}. "
+                "Supported strategies: disease_shuffle"
+            )
+        known_keys = {
+            _canonical_key(row.drug_set, row.condition_id_norm)
+            for row in combined.itertuples(index=False)
+        }
+        randomized_df, random_stats = _build_randomized_disease_shuffle_negatives(
+            sourced_negatives_df,
+            positives_df,
+            known_keys=known_keys,
+            ratio=random_negative_ratio,
+            seed=seed,
+        )
+        if not randomized_df.empty:
+            combined = pd.concat([combined, randomized_df], ignore_index=True)
 
     combined["drug_set_key"] = combined["drug_set"].apply(tuple)
     conflict_flags = (
@@ -150,9 +331,48 @@ def load_deduped_dataframe(
 
     deduped = (
         combined.groupby(["drug_set_key", "condition_id_norm"], as_index=False)
-        .agg(label=("label", "min"), drug_set=("drug_set", "first"))
+        .agg(
+            label=("label", "min"),
+            drug_set=("drug_set", "first"),
+            source_name=(
+                "source_name",
+                lambda values: "|".join(sorted({str(value) for value in values})),
+            ),
+        )
         .drop(columns=["drug_set_key"])
     )
+    if report_out is not None:
+        report_out.clear()
+        report_out.update(
+            {
+                "enable_mixed_negatives": bool(enable_mixed_negatives),
+                "random_negative_ratio": float(random_negative_ratio),
+                "random_negative_strategy": str(random_negative_strategy),
+                "source_counts_before_dedup": {
+                    str(key): int(value)
+                    for key, value in combined["source_name"].value_counts().to_dict().items()
+                },
+                "label_counts_before_dedup": {
+                    int(key): int(value)
+                    for key, value in combined["label"].value_counts().to_dict().items()
+                },
+                "source_counts_after_dedup": {
+                    str(key): int(value)
+                    for key, value in deduped["source_name"]
+                    .str.split("|", regex=False)
+                    .explode()
+                    .value_counts()
+                    .to_dict()
+                    .items()
+                },
+                "label_counts_after_dedup": {
+                    int(key): int(value)
+                    for key, value in deduped["label"].value_counts().to_dict().items()
+                },
+                "random_negative_generation": random_stats,
+                "conflict_count": int(conflict_count),
+            }
+        )
     return deduped, conflict_count
 
 
@@ -174,6 +394,11 @@ def load_examples(
     contraindications_path: str,
     single_therapy_indications_path: Optional[str] = None,
     single_therapy_contraindications_path: Optional[str] = None,
+    twosides_contraindications_path: Optional[str] = None,
+    enable_mixed_negatives: bool = False,
+    random_negative_ratio: float = 1.0,
+    random_negative_strategy: str = "disease_shuffle",
+    seed: int = 13,
 ) -> List[LabeledExample]:
     """Load labeled examples with deduplication and conflict resolution applied."""
     deduped, _ = load_deduped_dataframe(
@@ -181,6 +406,11 @@ def load_examples(
         contraindications_path,
         single_therapy_indications_path,
         single_therapy_contraindications_path,
+        twosides_contraindications_path,
+        enable_mixed_negatives,
+        random_negative_ratio,
+        random_negative_strategy,
+        seed,
     )
     return dataframe_to_examples(deduped)
 

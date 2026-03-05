@@ -2,6 +2,7 @@ import argparse
 import itertools
 import json
 import os
+import pickle
 from typing import Dict, List, Tuple
 
 import numpy as np
@@ -21,6 +22,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run RF vs LSTM comparison.")
     parser.add_argument("--config", default=None, help="Optional JSON config overrides.")
     parser.add_argument("--output-dir", default="artifacts")
+    parser.add_argument("--indications", default="indications_norm.csv")
+    parser.add_argument("--contraindications", default="contraindications_norm.csv")
     parser.add_argument("--kg", default="kg_edges.parquet")
     parser.add_argument(
         "--kg-embeddings",
@@ -89,6 +92,33 @@ def parse_args() -> argparse.Namespace:
         "--single-therapy-contraindications",
         default=None,
         help="Optional RENCI single-therapy contraindications CSV.",
+    )
+    parser.add_argument(
+        "--twosides-contraindications",
+        default="twosides_ddi_prefixed_normalized.csv",
+        help="Optional TWOSIDES normalized contraindication-like interaction CSV.",
+    )
+    parser.add_argument(
+        "--enable-mixed-negatives",
+        action="store_true",
+        help="Mix sourced negatives with randomized negatives.",
+    )
+    parser.add_argument(
+        "--random-negative-ratio",
+        type=float,
+        default=1.0,
+        help="Randomized negatives / sourced negatives ratio when mixed negatives are enabled.",
+    )
+    parser.add_argument(
+        "--random-negative-strategy",
+        choices=["disease_shuffle"],
+        default="disease_shuffle",
+        help="Strategy for randomized negative generation.",
+    )
+    parser.add_argument(
+        "--save-mixed-dataset-details",
+        action="store_true",
+        help="Write mixed-negative source/report stats to output directory.",
     )
     return parser.parse_args()
 
@@ -402,13 +432,30 @@ def main() -> None:
     ensure_dir(args.output_dir)
     utils.save_json(os.path.join(args.output_dir, "config.json"), config)
 
+    dedupe_report: Dict[str, object] = {}
     deduped_df, conflict_count = data_lib.load_deduped_dataframe(
-        "indications_norm.csv",
-        "contraindications_norm.csv",
+        args.indications,
+        args.contraindications,
         single_therapy_indications_path=args.single_therapy_indications,
         single_therapy_contraindications_path=args.single_therapy_contraindications,
+        twosides_contraindications_path=args.twosides_contraindications,
+        enable_mixed_negatives=args.enable_mixed_negatives,
+        random_negative_ratio=args.random_negative_ratio,
+        random_negative_strategy=args.random_negative_strategy,
+        seed=args.seed,
+        report_out=dedupe_report,
     )
     print(f"Conflict resolution: {conflict_count}")
+    if args.enable_mixed_negatives:
+        print(
+            "Mixed negatives enabled: "
+            f"strategy={args.random_negative_strategy}, ratio={args.random_negative_ratio}"
+        )
+    if args.save_mixed_dataset_details:
+        utils.save_json(
+            os.path.join(args.output_dir, "mixed_negative_report.json"),
+            dedupe_report,
+        )
 
     required_drugs = set(
         itertools.chain.from_iterable(deduped_df["drug_set"])  # type: ignore[arg-type]
@@ -641,6 +688,21 @@ def main() -> None:
             max_depth=args.rf_max_depth,
             seed=rep_seed,
         )
+        rf_model_path = os.path.join(run_output_dir, "rf_model.pkl")
+        with open(rf_model_path, "wb") as handle:
+            pickle.dump(rf_model, handle)
+        rf_meta = {
+            "seed": rep_seed,
+            "n_estimators": args.rf_estimators,
+            "max_depth": args.rf_max_depth,
+            "train_examples": int(len(y_rf_train)),
+            "feature_dim": int(X_rf_train.shape[1]),
+            "mixed_negatives_enabled": bool(args.enable_mixed_negatives),
+            "random_negative_ratio": float(args.random_negative_ratio),
+            "random_negative_strategy": str(args.random_negative_strategy),
+        }
+        utils.save_json(os.path.join(run_output_dir, "rf_model_metadata.json"), rf_meta)
+        print(f"Saved RF model to {rf_model_path}")
         X_rf_test, y_rf_test = build_rf_features(
             test_df, drug_to_idx, disease_to_idx, drug_embeddings, disease_embeddings
         )
