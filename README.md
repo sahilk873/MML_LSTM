@@ -20,6 +20,8 @@ The code lives in the repo. Large generated outputs should stay local and do not
 | `polypharmacy/` | Core package: config, data loading, KG handling, models, utilities, triplet helpers. |
 | `scripts/` | Utility scripts for preprocessing, ranking, scoring, sweeps, and auxiliary experiments. |
 | `tests/` | Unit tests for the main pipeline and utility scripts. |
+| `EXPERIMENTS.md` | Running record of experiments, metrics, and conclusions. |
+| `AGENTS.md` | Repo instructions for agents, including the requirement to update `EXPERIMENTS.md`. |
 
 ## Environment setup
 
