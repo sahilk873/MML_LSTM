@@ -9,7 +9,7 @@ import numpy as np
 import torch
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, TensorDataset
 
 from polypharmacy import config as config_lib
 from polypharmacy import data as data_lib
@@ -99,6 +99,11 @@ def parse_args() -> argparse.Namespace:
         help="Optional TWOSIDES normalized contraindication-like interaction CSV.",
     )
     parser.add_argument(
+        "--alias-index",
+        default="artifacts/precomputed_embeddings/topological/equivalent_id_to_node_id.parquet",
+        help="Alias-to-canonical node ID parquet used to resolve equivalent IDs everywhere.",
+    )
+    parser.add_argument(
         "--enable-mixed-negatives",
         action="store_true",
         help="Mix sourced negatives with randomized negatives.",
@@ -120,7 +125,35 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Write mixed-negative source/report stats to output directory.",
     )
+    parser.add_argument(
+        "--extra-drug-ids-file",
+        default=None,
+        help=(
+            "Optional newline-delimited file of extra drug IDs to include in the "
+            "LSTM embedding/vocab tables when they exist in the precomputed embeddings."
+        ),
+    )
+    parser.add_argument(
+        "--extra-disease-ids-file",
+        default=None,
+        help=(
+            "Optional newline-delimited file of extra disease IDs to include in the "
+            "LSTM embedding/vocab tables when they exist in the precomputed embeddings."
+        ),
+    )
     return parser.parse_args()
+
+
+def load_id_file(path: str | None) -> List[str]:
+    if path is None:
+        return []
+    values: List[str] = []
+    with open(path, "r", encoding="utf-8") as handle:
+        for raw_line in handle:
+            line = raw_line.split("#", 1)[0].strip()
+            if line:
+                values.append(line)
+    return sorted(set(values))
 
 
 def ensure_dir(path: str) -> None:
@@ -195,8 +228,21 @@ def fit_random_forest(
     return clf
 
 
-def evaluate_model_with_loader(
-    model: model_lib.PolypharmacyLSTMClassifier,
+def build_pair_feature_loader(
+    X: np.ndarray,
+    y: np.ndarray,
+    batch_size: int,
+    shuffle: bool,
+) -> DataLoader:
+    dataset = TensorDataset(
+        torch.tensor(X, dtype=torch.float32),
+        torch.tensor(y, dtype=torch.float32),
+    )
+    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle)
+
+
+def evaluate_pair_mlp(
+    model: model_lib.PairEmbeddingMLPClassifier,
     loader: DataLoader,
     device: torch.device,
 ) -> Dict[str, object]:
@@ -204,11 +250,92 @@ def evaluate_model_with_loader(
     all_probs = []
     all_labels = []
     with torch.no_grad():
-        for drug_seq, lengths, disease_idx, labels in loader:
+        for features, labels in loader:
+            features = features.to(device)
+            logits = model(features)
+            probs = torch.sigmoid(logits).cpu().numpy()
+            all_probs.append(probs)
+            all_labels.append(labels.numpy())
+    if not all_probs:
+        return {"roc_auc": float("nan"), "accuracy": float("nan")}
+    return utils.compute_metrics(np.concatenate(all_labels), np.concatenate(all_probs))
+
+
+def train_pair_mlp(
+    train_loader: DataLoader,
+    val_loader: DataLoader,
+    config: Dict[str, object],
+    input_dim: int,
+    device: torch.device,
+    output_dir: str,
+) -> Tuple[model_lib.PairEmbeddingMLPClassifier, str]:
+    model = model_lib.PairEmbeddingMLPClassifier(
+        input_dim=input_dim,
+        hidden_dim=int(config["pair_mlp_hidden_dim"]),
+        num_layers=int(config["pair_mlp_layers"]),
+        dropout=float(config["pair_mlp_dropout"]),
+        init_sigma=config.get("pair_mlp_init_sigma"),
+    ).to(device)
+    optimizer = torch.optim.Adam(
+        model.parameters(),
+        lr=float(config["pair_mlp_learning_rate"]),
+        weight_decay=float(config["pair_mlp_weight_decay"]),
+    )
+    criterion = torch.nn.BCEWithLogitsLoss()
+    best_auc = float("-inf")
+    best_path = os.path.join(output_dir, "pair_mlp_best.pt")
+    for epoch in range(1, int(config["pair_mlp_epochs"]) + 1):
+        model.train()
+        total_loss = 0.0
+        for features, labels in train_loader:
+            features = features.to(device)
+            labels = labels.to(device)
+            optimizer.zero_grad()
+            logits = model(features)
+            loss = criterion(logits, labels)
+            loss.backward()
+            optimizer.step()
+            total_loss += loss.item()
+        val_metrics = evaluate_pair_mlp(model, val_loader, device)
+        print(
+            f"PairMLP Epoch {epoch:02d} | loss={total_loss/len(train_loader):.4f} | "
+            f"val_auc={val_metrics['roc_auc']:.4f} | val_acc={val_metrics['accuracy']:.4f} | "
+            f"val_sens={val_metrics['sensitivity']:.4f} | val_spec={val_metrics['specificity']:.4f} | "
+            f"val_f1={val_metrics['f1']:.4f}"
+        )
+        if not np.isnan(val_metrics["roc_auc"]) and val_metrics["roc_auc"] > best_auc:
+            best_auc = val_metrics["roc_auc"]
+            torch.save(
+                {
+                    "model_state": model.state_dict(),
+                    "input_dim": input_dim,
+                    "hidden_dim": int(config["pair_mlp_hidden_dim"]),
+                    "num_layers": int(config["pair_mlp_layers"]),
+                    "dropout": float(config["pair_mlp_dropout"]),
+                    "init_sigma": config.get("pair_mlp_init_sigma"),
+                    "learning_rate": float(config["pair_mlp_learning_rate"]),
+                    "weight_decay": float(config["pair_mlp_weight_decay"]),
+                    "epochs": int(config["pair_mlp_epochs"]),
+                },
+                best_path,
+            )
+    return model, best_path
+
+
+def evaluate_model_with_loader(
+    model: torch.nn.Module,
+    loader: DataLoader,
+    device: torch.device,
+) -> Dict[str, object]:
+    model.eval()
+    all_probs = []
+    all_labels = []
+    with torch.no_grad():
+        for drug_seq, lengths, disease_features, labels in loader:
             drug_seq = drug_seq.to(device)
             lengths = lengths.to(device)
-            disease_idx = disease_idx.to(device)
-            logits = model(drug_seq, lengths, disease_idx)
+            disease_features = disease_features.to(device)
+            logits = model(drug_seq, lengths, disease_features)
             probs = torch.sigmoid(logits).cpu().numpy()
             all_probs.append(probs)
             all_labels.append(labels.numpy())
@@ -218,7 +345,7 @@ def evaluate_model_with_loader(
 
 
 def collect_predictions(
-    model: model_lib.PolypharmacyLSTMClassifier,
+    model: torch.nn.Module,
     loader: DataLoader,
     device: torch.device,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -227,11 +354,11 @@ def collect_predictions(
     all_labels = []
     all_lengths = []
     with torch.no_grad():
-        for drug_seq, lengths, disease_idx, labels in loader:
+        for drug_seq, lengths, disease_features, labels in loader:
             drug_seq = drug_seq.to(device)
             lengths = lengths.to(device)
-            disease_idx = disease_idx.to(device)
-            logits = model(drug_seq, lengths, disease_idx)
+            disease_features = disease_features.to(device)
+            logits = model(drug_seq, lengths, disease_features)
             probs = torch.sigmoid(logits).cpu().numpy()
             all_probs.append(probs)
             all_labels.append(labels.numpy())
@@ -307,26 +434,81 @@ def compute_bucket_metrics(
     return metrics_by_bucket
 
 
+class DirectEmbeddingDataset(torch.utils.data.Dataset):
+    def __init__(
+        self,
+        drug_sequences: List[np.ndarray],
+        disease_embeddings: List[np.ndarray],
+        labels: List[int],
+    ) -> None:
+        self.drug_sequences = drug_sequences
+        self.disease_embeddings = disease_embeddings
+        self.labels = labels
+
+    def __len__(self) -> int:
+        return len(self.labels)
+
+    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        return (
+            torch.tensor(self.drug_sequences[idx], dtype=torch.float32),
+            torch.tensor(self.disease_embeddings[idx], dtype=torch.float32),
+            torch.tensor(float(self.labels[idx]), dtype=torch.float32),
+        )
+
+
+def collate_direct_embedding_batch(
+    batch: List[Tuple[torch.Tensor, torch.Tensor, torch.Tensor]],
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    drug_seqs, disease_embeddings, labels = zip(*batch)
+    lengths = torch.tensor([seq.size(0) for seq in drug_seqs], dtype=torch.long)
+    padded = torch.nn.utils.rnn.pad_sequence(
+        drug_seqs, batch_first=True, padding_value=0.0
+    )
+    disease_tensor = torch.stack(disease_embeddings)
+    label_tensor = torch.stack(labels)
+    return padded, lengths, disease_tensor, label_tensor
+
+
+def embed_examples_direct(
+    examples: List[data_lib.LabeledExample],
+    node_to_idx: Dict[str, int],
+    node_vectors: np.ndarray,
+) -> Tuple[List[np.ndarray], List[np.ndarray], List[int]]:
+    drug_sequences: List[np.ndarray] = []
+    disease_embeddings: List[np.ndarray] = []
+    labels: List[int] = []
+    for example in examples:
+        drug_sequences.append(
+            np.stack(
+                [np.asarray(node_vectors[node_to_idx[drug_id]], dtype=np.float32) for drug_id in example.drug_ids],
+                axis=0,
+            )
+        )
+        disease_embeddings.append(
+            np.asarray(node_vectors[node_to_idx[example.disease_id]], dtype=np.float32)
+        )
+        labels.append(example.label)
+    return drug_sequences, disease_embeddings, labels
+
+
 def train_lstm(
     train_loader: DataLoader,
     val_loader: DataLoader,
     config: dict,
-    drug_embeddings: np.ndarray,
-    disease_embeddings: np.ndarray,
+    drug_embedding_dim: int,
+    disease_embedding_dim: int,
     device: torch.device,
     output_dir: str,
-) -> Tuple[model_lib.PolypharmacyLSTMClassifier, str]:
-    model = model_lib.PolypharmacyLSTMClassifier(
-        drug_embeddings=torch.tensor(drug_embeddings),
-        disease_embeddings=torch.tensor(disease_embeddings),
+) -> Tuple[torch.nn.Module, str]:
+    model = model_lib.PolypharmacyDirectEmbeddingLSTMClassifier(
+        drug_embedding_dim=drug_embedding_dim,
+        disease_embedding_dim=disease_embedding_dim,
         lstm_hidden_dim=config["lstm_hidden_dim"],
         mlp_hidden_dim=config["mlp_hidden_dim"],
         mlp_layers=config["mlp_layers"],
         dropout=config["dropout"],
-        freeze_kg=config["freeze_kg"],
         disease_token_position=config.get("disease_token_position"),
         concat_disease_after_lstm=config.get("concat_disease_after_lstm", True),
-        pad_idx=0,
     ).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=config["learning_rate"])
     criterion = torch.nn.BCEWithLogitsLoss()
@@ -359,19 +541,17 @@ def train_lstm(
                 {
                     "model_state": model.state_dict(),
                     "config": config,
-                    "drug_vocab_size": drug_embeddings.shape[0],
-                    "disease_vocab_size": disease_embeddings.shape[0],
-                    "embedding_dim": drug_embeddings.shape[1],
+                    "uses_direct_embeddings": True,
+                    "drug_embedding_dim": int(drug_embedding_dim),
+                    "disease_embedding_dim": int(disease_embedding_dim),
                     "lstm_hidden_dim": config["lstm_hidden_dim"],
                     "mlp_hidden_dim": config["mlp_hidden_dim"],
                     "mlp_layers": config["mlp_layers"],
                     "dropout": config["dropout"],
-                    "freeze_kg": config["freeze_kg"],
                     "disease_token_position": config.get("disease_token_position"),
                     "concat_disease_after_lstm": config.get(
                         "concat_disease_after_lstm", True
                     ),
-                    "pad_idx": 0,
                 },
                 best_path,
             )
@@ -439,6 +619,7 @@ def main() -> None:
         single_therapy_indications_path=args.single_therapy_indications,
         single_therapy_contraindications_path=args.single_therapy_contraindications,
         twosides_contraindications_path=args.twosides_contraindications,
+        alias_index_path=args.alias_index,
         enable_mixed_negatives=args.enable_mixed_negatives,
         random_negative_ratio=args.random_negative_ratio,
         random_negative_strategy=args.random_negative_strategy,
@@ -540,12 +721,43 @@ def main() -> None:
         print(f"Most common missing prefixes: {drop_stats['missing_prefixes']}")
 
     filtered_examples = data_lib.dataframe_to_examples(filtered_df)
-    drug_to_idx, disease_to_idx = data_lib.build_mappings(filtered_examples)
-    drug_idx_to_id = build_idx_to_id(drug_to_idx, pad_token="<PAD>")
-    disease_idx_to_id = build_idx_to_id(disease_to_idx)
+    requested_extra_drug_ids = load_id_file(args.extra_drug_ids_file)
+    requested_extra_disease_ids = load_id_file(args.extra_disease_ids_file)
+    extra_drug_ids = [drug_id for drug_id in requested_extra_drug_ids if drug_id in kg_nodes]
+    extra_disease_ids = [
+        disease_id for disease_id in requested_extra_disease_ids if disease_id in kg_nodes
+    ]
+    skipped_extra_drug_ids = sorted(set(requested_extra_drug_ids) - set(extra_drug_ids))
+    skipped_extra_disease_ids = sorted(
+        set(requested_extra_disease_ids) - set(extra_disease_ids)
+    )
+    if extra_drug_ids:
+        print(
+            "Including extra drug IDs in embedding vocab: "
+            f"{len(extra_drug_ids)} kept from {len(requested_extra_drug_ids)} requested"
+        )
+    if extra_disease_ids:
+        print(
+            "Including extra disease IDs in embedding vocab: "
+            f"{len(extra_disease_ids)} kept from {len(requested_extra_disease_ids)} requested"
+        )
+    if skipped_extra_drug_ids:
+        print(f"Skipped extra drug IDs missing from KG embeddings: {skipped_extra_drug_ids}")
+    if skipped_extra_disease_ids:
+        print(
+            "Skipped extra disease IDs missing from KG embeddings: "
+            f"{skipped_extra_disease_ids}"
+        )
     node_to_idx = {node_id: idx for idx, node_id in enumerate(node_ids)}
     embedding_dim = node_vectors.shape[1]
     rng = np.random.RandomState(args.seed)
+    drug_to_idx, disease_to_idx = data_lib.build_mappings(
+        filtered_examples,
+        extra_drug_ids=extra_drug_ids,
+        extra_disease_ids=extra_disease_ids,
+    )
+    drug_idx_to_id = build_idx_to_id(drug_to_idx, pad_token="<PAD>")
+    disease_idx_to_id = build_idx_to_id(disease_to_idx)
     drug_embeddings = kg_lib.build_entity_embedding(
         entity_ids=drug_idx_to_id,
         node_to_idx=node_to_idx,
@@ -576,16 +788,34 @@ def main() -> None:
     )
     np.save(os.path.join(args.output_dir, "drug_embeddings.npy"), drug_embeddings)
     np.save(os.path.join(args.output_dir, "disease_embeddings.npy"), disease_embeddings)
+    utils.save_json(
+        os.path.join(args.output_dir, "extra_vocab_metadata.json"),
+        {
+            "requested_extra_drug_ids": requested_extra_drug_ids,
+            "requested_extra_disease_ids": requested_extra_disease_ids,
+            "included_extra_drug_ids": extra_drug_ids,
+            "included_extra_disease_ids": extra_disease_ids,
+            "skipped_extra_drug_ids": skipped_extra_drug_ids,
+            "skipped_extra_disease_ids": skipped_extra_disease_ids,
+        },
+    )
 
     def encode_split(df: data_lib.pd.DataFrame) -> Tuple[List[List[int]], List[int], List[int]]:
         examples = data_lib.dataframe_to_examples(df)
         return data_lib.encode_examples(examples, drug_to_idx, disease_to_idx)
+
+    def embed_split_direct(
+        df: data_lib.pd.DataFrame,
+    ) -> Tuple[List[np.ndarray], List[np.ndarray], List[int]]:
+        examples = data_lib.dataframe_to_examples(df)
+        return embed_examples_direct(examples, node_to_idx, node_vectors)
 
     filtered_positions = {idx: pos for pos, idx in enumerate(filtered_df.index)}
     filtered_df.to_csv(os.path.join(args.output_dir, "filtered_dataset_run.csv"), index=False)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     rf_metrics_all: List[Dict[str, object]] = []
+    pair_mlp_metrics_all: List[Dict[str, object]] = []
     lstm_metrics_all: List[Dict[str, object]] = []
     bucket_metrics_val: Dict[str, List[Dict[str, object]]] = {
         "1": [],
@@ -629,6 +859,9 @@ def main() -> None:
         train_seqs, train_diseases, train_labels = encode_split(train_df)
         val_seqs, val_diseases, val_labels = encode_split(val_df)
         test_seqs, test_diseases, test_labels = encode_split(test_df)
+        train_seq_embs, train_dis_embs, train_lstm_labels = embed_split_direct(train_df)
+        val_seq_embs, val_dis_embs, val_lstm_labels = embed_split_direct(val_df)
+        test_seq_embs, test_dis_embs, test_lstm_labels = embed_split_direct(test_df)
 
         train_idx = np.array([filtered_positions[idx] for idx in train_df.index], dtype=np.int64)
         val_idx = np.array([filtered_positions[idx] for idx in val_df.index], dtype=np.int64)
@@ -644,28 +877,33 @@ def main() -> None:
         if not train_seqs or not val_seqs or not test_seqs:
             raise ValueError("One of the splits became empty after encoding.")
 
-        train_dataset = data_lib.PolypharmacyDataset(train_seqs, train_diseases, train_labels)
-        val_dataset = data_lib.PolypharmacyDataset(val_seqs, val_diseases, val_labels)
-        test_dataset = data_lib.PolypharmacyDataset(test_seqs, test_diseases, test_labels)
+        train_dataset = DirectEmbeddingDataset(
+            train_seq_embs, train_dis_embs, train_lstm_labels
+        )
+        val_dataset = DirectEmbeddingDataset(
+            val_seq_embs, val_dis_embs, val_lstm_labels
+        )
+        test_dataset = DirectEmbeddingDataset(
+            test_seq_embs, test_dis_embs, test_lstm_labels
+        )
 
-        collate = lambda batch: data_lib.collate_batch(batch, pad_idx=0)
         train_loader = DataLoader(
             train_dataset,
             batch_size=config["batch_size"],
             shuffle=True,
-            collate_fn=collate,
+            collate_fn=collate_direct_embedding_batch,
         )
         val_loader = DataLoader(
             val_dataset,
             batch_size=config["batch_size"],
             shuffle=False,
-            collate_fn=collate,
+            collate_fn=collate_direct_embedding_batch,
         )
         test_loader = DataLoader(
             test_dataset,
             batch_size=config["batch_size"],
             shuffle=False,
-            collate_fn=collate,
+            collate_fn=collate_direct_embedding_batch,
         )
 
         print(
@@ -680,6 +918,12 @@ def main() -> None:
         )
         X_rf_train, y_rf_train = build_rf_features(
             rf_train_df, drug_to_idx, disease_to_idx, drug_embeddings, disease_embeddings
+        )
+        rf_val_df = val_df[val_df["drug_set"].apply(lambda ds: len(ds) == 2)]
+        if rf_val_df.empty:
+            raise ValueError("Validation split contains no 2-drug examples for pairwise baselines.")
+        X_rf_val, y_rf_val = build_rf_features(
+            rf_val_df, drug_to_idx, disease_to_idx, drug_embeddings, disease_embeddings
         )
         rf_model = fit_random_forest(
             X_rf_train,
@@ -716,14 +960,71 @@ def main() -> None:
             f"confusion={rf_metrics['confusion']}"
         )
 
+        pair_train_loader = build_pair_feature_loader(
+            X_rf_train,
+            y_rf_train,
+            batch_size=int(config["pair_mlp_batch_size"]),
+            shuffle=True,
+        )
+        pair_val_loader = build_pair_feature_loader(
+            X_rf_val,
+            y_rf_val,
+            batch_size=int(config["pair_mlp_batch_size"]),
+            shuffle=False,
+        )
+        pair_test_loader = build_pair_feature_loader(
+            X_rf_test,
+            y_rf_test,
+            batch_size=int(config["pair_mlp_batch_size"]),
+            shuffle=False,
+        )
+        pair_mlp_model, pair_mlp_best_path = train_pair_mlp(
+            pair_train_loader,
+            pair_val_loader,
+            config,
+            input_dim=int(X_rf_train.shape[1]),
+            device=device,
+            output_dir=run_output_dir,
+        )
+        pair_mlp_metrics = evaluate_pair_mlp(pair_mlp_model, pair_test_loader, device)
+        pair_mlp_metrics_all.append(pair_mlp_metrics)
+        utils.save_json(
+            os.path.join(run_output_dir, "pair_mlp_metadata.json"),
+            {
+                "seed": rep_seed,
+                "train_examples": int(len(y_rf_train)),
+                "val_examples": int(len(y_rf_val)),
+                "test_examples": int(len(y_rf_test)),
+                "feature_dim": int(X_rf_train.shape[1]),
+                "hidden_dim": int(config["pair_mlp_hidden_dim"]),
+                "num_layers": int(config["pair_mlp_layers"]),
+                "dropout": float(config["pair_mlp_dropout"]),
+                "epochs": int(config["pair_mlp_epochs"]),
+                "batch_size": int(config["pair_mlp_batch_size"]),
+                "learning_rate": float(config["pair_mlp_learning_rate"]),
+                "weight_decay": float(config["pair_mlp_weight_decay"]),
+                "init_sigma": config.get("pair_mlp_init_sigma"),
+                "mixed_negatives_enabled": bool(args.enable_mixed_negatives),
+                "random_negative_ratio": float(args.random_negative_ratio),
+                "random_negative_strategy": str(args.random_negative_strategy),
+            },
+        )
+        print(
+            f"PairMLP on held-out 2-drug test | auc={pair_mlp_metrics['roc_auc']:.4f} | "
+            f"acc={pair_mlp_metrics['accuracy']:.4f} | sens={pair_mlp_metrics['sensitivity']:.4f} | "
+            f"spec={pair_mlp_metrics['specificity']:.4f} | f1={pair_mlp_metrics['f1']:.4f} | "
+            f"confusion={pair_mlp_metrics['confusion']}"
+        )
+        print(f"Best PairMLP checkpoint saved to {pair_mlp_best_path}")
+
         lstm_model, lstm_best_path = train_lstm(
             train_loader,
             val_loader,
             config,
-            drug_embeddings,
-            disease_embeddings,
-            device,
-            run_output_dir,
+            drug_embedding_dim=int(embedding_dim),
+            disease_embedding_dim=int(embedding_dim),
+            device=device,
+            output_dir=run_output_dir,
         )
         test_probs, test_labels, test_lengths = collect_predictions(
             lstm_model, test_loader, device
@@ -774,6 +1075,7 @@ def main() -> None:
                 "seed": rep_seed,
                 "run_dir": run_output_dir,
                 "rf_metrics": rf_metrics,
+                "pair_mlp_metrics": pair_mlp_metrics,
                 "lstm_metrics": lstm_metrics,
                 "lstm_val_bucket_metrics": val_bucket_metrics
                 if args.per_drug_count_metrics
@@ -792,14 +1094,17 @@ def main() -> None:
                 "replicate": rep,
                 "seed": rep_seed,
                 "rf_metrics": rf_metrics,
+                "pair_mlp_metrics": pair_mlp_metrics,
                 "lstm_metrics": lstm_metrics,
             },
         )
 
     if args.replicates > 1:
         rf_summary = aggregate_metrics(rf_metrics_all)
+        pair_mlp_summary = aggregate_metrics(pair_mlp_metrics_all)
         lstm_summary = aggregate_metrics(lstm_metrics_all)
         print_summary("RF", rf_summary)
+        print_summary("PairMLP", pair_mlp_summary)
         print_summary("LSTM", lstm_summary)
         if args.per_drug_count_metrics:
             print("LSTM per-drug-count summary (mean±SEM):")
@@ -831,6 +1136,7 @@ def main() -> None:
                 "seed": args.seed,
                 "replicate_seed_step": args.replicate_seed_step,
                 "rf_summary": rf_summary,
+                "pair_mlp_summary": pair_mlp_summary,
                 "lstm_summary": lstm_summary,
                 "lstm_bucket_summary": {
                     "validation": {

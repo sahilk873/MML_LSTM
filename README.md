@@ -1,19 +1,27 @@
 # MML Polypharmacy Runbook
 
-This repository contains the polypharmacy training, evaluation, and repurposing workflow built around drug-drug-disease tuples, KG-derived embeddings, mixed negative construction, and downstream RF/LSTM ranking.
+This repository contains the polypharmacy modeling code for:
 
-## Repo layout
+- LSTM-based drug-combination prediction
+- RF and pair-MLP pair scoring on top of embedding features
+- mixed-negative dataset construction
+- exact triple scoring and repurposing/ranking workflows
 
-| Area | Description |
+The code lives in the repo. Large generated outputs should stay local and do not need to be committed.
+
+## Repository layout
+
+| Path | Purpose |
 | --- | --- |
-| `train.py` / `evaluate.py` / `generalize.py` / `experiment.py` | Main training, evaluation, generalization, and comparative experiment entrypoints. |
-| `polypharmacy/` | Shared data loading, model, KG, and utility code. |
-| `scripts/` | Helper scripts for ground-truth rebuilding, embedding export, and RF-based ranking over MeDIC. |
-| `artifacts/` | Model checkpoints, metrics, mixed-negative reports, and ranking outputs. |
+| `train.py` | Train the main LSTM classifier on drug-drug-disease examples. |
+| `evaluate.py` | Re-evaluate saved model runs from an output directory. |
+| `experiment.py` | Comparative experiment driver for LSTM, RF, and pairwise models. |
+| `generalize.py` | Hold out a drug-count bucket and test generalization. |
+| `polypharmacy/` | Core package: config, data loading, KG handling, models, utilities, triplet helpers. |
+| `scripts/` | Utility scripts for preprocessing, ranking, scoring, sweeps, and auxiliary experiments. |
+| `tests/` | Unit tests for the main pipeline and utility scripts. |
 
-## Environment
-
-Create a virtualenv and install dependencies:
+## Environment setup
 
 ```bash
 python3.12 -m venv .venv
@@ -21,63 +29,61 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Run scripts from repo root with `PYTHONPATH=.`:
+Run all commands from the repo root:
 
 ```bash
 PYTHONPATH=. .venv/bin/python <script>.py ...
 ```
 
-## Core datasets
+## Required inputs
 
-Main tuple datasets used in the current workflow:
+The core workflows assume these files are available locally:
 
 - `artifacts/refined_gt/refined_indications.csv`
-  - Mechanistically synergistic positive indications.
 - `contraindications_norm_dedup.csv`
-  - Deduplicated sourced contraindication negatives.
 - `twosides_ddi_prefixed_normalized.csv`
-  - Additional sourced DDI-style negative tuples.
-- `MeDIC Drug List.csv`
-  - Drug universe used for RF repurposing candidate generation.
-- `disease_codes_reference.md`
-  - Ten target diseases used in RF repurposing runs.
+- `kg_edges.parquet`
 
-Embedding assets:
+For precomputed-embedding workflows, also provide:
 
-- `artifacts/refined/kg_embeddings.npz`
-  - Precomputed KG embeddings used by training/eval runs.
+- `artifacts/refined/kg_embeddings.npz` or another saved embedding file
 - `artifacts/precomputed_embeddings/topological/node_ids.npy`
 - `artifacts/precomputed_embeddings/topological/embeddings.npy`
 - `artifacts/precomputed_embeddings/topological/equivalent_id_to_node_id.parquet`
-  - Global precomputed node IDs, vectors, and alias index used for MeDIC-to-embedding matching.
 
-## Mixed-negative training setup
+For MeDIC ranking workflows, also provide:
 
-The current training path supports:
+- `MeDIC Drug List.csv`
+- `disease_codes_reference.md`
 
-- positives from `refined_indications.csv`
-- sourced negatives from `contraindications_norm_dedup.csv`
-- optional sourced negatives from `twosides_ddi_prefixed_normalized.csv`
-- randomized disease-shuffled negatives at a configurable ratio
+## Main workflows
 
-Shared mixed-negative flags are available in:
+### 1. Train the main LSTM model
 
-- `train.py`
-- `generalize.py`
-- `evaluate.py` fallback rebuild path
-- `experiment.py`
+```bash
+PYTHONPATH=. .venv/bin/python train.py \
+  --indications artifacts/refined_gt/refined_indications.csv \
+  --contraindications contraindications_norm_dedup.csv \
+  --kg kg_edges.parquet \
+  --kg-embeddings artifacts/refined/kg_embeddings.npz \
+  --twosides-contraindications twosides_ddi_prefixed_normalized.csv \
+  --enable-mixed-negatives \
+  --random-negative-ratio 1.0 \
+  --random-negative-strategy disease_shuffle \
+  --save-mixed-dataset-details \
+  --output-dir artifacts/refined_train_precomputed
+```
 
-Relevant flags:
+Common useful flags:
 
-- `--twosides-contraindications`
-- `--enable-mixed-negatives`
-- `--random-negative-ratio`
-- `--random-negative-strategy`
-- `--save-mixed-dataset-details`
+- `--config <json>` to override model/training defaults
+- `--quick` for a smoke test
+- `--disease-token-position first|last|none`
+- `--concat-disease-after-lstm true|false`
 
-## Training command used for the mixed-negative experiment
+### 2. Run the comparative experiment
 
-This is the main experiment configuration used for the refined positives + sourced negatives + TWOSIDES + randomized negatives setup:
+This is the main driver for the saved mixed-negative experiments in this repo.
 
 ```bash
 PYTHONPATH=. .venv/bin/python experiment.py \
@@ -93,47 +99,57 @@ PYTHONPATH=. .venv/bin/python experiment.py \
   --output-dir artifacts/exp_refined_mixed_twosides_topological512
 ```
 
-Expected outputs in the run directory:
+Typical outputs:
 
 - `best_model.pt`
 - `rf_model.pkl`
-- `rf_model_metadata.json`
+- `pair_mlp_best.pt`
 - `metrics.json`
 - `mixed_negative_report.json`
 
-## Precomputed embedding alias index
+### 3. Re-evaluate a saved run
 
-`scripts/build_precomputed_embeddings.py` now exports `equivalent_id_to_node_id.parquet` alongside the embedding arrays.
+```bash
+PYTHONPATH=. .venv/bin/python evaluate.py \
+  --output-dir artifacts/exp_refined_mixed_twosides_topological512 \
+  --indications artifacts/refined_gt/refined_indications.csv \
+  --contraindications contraindications_norm_dedup.csv \
+  --kg kg_edges.parquet \
+  --twosides-contraindications twosides_ddi_prefixed_normalized.csv \
+  --enable-mixed-negatives
+```
 
-The alias index contains:
+### 4. Hold out a drug-count bucket
 
-- `alias_id`
-- `node_id`
-- `match_source`
+```bash
+PYTHONPATH=. .venv/bin/python generalize.py \
+  --indications artifacts/refined_gt/refined_indications.csv \
+  --contraindications contraindications_norm_dedup.csv \
+  --kg kg_edges.parquet \
+  --kg-embeddings artifacts/refined/kg_embeddings.npz \
+  --twosides-contraindications twosides_ddi_prefixed_normalized.csv \
+  --enable-mixed-negatives \
+  --holdout-drug-count 3-4 \
+  --output-dir artifacts_refined_combo_holdout
+```
 
-It is built from canonical `id` plus `equivalent_identifiers` from the source embedding parquet files and improves matching coverage for MeDIC `curie` and `alternate_ids`.
+Accepted `--holdout-drug-count` forms:
 
-Backfill alias index only:
+- `1`
+- `2`
+- `3-4`
+- `>=5`
+
+## Ranking and scoring workflows
+
+### Build or refresh the alias index
 
 ```bash
 PYTHONPATH=. .venv/bin/python scripts/build_precomputed_embeddings.py \
   --only-equivalent-id-index
 ```
 
-## RF repurposing ranking over MeDIC
-
-`scripts/rank_medic_pairs_rf.py` does the following:
-
-- maps `MeDIC Drug List.csv` drugs via `curie + alternate_ids`
-- resolves aliases against `equivalent_id_to_node_id.parquet`
-- uses the full topological precomputed embedding space
-- scores all possible 2-drug combinations for the ten diseases in `disease_codes_reference.md`
-- excludes known disease-specific combos from the training dataset
-- writes top 50 RF-ranked novel pairs per disease plus a combined file
-- adds `drug_name_1` and `drug_name_2` to every ranking CSV automatically
-- supports disease-level parallelism with `--max-workers`
-
-### Command to run everything
+### Rank MeDIC candidate pairs with the RF model
 
 ```bash
 PYTHONPATH=. .venv/bin/python scripts/rank_medic_pairs_rf.py \
@@ -151,32 +167,77 @@ PYTHONPATH=. .venv/bin/python scripts/rank_medic_pairs_rf.py \
   --output-dir artifacts/rf_repurpose_top50
 ```
 
-Outputs:
+### Rank CHEBI vocabulary pairs with RF or pair-MLP
 
-- `artifacts/rf_repurpose_top50/<run_name>/top50_all_diseases.csv`
-- `artifacts/rf_repurpose_top50/<run_name>/top50_MONDO_*.csv`
-- `artifacts/rf_repurpose_top50/<run_name>/medic_mapping_matched.csv`
-- `artifacts/rf_repurpose_top50/<run_name>/medic_mapping_unmatched.csv`
-- `artifacts/rf_repurpose_top50/<run_name>/disease_run_summary.csv`
-- `artifacts/rf_repurpose_top50/<run_name>/summary.json`
+```bash
+PYTHONPATH=. .venv/bin/python scripts/rank_vocab_pairs.py \
+  --model-type pair_mlp \
+  --model-output-dir artifacts/exp_refined_mixed_twosides_topological512_pairmlp_low_sigma \
+  --disease-reference-md disease_codes_reference.md \
+  --novelty-source deduped \
+  --top-n 50 \
+  --output-dir artifacts/vocab_repurpose
+```
 
-## Tests added for recent changes
+### Score exact triples with saved models
 
-- `tests/test_mixed_negative_pipeline.py`
-- `tests/test_build_precomputed_embeddings.py`
-- `tests/test_rank_medic_pairs_rf.py`
+`--triples-json` must point to a JSON list with entries like:
 
-Run targeted tests:
+```json
+[
+  {
+    "label": "example",
+    "drug_ids": ["CHEBI:15365", "CHEBI:6801"],
+    "disease_id": "MONDO:0005148"
+  }
+]
+```
+
+Run:
+
+```bash
+PYTHONPATH=. .venv/bin/python scripts/score_exact_triples.py \
+  --triples-json path/to/triples.json \
+  --model-output-dir artifacts/exp_refined_mixed_twosides_topological512 \
+  --precomputed-node-ids artifacts/precomputed_embeddings/topological/node_ids.npy \
+  --precomputed-embeddings artifacts/precomputed_embeddings/topological/embeddings.npy \
+  --alias-index artifacts/precomputed_embeddings/topological/equivalent_id_to_node_id.parquet \
+  --output-json scored_triples.json
+```
+
+### Generate novel candidate combinations with the saved LSTM
+
+```bash
+PYTHONPATH=. .venv/bin/python scripts/generate_novel_combos.py \
+  --model-output-dir artifacts/refined_train_precomputed \
+  --target-disease MONDO:0005148 \
+  --min-combo-size 2 \
+  --max-combo-size 2 \
+  --top-n 200 \
+  --min-prob 0.9 \
+  --output-dir artifacts_repurpose
+```
+
+## Other scripts
+
+See `scripts/README.md` for a short summary of the utility scripts that are in the repo and when to use them.
+
+## Tests
+
+Run the core regression suite:
 
 ```bash
 PYTHONPATH=. .venv/bin/python -m unittest \
   tests.test_mixed_negative_pipeline \
   tests.test_build_precomputed_embeddings \
-  tests.test_rank_medic_pairs_rf
+  tests.test_rank_medic_pairs_rf \
+  tests.test_generate_novel_combos \
+  tests.test_rank_vocab_pairs \
+  tests.test_triplet_metrics
 ```
 
 ## Notes
 
-- RF ranking uses the trained RF model with concatenated `[drug1_emb, drug2_emb, disease_emb]` features.
-- The ranking workflow intentionally uses `curie + alternate_ids` only for MeDIC matching. `ingredient_ids` are excluded to avoid component-vs-product semantic drift.
-- `MONDO:0011699` is substituted to `MONDO:0005265` for IBD because that is the disease embedding used in this workflow.
+- RF and pairwise models use concatenated `[drug1_emb, drug2_emb, disease_emb]` features.
+- The MeDIC ranking workflow resolves `curie` and `alternate_ids` through the alias index.
+- `MONDO:0011699` is substituted to `MONDO:0005265` in the ranking workflow where IBD uses the latter embedding.

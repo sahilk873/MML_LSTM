@@ -49,6 +49,11 @@ def parse_args() -> argparse.Namespace:
         default="disease_shuffle",
         help="Strategy for randomized negative generation.",
     )
+    parser.add_argument(
+        "--alias-index",
+        default="artifacts/precomputed_embeddings/topological/equivalent_id_to_node_id.parquet",
+        help="Alias-to-canonical node ID parquet used to resolve equivalent IDs everywhere.",
+    )
     parser.add_argument("--checkpoint", default=None)
     parser.add_argument("--output-dir", default="artifacts")
     parser.add_argument("--batch-size", type=int, default=128)
@@ -93,22 +98,28 @@ def evaluate_split(
 
 
 def load_filtered_df(args: argparse.Namespace) -> pd.DataFrame:
+    alias_to_node = data_lib.load_alias_to_node_map(args.alias_index)
+
+    def _canonicalize_loaded_df(filtered_df: pd.DataFrame) -> pd.DataFrame:
+        filtered_df["drug_set"] = filtered_df["drug_set"].apply(data_lib.parse_list_column)
+        filtered_df, _ = data_lib.canonicalize_dataframe_ids(filtered_df, alias_to_node)
+        return filtered_df
+
     run_path = os.path.join(args.output_dir, "filtered_dataset_run.csv")
     filtered_path = os.path.join(args.output_dir, "filtered_dataset.csv")
     if os.path.exists(run_path):
         filtered_df = pd.read_csv(run_path)
-        filtered_df["drug_set"] = filtered_df["drug_set"].apply(data_lib.parse_list_column)
-        return filtered_df
+        return _canonicalize_loaded_df(filtered_df)
     if os.path.exists(filtered_path):
         filtered_df = pd.read_csv(filtered_path)
-        filtered_df["drug_set"] = filtered_df["drug_set"].apply(data_lib.parse_list_column)
-        return filtered_df
+        return _canonicalize_loaded_df(filtered_df)
     deduped_df, _ = data_lib.load_deduped_dataframe(
         args.indications,
         args.contraindications,
         single_therapy_indications_path=args.single_therapy_indications,
         single_therapy_contraindications_path=args.single_therapy_contraindications,
         twosides_contraindications_path=args.twosides_contraindications,
+        alias_index_path=args.alias_index,
         enable_mixed_negatives=args.enable_mixed_negatives,
         random_negative_ratio=args.random_negative_ratio,
         random_negative_strategy=args.random_negative_strategy,

@@ -87,6 +87,73 @@ def _canonical_key(drug_set: Sequence[str], condition_id: str) -> Tuple[Tuple[st
     return tuple(sorted(str(drug_id) for drug_id in drug_set)), str(condition_id)
 
 
+def load_alias_to_node_map(alias_index_path: Optional[str]) -> Dict[str, str]:
+    if alias_index_path is None:
+        return {}
+    alias_df = pd.read_parquet(alias_index_path, columns=["alias_id", "node_id"])
+    alias_to_node: Dict[str, str] = {}
+    for row in alias_df.itertuples(index=False):
+        alias = str(row.alias_id).strip()
+        node = str(row.node_id).strip()
+        if alias and node:
+            alias_to_node.setdefault(alias, node)
+    return alias_to_node
+
+
+def resolve_identifier_alias(value: str, alias_to_node: Dict[str, str]) -> str:
+    token = str(value).strip()
+    if not token:
+        return token
+    return alias_to_node.get(token, token)
+
+
+def canonicalize_dataframe_ids(
+    df: pd.DataFrame,
+    alias_to_node: Dict[str, str],
+    drug_column: str = "drug_set",
+    disease_column: str = "condition_id_norm",
+) -> Tuple[pd.DataFrame, Dict[str, int]]:
+    if not alias_to_node:
+        return df, {
+            "rows_touched": 0,
+            "drug_ids_changed": 0,
+            "disease_ids_changed": 0,
+        }
+
+    out = df.copy()
+    rows_touched = 0
+    drug_ids_changed = 0
+    disease_ids_changed = 0
+    resolved_drug_sets: List[List[str]] = []
+    resolved_diseases: List[str] = []
+    for row in out.itertuples(index=False):
+        original_drugs = list(getattr(row, drug_column))
+        original_disease = str(getattr(row, disease_column))
+        resolved_drugs = sorted(
+            normalize_id_list(
+                [resolve_identifier_alias(drug_id, alias_to_node) for drug_id in original_drugs]
+            )
+        )
+        resolved_disease = resolve_identifier_alias(original_disease, alias_to_node)
+        if resolved_drugs != original_drugs or resolved_disease != original_disease:
+            rows_touched += 1
+        drug_ids_changed += sum(
+            1 for before, after in zip(original_drugs, resolved_drugs) if before != after
+        )
+        if resolved_disease != original_disease:
+            disease_ids_changed += 1
+        resolved_drug_sets.append(resolved_drugs)
+        resolved_diseases.append(resolved_disease)
+
+    out[drug_column] = resolved_drug_sets
+    out[disease_column] = resolved_diseases
+    return out, {
+        "rows_touched": int(rows_touched),
+        "drug_ids_changed": int(drug_ids_changed),
+        "disease_ids_changed": int(disease_ids_changed),
+    }
+
+
 @dataclass
 class LabeledExample:
     drug_ids: List[str]
@@ -256,6 +323,7 @@ def load_deduped_dataframe(
     single_therapy_indications_path: Optional[str] = None,
     single_therapy_contraindications_path: Optional[str] = None,
     twosides_contraindications_path: Optional[str] = None,
+    alias_index_path: Optional[str] = "artifacts/precomputed_embeddings/topological/equivalent_id_to_node_id.parquet",
     enable_mixed_negatives: bool = False,
     random_negative_ratio: float = 1.0,
     random_negative_strategy: str = "disease_shuffle",
@@ -292,6 +360,34 @@ def load_deduped_dataframe(
 
     positives_df = pd.concat(positive_frames, ignore_index=True)
     sourced_negatives_df = pd.concat(negative_frames, ignore_index=True)
+    alias_to_node = load_alias_to_node_map(alias_index_path)
+    alias_stats = {
+        "rows_touched": 0,
+        "drug_ids_changed": 0,
+        "disease_ids_changed": 0,
+    }
+    if alias_to_node:
+        positives_df, positive_alias_stats = canonicalize_dataframe_ids(
+            positives_df,
+            alias_to_node,
+        )
+        sourced_negatives_df, negative_alias_stats = canonicalize_dataframe_ids(
+            sourced_negatives_df,
+            alias_to_node,
+        )
+        alias_stats = {
+            "rows_touched": int(
+                positive_alias_stats["rows_touched"] + negative_alias_stats["rows_touched"]
+            ),
+            "drug_ids_changed": int(
+                positive_alias_stats["drug_ids_changed"]
+                + negative_alias_stats["drug_ids_changed"]
+            ),
+            "disease_ids_changed": int(
+                positive_alias_stats["disease_ids_changed"]
+                + negative_alias_stats["disease_ids_changed"]
+            ),
+        }
     combined = pd.concat([positives_df, sourced_negatives_df], ignore_index=True)
 
     random_stats: Dict[str, int] = {
@@ -369,6 +465,11 @@ def load_deduped_dataframe(
                     int(key): int(value)
                     for key, value in deduped["label"].value_counts().to_dict().items()
                 },
+                "alias_resolution": {
+                    "enabled": bool(alias_to_node),
+                    "alias_index_path": alias_index_path,
+                    **alias_stats,
+                },
                 "random_negative_generation": random_stats,
                 "conflict_count": int(conflict_count),
             }
@@ -395,6 +496,7 @@ def load_examples(
     single_therapy_indications_path: Optional[str] = None,
     single_therapy_contraindications_path: Optional[str] = None,
     twosides_contraindications_path: Optional[str] = None,
+    alias_index_path: Optional[str] = "artifacts/precomputed_embeddings/topological/equivalent_id_to_node_id.parquet",
     enable_mixed_negatives: bool = False,
     random_negative_ratio: float = 1.0,
     random_negative_strategy: str = "disease_shuffle",
@@ -407,6 +509,7 @@ def load_examples(
         single_therapy_indications_path,
         single_therapy_contraindications_path,
         twosides_contraindications_path,
+        alias_index_path,
         enable_mixed_negatives,
         random_negative_ratio,
         random_negative_strategy,
@@ -484,12 +587,23 @@ def build_vocab(values: Iterable[str]) -> List[str]:
     return sorted(set(values))
 
 
-def build_mappings(examples: Sequence[LabeledExample]) -> Tuple[Dict[str, int], Dict[str, int]]:
+def build_mappings(
+    examples: Sequence[LabeledExample],
+    extra_drug_ids: Optional[Iterable[str]] = None,
+    extra_disease_ids: Optional[Iterable[str]] = None,
+) -> Tuple[Dict[str, int], Dict[str, int]]:
     drug_ids: List[str] = []
     disease_ids: List[str] = []
     for example in examples:
         drug_ids.extend(example.drug_ids)
         disease_ids.append(example.disease_id)
+
+    if extra_drug_ids is not None:
+        drug_ids.extend(str(drug_id).strip() for drug_id in extra_drug_ids if str(drug_id).strip())
+    if extra_disease_ids is not None:
+        disease_ids.extend(
+            str(disease_id).strip() for disease_id in extra_disease_ids if str(disease_id).strip()
+        )
 
     drug_vocab = build_vocab(drug_ids)
     disease_vocab = build_vocab(disease_ids)

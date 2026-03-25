@@ -34,7 +34,33 @@ nodes_with_embeddings/
 # Track most artifacts, but keep generated embedding dumps local.
 artifacts/precomputed_embeddings/
 
+# Local result/output directories that should not be pushed by default
+artifacts/analysis/
+artifacts/exp_*/
+artifacts/model_compare_repurpose/
+artifacts/pairmlp_uniqueness_analysis/
+artifacts/repurpose_top50_alias/
+artifacts/requested_triples_exact/
+artifacts/rf_old_vs_new_holdout/
+artifacts/rf_repurpose_top50/
+artifacts/sigma_replicates_smoke/
+artifacts/sigma_sweep_topological512_pairmlp*/
+artifacts/vocab_repurpose/
+artifacts_repurpose/
+artifacts_refined_combo_holdout/
+artifacts_refined_disease_holdout/
+artifacts_refined_drug_holdout/
+artifacts_refined_precomputed/
+artifacts_triplet_lstm_full/
+
 # Initial datasets
 indications_norm.csv
 contraindications_norm.csv
 kg_edges.parquet
+twosides_ddi_prefixed_normalized.csv
+
+# Large local data files
+*.parquet
+*.joblib
+MeDIC Drug List.csv
+Diseases List.csv

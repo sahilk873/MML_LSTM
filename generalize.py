@@ -38,6 +38,11 @@ def parse_args() -> argparse.Namespace:
         help="Optional TWOSIDES normalized contraindication-like interaction CSV.",
     )
     parser.add_argument(
+        "--alias-index",
+        default="artifacts/precomputed_embeddings/topological/equivalent_id_to_node_id.parquet",
+        help="Alias-to-canonical node ID parquet used to resolve equivalent IDs everywhere.",
+    )
+    parser.add_argument(
         "--enable-mixed-negatives",
         action="store_true",
         help="Mix sourced negatives with randomized negatives.",
@@ -285,6 +290,7 @@ def main() -> None:
         single_therapy_indications_path=args.single_therapy_indications,
         single_therapy_contraindications_path=args.single_therapy_contraindications,
         twosides_contraindications_path=args.twosides_contraindications,
+        alias_index_path=args.alias_index,
         enable_mixed_negatives=args.enable_mixed_negatives,
         random_negative_ratio=args.random_negative_ratio,
         random_negative_strategy=args.random_negative_strategy,

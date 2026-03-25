@@ -12,8 +12,10 @@ from typing import Dict, Iterable, List, Sequence, Set, Tuple
 
 import numpy as np
 import pandas as pd
+import torch
 
 from polypharmacy import data as data_lib
+from polypharmacy import model as model_lib
 from polypharmacy import utils
 
 
@@ -24,14 +26,26 @@ PREFIX_PRIORITY = {
     "DRUGBANK": 2,
     "PUBCHEM.COMPOUND": 3,
 }
+ZINC_OXIDE_IDS = {"CHEBI:36560"}
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Map MeDIC drugs via curie+alternate_ids to model vocab and rank all "
-            "2-drug pairs for the disease set using saved RF model."
+            "2-drug pairs for the disease set using saved model artifacts."
         )
+    )
+    parser.add_argument(
+        "--model-type",
+        choices=["rf", "pair_mlp", "lstm"],
+        default="rf",
+        help="Scoring model to use for ranking.",
+    )
+    parser.add_argument(
+        "--model-path",
+        default=None,
+        help="Explicit model path. Defaults to the artifact matching --model-type.",
     )
     parser.add_argument(
         "--model-output-dir",
@@ -53,6 +67,16 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--disease-reference-md", default="disease_codes_reference.md")
     parser.add_argument("--novelty-source", choices=["filtered", "deduped"], default="deduped")
+    parser.add_argument(
+        "--candidate-drugs-file",
+        default=None,
+        help="Optional newline-delimited allowlist of candidate drug IDs after MeDIC mapping.",
+    )
+    parser.add_argument(
+        "--exclude-drug-ids-file",
+        default=None,
+        help="Optional newline-delimited blocklist of candidate drug IDs after MeDIC mapping.",
+    )
     parser.add_argument("--top-n", type=int, default=50)
     parser.add_argument("--batch-size", type=int, default=200000)
     parser.add_argument("--max-workers", type=int, default=4)
@@ -60,6 +84,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--run-name", default=None)
     parser.add_argument("--seed", type=int, default=13)
     return parser.parse_args()
+
+
+def _resolve_model_path(args: argparse.Namespace) -> str:
+    if args.model_path:
+        return args.model_path
+    if args.rf_model_path:
+        return args.rf_model_path
+    if args.model_type == "lstm":
+        return os.path.join(args.model_output_dir, "best_model.pt")
+    if args.model_type == "pair_mlp":
+        return os.path.join(args.model_output_dir, "pair_mlp_best.pt")
+    return os.path.join(args.model_output_dir, "rf_model.pkl")
 
 
 def _canonical_combo(drug_ids: Sequence[str]) -> Tuple[str, ...]:
@@ -122,6 +158,24 @@ def _id_priority(identifier: str) -> Tuple[int, str]:
     return PREFIX_PRIORITY.get(prefix, 99), str(identifier)
 
 
+def _is_combination_therapy(value: object) -> bool:
+    if value is None or (isinstance(value, float) and np.isnan(value)):
+        return False
+    text = str(value).strip().lower()
+    if not text or text in {"nan", "none"}:
+        return False
+    tokens = [token.strip() for token in text.split(";")]
+    return any(token == "true" for token in tokens)
+
+
+def _should_exclude_medic_row(curie: str, alternate_ids: object, drug_name: str) -> bool:
+    if str(curie).strip() in ZINC_OXIDE_IDS:
+        return True
+    if any(token in ZINC_OXIDE_IDS for token in _parse_optional_id_list(alternate_ids)):
+        return True
+    return str(drug_name).strip().lower() == "zinc oxide"
+
+
 def _load_known_combos_for_target_disease(
     model_output_dir: str, novelty_source: str, target_disease: str
 ) -> Set[Tuple[str, ...]]:
@@ -174,7 +228,7 @@ def _map_medic_drugs(
         alias_to_nodes.setdefault(alias, set()).add(node)
 
     medic = pd.read_csv(medic_csv)
-    required_cols = {"curie", "alternate_ids", "drug_name"}
+    required_cols = {"curie", "alternate_ids", "drug_name", "combination_therapy"}
     missing = required_cols - set(medic.columns)
     if missing:
         raise ValueError(f"Missing columns in {medic_csv}: {sorted(missing)}")
@@ -183,6 +237,10 @@ def _map_medic_drugs(
     unmatched_rows: List[Dict[str, object]] = []
     for idx, row in enumerate(medic.itertuples(index=False)):
         curie = str(row.curie).strip()
+        if _is_combination_therapy(row.combination_therapy):
+            continue
+        if _should_exclude_medic_row(curie, row.alternate_ids, str(row.drug_name)):
+            continue
         alternates = _parse_optional_id_list(row.alternate_ids)
         candidate_aliases = []
         if curie:
@@ -214,6 +272,7 @@ def _map_medic_drugs(
             {
                 "medic_row_index": idx,
                 "drug_name": str(row.drug_name),
+                "curie_label": str(getattr(row, "curie_label", "")).strip(),
                 "curie": curie,
                 "alternate_ids": str(row.alternate_ids),
                 "selected_node_id": best_node,
@@ -249,13 +308,45 @@ def _build_drug_name_map(matched_df: pd.DataFrame) -> Dict[str, str]:
     missing = required_cols - set(matched_df.columns)
     if missing:
         raise ValueError(f"Cannot build drug name map, missing columns: {sorted(missing)}")
-    working = matched_df[["selected_node_id", "drug_name", "medic_row_index"]].copy()
+    label_column = "curie_label" if "curie_label" in matched_df.columns else "drug_name"
+    working = matched_df[["selected_node_id", label_column, "drug_name", "medic_row_index"]].copy()
     working["selected_node_id"] = working["selected_node_id"].astype(str)
+    working[label_column] = working[label_column].astype(str).str.strip()
     working["drug_name"] = working["drug_name"].astype(str).str.strip()
-    working = working[working["drug_name"] != ""]
+    working[label_column] = working[label_column].replace({"nan": "", "None": "", "none": ""})
+    if label_column != "drug_name":
+        working[label_column] = working[label_column].mask(working[label_column] == "", working["drug_name"])
+    working = working[working[label_column] != ""]
     working = working.sort_values(["selected_node_id", "medic_row_index"])
     working = working.drop_duplicates(subset=["selected_node_id"], keep="first")
-    return working.set_index("selected_node_id")["drug_name"].to_dict()
+    return working.set_index("selected_node_id")[label_column].to_dict()
+
+
+def _load_id_file(path: str | None) -> Set[str]:
+    if path is None:
+        return set()
+    values: Set[str] = set()
+    with open(path, "r", encoding="utf-8") as handle:
+        for raw_line in handle:
+            line = raw_line.split("#", 1)[0].strip()
+            if line:
+                values.add(line)
+    return values
+
+
+def _filter_selected_drug_ids(
+    selected_drug_ids: Sequence[str],
+    candidate_drugs_file: str | None,
+    exclude_drug_ids_file: str | None,
+) -> List[str]:
+    out = sorted(set(str(drug_id) for drug_id in selected_drug_ids))
+    allowlist = _load_id_file(candidate_drugs_file)
+    if allowlist:
+        out = [drug_id for drug_id in out if drug_id in allowlist]
+    blocklist = _load_id_file(exclude_drug_ids_file)
+    if blocklist:
+        out = [drug_id for drug_id in out if drug_id not in blocklist]
+    return out
 
 
 def _attach_drug_names(df: pd.DataFrame, drug_name_map: Dict[str, str]) -> pd.DataFrame:
@@ -281,7 +372,8 @@ def _score_pairs_for_disease(
     known_combos: Set[Tuple[str, ...]],
     node_to_idx: Dict[str, int],
     node_embeddings: np.ndarray,
-    rf_model: object,
+    score_batch,
+    score_column: str,
     top_n: int,
     batch_size: int,
 ) -> pd.DataFrame:
@@ -296,7 +388,7 @@ def _score_pairs_for_disease(
                 "disease_code_used",
                 "drug_id_1",
                 "drug_id_2",
-                "rf_p_indication",
+                score_column,
             ]
         )
 
@@ -317,7 +409,7 @@ def _score_pairs_for_disease(
             )
             feats.append(emb)
         X = np.stack(feats, axis=0)
-        probs[start:end] = rf_model.predict_proba(X)[:, 1].astype(np.float32)
+        probs[start:end] = score_batch(X)
 
     ranked_idx = np.argsort(-probs)[:top_n]
     rows = []
@@ -331,7 +423,7 @@ def _score_pairs_for_disease(
                 "disease_code_used": disease_used,
                 "drug_id_1": d1,
                 "drug_id_2": d2,
-                "rf_p_indication": float(probs[int(idx)]),
+                score_column: float(probs[int(idx)]),
             }
         )
     return pd.DataFrame(rows)
@@ -345,7 +437,8 @@ def _run_single_disease(
     selected_drug_ids: Sequence[str],
     node_to_idx: Dict[str, int],
     node_embeddings: np.ndarray,
-    rf_model: object,
+    score_batch,
+    score_column: str,
     top_n: int,
     batch_size: int,
 ) -> Tuple[pd.DataFrame, Dict[str, object], Dict[str, str]]:
@@ -364,7 +457,7 @@ def _run_single_disease(
                     "disease_code_used",
                     "drug_id_1",
                     "drug_id_2",
-                    "rf_p_indication",
+                    score_column,
                 ]
             ),
             {
@@ -392,7 +485,8 @@ def _run_single_disease(
         known_combos=known_combos,
         node_to_idx=node_to_idx,
         node_embeddings=node_embeddings,
-        rf_model=rf_model,
+        score_batch=score_batch,
+        score_column=score_column,
         top_n=top_n,
         batch_size=batch_size,
     )
@@ -408,6 +502,115 @@ def _run_single_disease(
     return ranked_df, summary_row, substitution_applied
 
 
+def _summarize_combined_rankings(combined: pd.DataFrame) -> Dict[str, int]:
+    if combined.empty:
+        return {
+            "exported_rows": 0,
+            "unique_pairs": 0,
+            "pairs_recommended_for_multiple_diseases": 0,
+            "reused_pair_rows": 0,
+        }
+    pair_keys = combined.apply(
+        lambda row: _canonical_combo((str(row["drug_id_1"]), str(row["drug_id_2"]))),
+        axis=1,
+    )
+    pair_counts = pair_keys.value_counts()
+    multi_disease_pairs = int((pair_counts > 1).sum())
+    reused_pair_rows = int(pair_counts[pair_counts > 1].sum())
+    return {
+        "exported_rows": int(len(combined)),
+        "unique_pairs": int(pair_counts.shape[0]),
+        "pairs_recommended_for_multiple_diseases": multi_disease_pairs,
+        "reused_pair_rows": reused_pair_rows,
+    }
+
+
+def _build_score_batch(
+    model_type: str,
+    model_path: str,
+    sample_feature_dim: int,
+):
+    if model_type == "rf":
+        with open(model_path, "rb") as handle:
+            rf_model = pickle.load(handle)
+        if hasattr(rf_model, "n_features_in_") and int(rf_model.n_features_in_) != sample_feature_dim:
+            raise ValueError(
+                "RF model feature dimension does not match precomputed embeddings: "
+                f"model={rf_model.n_features_in_}, expected={sample_feature_dim}"
+            )
+
+        def score_batch(X: np.ndarray) -> np.ndarray:
+            return rf_model.predict_proba(X)[:, 1].astype(np.float32)
+
+        return score_batch, "rf_p_indication", rf_model
+
+    if model_type == "lstm":
+        checkpoint = torch.load(model_path, map_location="cpu")
+        if not checkpoint.get("uses_direct_embeddings"):
+            raise ValueError(
+                "Ranking expects a direct-embedding LSTM checkpoint with "
+                "'uses_direct_embeddings': true."
+            )
+        embedding_dim = sample_feature_dim // 3
+        model = model_lib.PolypharmacyDirectEmbeddingLSTMClassifier(
+            drug_embedding_dim=embedding_dim,
+            disease_embedding_dim=embedding_dim,
+            lstm_hidden_dim=int(checkpoint["lstm_hidden_dim"]),
+            mlp_hidden_dim=int(checkpoint["mlp_hidden_dim"]),
+            mlp_layers=int(checkpoint.get("mlp_layers", 2)),
+            dropout=float(checkpoint["dropout"]),
+            disease_token_position=checkpoint.get("disease_token_position"),
+            concat_disease_after_lstm=bool(checkpoint.get("concat_disease_after_lstm", True)),
+        )
+        model.load_state_dict(checkpoint["model_state"])
+        model.eval()
+
+        def score_batch(X: np.ndarray) -> np.ndarray:
+            with torch.no_grad():
+                drug_dim = X.shape[1] // 3
+                drug_embeddings = torch.tensor(
+                    np.stack([X[:, :drug_dim], X[:, drug_dim : 2 * drug_dim]], axis=1),
+                    dtype=torch.float32,
+                )
+                disease_embeddings = torch.tensor(
+                    X[:, 2 * drug_dim :],
+                    dtype=torch.float32,
+                )
+                lengths = torch.full(
+                    (drug_embeddings.shape[0],),
+                    2,
+                    dtype=torch.long,
+                )
+                logits = model(drug_embeddings, lengths, disease_embeddings)
+                return torch.sigmoid(logits).cpu().numpy().astype(np.float32)
+
+        return score_batch, "lstm_p_indication", model
+
+    checkpoint = torch.load(model_path, map_location="cpu")
+    expected_dim = int(checkpoint["input_dim"])
+    if expected_dim != sample_feature_dim:
+        raise ValueError(
+            "PairMLP feature dimension does not match precomputed embeddings: "
+            f"model={expected_dim}, expected={sample_feature_dim}"
+        )
+    model = model_lib.PairEmbeddingMLPClassifier(
+        input_dim=expected_dim,
+        hidden_dim=int(checkpoint["hidden_dim"]),
+        num_layers=int(checkpoint["num_layers"]),
+        dropout=float(checkpoint["dropout"]),
+        init_sigma=None,
+    )
+    model.load_state_dict(checkpoint["model_state"])
+    model.eval()
+
+    def score_batch(X: np.ndarray) -> np.ndarray:
+        with torch.no_grad():
+            logits = model(torch.tensor(X, dtype=torch.float32))
+            return torch.sigmoid(logits).cpu().numpy().astype(np.float32)
+
+    return score_batch, "pair_mlp_p_indication", model
+
+
 def main() -> None:
     start = time.time()
     args = parse_args()
@@ -419,9 +622,7 @@ def main() -> None:
     run_dir = os.path.join(args.output_dir, run_name)
     utils.ensure_dir(run_dir)
 
-    rf_model_path = args.rf_model_path or os.path.join(args.model_output_dir, "rf_model.pkl")
-    with open(rf_model_path, "rb") as handle:
-        rf_model = pickle.load(handle)
+    model_path = _resolve_model_path(args)
 
     node_ids = np.load(args.precomputed_node_ids, allow_pickle=True)
     node_embeddings = np.load(args.precomputed_embeddings, mmap_mode="r")
@@ -452,11 +653,16 @@ def main() -> None:
     selected_drug_ids = (
         matched_df[matched_df["in_precomputed_embeddings"]]["selected_node_id"].astype(str).tolist()
     )
+    selected_drug_ids = _filter_selected_drug_ids(
+        selected_drug_ids,
+        candidate_drugs_file=args.candidate_drugs_file,
+        exclude_drug_ids_file=args.exclude_drug_ids_file,
+    )
     drug_name_map = _build_drug_name_map(matched_df)
     matched_df.to_csv(os.path.join(run_dir, "medic_mapping_matched.csv"), index=False)
     unmatched_df.to_csv(os.path.join(run_dir, "medic_mapping_unmatched.csv"), index=False)
 
-    # Validate RF input dimensionality against concatenated embeddings.
+    # Validate model input dimensionality against concatenated embeddings.
     if not selected_drug_ids:
         raise ValueError("No MeDIC drugs mapped to precomputed embeddings.")
     sample_drug = selected_drug_ids[0]
@@ -470,14 +676,13 @@ def main() -> None:
         int(node_embeddings[node_to_idx[sample_drug]].shape[0]) * 2
         + int(node_embeddings[node_to_idx[sample_disease]].shape[0])
     )
-    if hasattr(rf_model, "n_features_in_") and int(rf_model.n_features_in_) != sample_feature_dim:
-        raise ValueError(
-            "RF model feature dimension does not match precomputed embeddings: "
-            f"model={rf_model.n_features_in_}, expected={sample_feature_dim}"
-        )
-    # Avoid oversubscribing CPU cores when parallelizing across diseases.
-    if hasattr(rf_model, "n_jobs"):
-        rf_model.n_jobs = 1 if args.max_workers > 1 else rf_model.n_jobs
+    score_batch, score_column, loaded_model = _build_score_batch(
+        model_type=args.model_type,
+        model_path=model_path,
+        sample_feature_dim=sample_feature_dim,
+    )
+    if hasattr(loaded_model, "n_jobs"):
+        loaded_model.n_jobs = 1 if args.max_workers > 1 else loaded_model.n_jobs
 
     substitution_applied: Dict[str, str] = {}
     all_ranked = []
@@ -494,7 +699,8 @@ def main() -> None:
                     selected_drug_ids=selected_drug_ids,
                     node_to_idx=node_to_idx,
                     node_embeddings=node_embeddings,
-                    rf_model=rf_model,
+                    score_batch=score_batch,
+                    score_column=score_column,
                     top_n=args.top_n,
                     batch_size=args.batch_size,
                 ),
@@ -522,18 +728,20 @@ def main() -> None:
                 "disease_code_used",
                 "drug_id_1",
                 "drug_id_2",
-                "rf_p_indication",
+                score_column,
             ]
         )
     )
     combined = _attach_drug_names(combined, drug_name_map)
     combined.to_csv(os.path.join(run_dir, "top50_all_diseases.csv"), index=False)
     pd.DataFrame(summary_rows).to_csv(os.path.join(run_dir, "disease_run_summary.csv"), index=False)
+    uniqueness_summary = _summarize_combined_rankings(combined)
 
     summary_payload = {
         "run_name": run_name,
         "model_output_dir": args.model_output_dir,
-        "rf_model_path": rf_model_path,
+        "model_type": args.model_type,
+        "model_path": model_path,
         "alias_index": args.alias_index,
         "precomputed_node_ids": args.precomputed_node_ids,
         "precomputed_embeddings": args.precomputed_embeddings,
@@ -544,7 +752,10 @@ def main() -> None:
         "max_workers": args.max_workers,
         "mapped_medic_drugs": int(len(matched_df)),
         "mapped_medic_drugs_in_precomputed": int(len(selected_drug_ids)),
+        "candidate_drugs_file": args.candidate_drugs_file,
+        "exclude_drug_ids_file": args.exclude_drug_ids_file,
         "unmatched_medic_drugs": int(len(unmatched_df)),
+        "uniqueness_summary": uniqueness_summary,
         "ibd_substitutions": substitution_applied,
         "timing_seconds": float(time.time() - start),
     }

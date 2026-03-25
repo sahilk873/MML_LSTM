@@ -89,3 +89,113 @@ class PolypharmacyLSTMClassifier(nn.Module):
             combined = combo_embedding
         logits = self.classifier(combined).squeeze(1)
         return logits
+
+
+class PolypharmacyDirectEmbeddingLSTMClassifier(nn.Module):
+    def __init__(
+        self,
+        drug_embedding_dim: int,
+        disease_embedding_dim: int,
+        lstm_hidden_dim: int,
+        mlp_hidden_dim: int,
+        mlp_layers: int,
+        dropout: float,
+        disease_token_position: Optional[str] = None,
+        concat_disease_after_lstm: bool = True,
+    ) -> None:
+        super().__init__()
+        valid_positions = {None, "first", "last"}
+        if disease_token_position not in valid_positions:
+            raise ValueError(
+                "disease_token_position must be one of None, 'first', or 'last'."
+            )
+        self.disease_token_position = disease_token_position
+        self.concat_disease_after_lstm = concat_disease_after_lstm
+        self.disease_to_drug = None
+        if disease_token_position is not None and disease_embedding_dim != drug_embedding_dim:
+            self.disease_to_drug = nn.Linear(disease_embedding_dim, drug_embedding_dim)
+        self.lstm = nn.LSTM(
+            input_size=drug_embedding_dim,
+            hidden_size=lstm_hidden_dim,
+            batch_first=True,
+        )
+        mlp_layers_seq: List[nn.Module] = []
+        input_dim = lstm_hidden_dim
+        if self.concat_disease_after_lstm:
+            input_dim += disease_embedding_dim
+        for _ in range(max(1, mlp_layers)):
+            mlp_layers_seq.append(nn.Linear(input_dim, mlp_hidden_dim))
+            mlp_layers_seq.append(nn.LayerNorm(mlp_hidden_dim))
+            mlp_layers_seq.append(nn.ReLU())
+            mlp_layers_seq.append(nn.Dropout(dropout))
+            input_dim = mlp_hidden_dim
+        mlp_layers_seq.append(nn.Linear(input_dim, 1))
+        self.classifier = nn.Sequential(*mlp_layers_seq)
+
+    def forward(
+        self,
+        drug_embeddings: torch.Tensor,
+        drug_lengths: torch.Tensor,
+        disease_embeddings: torch.Tensor,
+    ) -> torch.Tensor:
+        if self.disease_token_position is not None:
+            disease_token = disease_embeddings
+            if self.disease_to_drug is not None:
+                disease_token = self.disease_to_drug(disease_token)
+            disease_token = disease_token.unsqueeze(1)
+            if self.disease_token_position == "first":
+                drug_embeddings = torch.cat([disease_token, drug_embeddings], dim=1)
+            else:
+                drug_embeddings = torch.cat([drug_embeddings, disease_token], dim=1)
+            drug_lengths = drug_lengths + 1
+        packed = nn.utils.rnn.pack_padded_sequence(
+            drug_embeddings,
+            drug_lengths.cpu(),
+            batch_first=True,
+            enforce_sorted=False,
+        )
+        _, (h_n, _) = self.lstm(packed)
+        combo_embedding = h_n[-1]
+        if self.concat_disease_after_lstm:
+            combined = torch.cat([combo_embedding, disease_embeddings], dim=1)
+        else:
+            combined = combo_embedding
+        logits = self.classifier(combined).squeeze(1)
+        return logits
+
+
+class PairEmbeddingMLPClassifier(nn.Module):
+    def __init__(
+        self,
+        input_dim: int,
+        hidden_dim: int,
+        num_layers: int,
+        dropout: float,
+        init_sigma: Optional[float] = None,
+    ) -> None:
+        super().__init__()
+        layers: List[nn.Module] = []
+        current_dim = input_dim
+        for _ in range(max(1, num_layers)):
+            layers.append(nn.Linear(current_dim, hidden_dim))
+            layers.append(nn.LayerNorm(hidden_dim))
+            layers.append(nn.ReLU())
+            layers.append(nn.Dropout(dropout))
+            current_dim = hidden_dim
+        layers.append(nn.Linear(current_dim, 1))
+        self.network = nn.Sequential(*layers)
+        if init_sigma is not None:
+            self.reset_parameters(init_sigma)
+
+    def reset_parameters(self, init_sigma: float) -> None:
+        for module in self.modules():
+            if isinstance(module, nn.Linear):
+                nn.init.normal_(module.weight, mean=0.0, std=init_sigma)
+                if module.bias is not None:
+                    nn.init.zeros_(module.bias)
+            elif isinstance(module, nn.LayerNorm):
+                nn.init.ones_(module.weight)
+                nn.init.zeros_(module.bias)
+
+    def forward(self, features: torch.Tensor) -> torch.Tensor:
+        return self.network(features).squeeze(1)
