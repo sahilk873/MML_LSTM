@@ -41,6 +41,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--device", default="auto", choices=["auto", "cpu", "cuda", "mps"])
     parser.add_argument("--seed", type=int, default=13)
+    parser.add_argument(
+        "--pair-mlp-epochs",
+        type=int,
+        default=80,
+        help="Override PairMLP training epochs for low-init sigma runs.",
+    )
     parser.add_argument("--top-n", type=int, default=50)
     parser.add_argument("--ranking-batch-size", type=int, default=200000)
     parser.add_argument("--ranking-max-workers", type=int, default=4)
@@ -350,6 +356,7 @@ def main() -> None:
     base_state = load_base_state(base_artifact)
     config = dict(base_state["config"])
     config["seed"] = args.seed
+    config["pair_mlp_epochs"] = int(args.pair_mlp_epochs)
 
     filtered_df = base_state["filtered_df"]
     splits = base_state["splits"]

@@ -111,6 +111,7 @@ Takeaway:
 
 - The low-sigma Pair-MLP was viable, but not enough to beat RF on held-out classification.
 - This run later became useful mainly for diversity-oriented ranking analysis.
+- Follow-up decision: future reruns of the low-init Pair-MLP setup should use `80` epochs rather than `20`, because the loss curves suggested more learning headroom.
 
 ### Requested-triples experiments
 

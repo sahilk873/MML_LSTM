@@ -41,6 +41,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--replicates", type=int, default=10)
     parser.add_argument("--seed-start", type=int, default=13)
     parser.add_argument(
+        "--pair-mlp-epochs",
+        type=int,
+        default=80,
+        help="Override PairMLP training epochs for low-init sigma replicate runs.",
+    )
+    parser.add_argument(
         "--output-root",
         default="artifacts/sigma_sweep_topological512_pairmlp_replicates",
     )
@@ -443,6 +449,7 @@ def main() -> None:
 
     base_state = load_base_state(base_artifact)
     config = dict(base_state["config"])
+    config["pair_mlp_epochs"] = int(args.pair_mlp_epochs)
     filtered_df = base_state["filtered_df"]
     splits = base_state["splits"]
     train_df = filtered_df.iloc[splits["train_idx"]].copy()

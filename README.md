@@ -181,6 +181,8 @@ PYTHONPATH=. .venv/bin/python scripts/rank_vocab_pairs.py \
   --output-dir artifacts/vocab_repurpose
 ```
 
+For the low-init Pair-MLP configuration in `config_pair_mlp_low_sigma_slow_lr.json`, use `pair_mlp_epochs=80`. The sigma-sweep utilities also now default to 80 Pair-MLP epochs unless explicitly overridden.
+
 ### Score exact triples with saved models
 
 `--triples-json` must point to a JSON list with entries like:

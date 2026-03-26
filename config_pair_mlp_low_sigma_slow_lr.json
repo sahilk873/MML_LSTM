@@ -15,7 +15,7 @@
   "pair_mlp_hidden_dim": 128,
   "pair_mlp_layers": 2,
   "pair_mlp_dropout": 0.1,
-  "pair_mlp_epochs": 20,
+  "pair_mlp_epochs": 80,
   "pair_mlp_batch_size": 64,
   "pair_mlp_learning_rate": 0.00005,
   "pair_mlp_weight_decay": 0.00001,
