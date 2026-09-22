@@ -1,0 +1,27 @@
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+build/
+dist/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.tox/
+.venv/
+.venv*/
+venv/
+env/
+.env
+.DS_Store
+
+# Data and generated artifacts (not tracked in this repo)
+artifacts/
+artifacts_*/
+*.parquet
+*.joblib
+*.npz
+*.npy
+*.pt
+*.pkl
